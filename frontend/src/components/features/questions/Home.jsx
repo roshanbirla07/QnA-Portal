@@ -69,7 +69,7 @@ const Home = () => {
                 </div>
               ))}
             </div>
-            {(admin || userId === value.author) && (
+            {(admin || userId === (value.author?._id || value.author)) && (
               <button
                 className="text-red-600 mt-2 hover:underline"
                 onClick={() =>

@@ -126,7 +126,7 @@ const [updatedTags, setUpdatedTags] = useState(question?.tags?.join(",") || "");
             </div>
           ))}
         </div>
-           {( userId === question.author) && (
+           {( userId === (question.author?._id || question.author)) && (
                 
                 <div className="flex">
                 <button

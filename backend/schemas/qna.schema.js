@@ -20,10 +20,30 @@ const qnaSchema = new mongoose.Schema({
     default: "pending",
     enum: ["pending", "approved", "rejected"],
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  views: {
+    type: Number,
+    default: 0,
   },
+  upvotes: {
+    type: Number,
+    default: 0,
+  },
+  downvotes: {
+    type: Number,
+    default: 0,
+  },
+}, {
+  timestamps: true, // Adds createdAt and updatedAt automatically
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Virtual field for answer count (will be populated via aggregation)
+qnaSchema.virtual('answerCount', {
+  ref: 'Comment',
+  localField: '_id',
+  foreignField: 'questionId',
+  count: true
 });
 
 function arrLimit (val) {

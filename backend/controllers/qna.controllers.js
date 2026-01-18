@@ -2,11 +2,16 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import QnA from "../schemas/qna.schema.js";
+import User from "../schemas/user.schema.js";
 import mongoose from "mongoose";
 
 const fetchQuestions = asyncHandler(async (req, res) => {
   try {
-    const questions = await QnA.find({ status: "approved" });
+    const questions = await QnA.find({ status: "approved" })
+      .populate("author", "email")
+      .populate("answerCount")
+      .sort({ createdAt: -1 });
+
     return res.status(200).json(new ApiResponse(200, questions, "Questions fetched Successfully"));
   } catch (error) {
     console.error(error);
@@ -70,7 +75,11 @@ const approvedQuestions = asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const questions = await QnA.find({
       $and: [{ author: userId }, { status: "approved" }],
-    });
+    })
+      .populate("author", "email")
+      .populate("answerCount")
+      .sort({ createdAt: -1 });
+
     return res
       .status(200)
       .json(
@@ -88,23 +97,22 @@ const approvedQuestions = asyncHandler(async (req, res) => {
 
 const pendingQuestions = asyncHandler(async (req, res) => {
   try {
-    let questions;
+    let query = { status: "pending" };
     if (req.user.roleType === "user") {
-      const userId = req.user.id;
-      questions = await QnA.find({
-        $and: [{ author: userId }, { status: "pending" }],
-      });
+      query.author = req.user.id;
     }
-    if (req.user.roleType === "admin") {
-      questions = await QnA.find({ status: "pending" });
-    }
+
+    const questions = await QnA.find(query)
+      .populate("author", "email")
+      .sort({ createdAt: -1 });
+
     return res
       .status(200)
       .json(
         new ApiResponse(
           200,
           questions,
-          "Approved Questions fetched Successfully"
+          "Pending Questions fetched Successfully"
         )
       );
   } catch (error) {
@@ -179,6 +187,38 @@ const deleteQuestion = asyncHandler(async (req, res) => {
   }
 });
 
+const incrementView = asyncHandler(async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const question = await QnA.findByIdAndUpdate(
+      questionId,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    return res
+      .status(200)
+      .json(new ApiResponse(200, question, "View incremented"));
+  } catch (error) {
+    return res.status(500).json(new ApiResponse(500, {}, "Error incrementing view"));
+  }
+});
+
+const getAdminStats = asyncHandler(async (req, res) => {
+  try {
+    const totalQuestions = await QnA.countDocuments();
+    const pendingApprovals = await QnA.countDocuments({ status: "pending" });
+    const activeUsers = await User.countDocuments();
+
+    return res.status(200).json(new ApiResponse(200, {
+      totalQuestions,
+      pendingApprovals,
+      activeUsers
+    }, "Stats fetched successfully"));
+  } catch (error) {
+    return res.status(500).json(new ApiResponse(500, {}, "Error fetching stats"));
+  }
+});
+
 export {
   fetchQuestions,
   postQuestion,
@@ -187,4 +227,6 @@ export {
   pendingQuestions,
   editQuestion,
   deleteQuestion,
+  incrementView,
+  getAdminStats
 };
