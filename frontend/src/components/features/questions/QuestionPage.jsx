@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { fetchComments, postComment } from "../services/comment.api";
-import { DELETE_QUESTION, EDIT_QUESTION, FETCH_COMMENTS, POST_COMMENT } from "../services/apis";
+import { fetchComments, postComment } from "../../../services/comment.api";
+import { DELETE_QUESTION, EDIT_QUESTION, FETCH_COMMENTS, POST_COMMENT } from "../../../services/apis";
 import { useLocation, useNavigate } from "react-router-dom";
-import { deleteQuestion, editQuestion } from "../services/qna.api";
+import { deleteQuestion, editQuestion } from "../../../services/qna.api";
 
 const QuestionPage = () => {
   const location = useLocation();

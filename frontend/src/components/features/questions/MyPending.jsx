@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { approveQuestion, fetchQuestion } from '../services/qna.api';
-import { APPROVE_QUESTION, PENDING_QUESTIONS } from '../services/apis';
+import { approveQuestion, fetchQuestion } from '../../../services/qna.api';
+import { APPROVE_QUESTION, PENDING_QUESTIONS } from '../../../services/apis';
 
 const MyPending = () => {
   const token = localStorage.getItem('token');

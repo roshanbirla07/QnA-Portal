@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import QuestionPage from "./QuestionPage";
 import { useEffect } from "react";
-import { deleteQuestion } from "../services/qna.api";
-import { DELETE_QUESTION, FETCH_QUESTIONS } from "../services/apis";
+import { deleteQuestion } from "../../../services/qna.api";
+import { DELETE_QUESTION, FETCH_QUESTIONS } from "../../../services/apis";
 import { useNavigate } from "react-router-dom";
 // import User from '../../backend/schemas/user.schema';
 

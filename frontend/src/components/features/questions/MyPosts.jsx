@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useState,useEffect } from "react";
-import { APPROVED_QUESTIONS } from "../services/apis";
+import { APPROVED_QUESTIONS } from "../../../services/apis";
 const MyPosts = () => {
   
 
