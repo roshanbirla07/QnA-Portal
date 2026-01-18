@@ -1,15 +1,10 @@
 import "./App.css";
-import Home from "./components/Home.jsx";
-import SignUp from "./components/SignUp.jsx";
-import Navbar from "./components/Navbar.jsx";
-import LoginPage from "./components/Login.jsx";
-import QuestionForm from "./components/QuestionForm.jsx";
-import MyPending from "./components/MyPending.jsx";
+import { Home, MyPending, MyPosts, QuestionForm, QuestionPage } from "./components/features/questions";
+import { SignUp, Login } from "./components/features/auth";
+import { Navbar } from "./components/layout";
+import { PrivateRoute } from "./components/common";
 import { Route, Routes } from "react-router-dom";
-import PrivateRoute from "./components/Auth/PrivateRoute.jsx";
 import { useAuth } from "./contexts/AuthContext.jsx";
-import MyPosts from "./components/MyPosts";
-import QuestionPage from "./components/QuestionPage";
 // import OpenRoute from './components/Auth/OpenRoute.jsx';
 function App() {
   const { token } = useAuth();
@@ -47,7 +42,7 @@ function App() {
           path="/login"
           element={
             // <PrivateRoute>
-            <LoginPage />
+            <Login />
             // </PrivateRoute>
           }
         />

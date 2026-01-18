@@ -2,8 +2,9 @@ import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 import app from "./app.js";
 import connectDB from "./db/connection.js";
+import config from "./stageconfig.js";
 
-const PORT =  process.env.PORT || 3001;
+const PORT = config.port;
 
 (async () => {
   try {

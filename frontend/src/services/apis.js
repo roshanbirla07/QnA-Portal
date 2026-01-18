@@ -1,5 +1,5 @@
-// const BASE_URL = "http://localhost:4000";
-const BASE_URL = "https://qna-hexawealth.onrender.com";
+const BASE_URL = "http://localhost:3001";
+// const BASE_URL = "https://qna-hexawealth.onrender.com";
 
 const USER_ROUTER = BASE_URL + "/api/v1/user";
 const QNA_ROUTER = BASE_URL + "/api/v1/qna";
