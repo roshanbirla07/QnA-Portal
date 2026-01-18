@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { approveQuestion } from '../services/qna.api';
-import { APPROVE_QUESTION, PENDING_QUESTIONS } from '../services/apis';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useState,useEffect } from "react";
+import { APPROVED_QUESTIONS } from "../../../services/apis";
+const MyPosts = () => {
+  
 
-const MyPending = () => {
+  const navigate = useNavigate();
+
   const token = localStorage.getItem('token');
   const payload = JSON.parse(atob(token.split(".")[1]));
   const admin = payload.roleType === "admin";
-  const { userId } = payload; 
-
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,7 +19,7 @@ const MyPending = () => {
     const fetchData = async () => {
       try {
         console.log("Fetching data...");
-        const response = await fetch(PENDING_QUESTIONS, {
+        const response = await fetch(APPROVED_QUESTIONS, {
           method: 'GET',
           credentials: 'include', // Include cookies
         });
@@ -37,33 +40,30 @@ const MyPending = () => {
 
     fetchData();
   }, []);
-
-  const approveHandler = (uid) => {
-    console.log(`Approving question with ID: ${uid}`);
-    // Add approve logic here
+ 
+  const clickHandler = (question) => {
+    console.log(question)
+    navigate(`/question`, { state: { question } });
   };
 
-  const deleteHandler = () => {
-    console.log('Deleting question...');
-    // Add delete logic here
+
+  // Edit handler: Navigates to the edit page with the selected question details
+  const editHandler = (question) => {
+    navigate(`/edit-question/${question.id}`, { state: question });
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  const deleteHandler = (id) => {
+    console.log(`Delete question with ID: ${id}`); // Example: Add your delete logic here
+  };
 
   return (
     <div>
       <div className="flex flex-col m-10">
-        {data?.map((value, index) => (
-          <div key={value.id} className="my-5 border-b-2 py-5">
-            <div className="text-2xl cursor-pointer hover:underline">
-              Q{index + 1}. {value.questionTitle}
-            </div>
+        {data.map((value) => (
+          <div key={value._id} className="my-5 border-b-2 py-5" 
+             onClick={() => clickHandler(value)}
+          >
+            <div className="text-2xl cursor-pointer hover:underline">Q. {value.questionTitle}</div>
             <div className="flex my-2">
               {value?.tags?.map((tt, idx) => (
                 <div key={idx} className="px-2 text-gray-600">{tt}</div>
@@ -73,21 +73,15 @@ const MyPending = () => {
               <div className="flex">
                 <button
                   className="text-green-600 mt-2 hover:underline px-8"
-                  onClick={() => approveQuestion("POST", APPROVE_QUESTION,  {
-                    questionId: value._id,
-                    status: "approved",
-                  })}
+                  onClick={() => editHandler(value)} // Pass the question details to editHandler
                 >
-                  Approve
+                  Edit
                 </button>
                 <button
                   className="text-red-600 mt-2 hover:underline px-8"
-                  onClick={() => approveQuestion("POST", APPROVE_QUESTION, {
-                    questionId: value._id,
-                    status: "rejected",
-                  })}
+                  onClick={() => deleteHandler(value.id)}
                 >
-                  Reject
+                  Delete
                 </button>
               </div>
             )}
@@ -98,4 +92,4 @@ const MyPending = () => {
   );
 };
 
-export default MyPending;
+export default MyPosts;

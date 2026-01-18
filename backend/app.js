@@ -4,14 +4,16 @@ import cors from "cors";
 import userRouter from "./routes/user.routes.js";
 import qnaRouter from "./routes/qna.routes.js";
 import commentRouter from "./routes/comment.routes.js";
+import config from "./stageconfig.js";
 
 const app = express();
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: config.corsOrigin === "*" ? "http://localhost:3000" : config.corsOrigin,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
   })
 );
 
@@ -28,17 +30,9 @@ app.use(
   })
 );
 
+app.use(express.static("public"));
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", `${process.env.CORS_ORIGIN}`);
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-  res.header("Access-Control-Allow-Credentials", "true")
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
+app.use(cookieParser());
 
 // app.options("*", (req, res) => {
 //   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");

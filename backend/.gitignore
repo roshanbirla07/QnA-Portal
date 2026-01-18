@@ -1,2 +1,27 @@
+# Dependencies
 /node_modules
+
+# Environment variables
 .env
+.env.*
+!.env.example
+
+# Build
+/dist
+/build
+
+# Testing
+/coverage
+.nyc_output
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

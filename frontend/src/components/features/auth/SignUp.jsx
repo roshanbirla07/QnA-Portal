@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { signupUser } from '../services/user.api';
-import { SIGNUP_USER } from '../services/apis';
+import { signupUser } from '../../../services/user.api';
+import { SIGNUP_USER } from '../../../services/apis';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 
 const Signup = () => {

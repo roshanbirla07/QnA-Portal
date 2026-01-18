@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import QuestionForm from "./QuestionForm";
+import QuestionForm from "../features/questions/QuestionForm";
 import { useNavigate } from "react-router-dom";
-import { LOGOUT_USER } from "../services/apis";
+import { LOGOUT_USER } from "../../services/apis";
 
 const Navbar = () => {
   const navigate = useNavigate();

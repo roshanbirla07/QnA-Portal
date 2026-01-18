@@ -3,9 +3,10 @@ import User from "../schemas/user.schema.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import config from "../stageconfig.js";
 
 const generateToken = (userId, roleType) => {
-  return jwt.sign({ userId, roleType }, process.env.JWT_SECRET, {
+  return jwt.sign({ userId, roleType }, config.jwtSecret, {
     expiresIn: "7d",
   });
 };
@@ -36,16 +37,20 @@ const signupUser = asyncHandler(async (req, res) => {
     const token = generateToken(user._id, roleType);
     res.cookie("authToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: config.nodeEnv === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     return res
       .status(200)
-      .json(new ApiResponse(200, {respUser, token}, "User Signed up Successfully"));
+      .json(new ApiResponse(200, { respUser, token }, "User Signed up Successfully"));
   } catch (error) {
-    console.error(error.message);
-    return res.status(500).json(error);
+    console.error("Signup Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Something went wrong during signup",
+      error: error.toString()
+    });
   }
 });
 
@@ -73,7 +78,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     res.cookie("authToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: config.nodeEnv === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -81,8 +86,12 @@ const loginUser = asyncHandler(async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, { respUser, token }, "User logged in successfully"));
   } catch (error) {
-    console.error(error.message);
-    return res.status(error.statusCode || 500).json(error);
+    console.error("Login Error:", error);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "Something went wrong during login",
+      error: error.toString()
+    });
   }
 });
 
@@ -91,7 +100,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   try {
     res.clearCookie("authToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: config.nodeEnv === "production",
     });
 
     return res

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { postQuestion } from "../services/qna.api";
-import { POST_QUESTION } from "../services/apis";
+import { postQuestion } from "../../../services/qna.api";
+import { POST_QUESTION } from "../../../services/apis";
 import { useNavigate } from "react-router-dom";
 
 const QuestionForm = ({ setNewPostPopup, newPostPopup }) => {

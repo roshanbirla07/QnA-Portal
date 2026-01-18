@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import ApiError from "../utils/ApiError.js";
 import User from "../schemas/user.schema.js";
+import config from "../stageconfig.js";
 
 const authMiddleware = (requiredRoles = []) => {
   return async (req, res, next) => {
@@ -11,7 +12,7 @@ const authMiddleware = (requiredRoles = []) => {
       if (!token) {
         throw new ApiError(401, "Authentication token missing");
       }
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, config.jwtSecret);
       const user = await User.findById(decoded.userId);
       if (!user) {
         throw new ApiError(401, "User not found or token invalid");
