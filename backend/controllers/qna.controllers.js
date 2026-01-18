@@ -11,17 +11,17 @@ const fetchQuestions = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(error);
     return res
-    .status(500)
-    .json(new ApiResponse(500, {}, "Internal Server Error"));
-    
+      .status(500)
+      .json(new ApiResponse(500, {}, "Internal Server Error"));
+
   }
 });
 
 const postQuestion = asyncHandler(async (req, res) => {
   try {
     const { questionTitle, tags } = req.body;
-    console.log(tags,typeof(tags));
-    if (!questionTitle || !tags ) {
+    console.log(tags, typeof (tags));
+    if (!questionTitle || !tags) {
       throw new ApiError(401, "All Fields are Required");
     }
     const question = await QnA.create({
@@ -67,16 +67,10 @@ const approveQuestion = asyncHandler(async (req, res) => {
 
 const approvedQuestions = asyncHandler(async (req, res) => {
   try {
-    let questions;
-    if(req.user.roleType === "user") {
-      const userId = req.user.id;
-      questions = await QnA.find({
-        $and: [{ author: userId }, { status: "approved" }],
-      });
-    }
-    if(req.user.roleType === "admin") {
-      questions = await QnA.find({ status: "approved" }); 
-    }
+    const userId = req.user.id;
+    const questions = await QnA.find({
+      $and: [{ author: userId }, { status: "approved" }],
+    });
     return res
       .status(200)
       .json(
@@ -95,14 +89,14 @@ const approvedQuestions = asyncHandler(async (req, res) => {
 const pendingQuestions = asyncHandler(async (req, res) => {
   try {
     let questions;
-    if(req.user.roleType === "user") {
+    if (req.user.roleType === "user") {
       const userId = req.user.id;
       questions = await QnA.find({
         $and: [{ author: userId }, { status: "pending" }],
       });
     }
-    if(req.user.roleType === "admin") {
-      questions = await QnA.find({ status: "pending"});
+    if (req.user.roleType === "admin") {
+      questions = await QnA.find({ status: "pending" });
     }
     return res
       .status(200)
@@ -114,7 +108,7 @@ const pendingQuestions = asyncHandler(async (req, res) => {
         )
       );
   } catch (error) {
-    console.error(error.message,"jjjkk");
+    console.error(error.message, "jjjkk");
     return res.status(error.statusCode).json(error);
   }
 });
@@ -122,8 +116,8 @@ const pendingQuestions = asyncHandler(async (req, res) => {
 const editQuestion = asyncHandler(async (req, res) => {
   try {
     const { questionId } = req.params;
-    const { questionTitle, tags } = req.body; 
-    const userId = req.user.id; 
+    const { questionTitle, tags } = req.body;
+    const userId = req.user.id;
     if (!mongoose.Types.ObjectId.isValid(questionId)) {
       throw new ApiError(400, "Invalid question ID");
     }
