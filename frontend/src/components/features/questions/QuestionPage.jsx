@@ -86,7 +86,7 @@ const QuestionPage = () => {
       tags: updatedTags.split(",").map((tag) => tag.trim()),
     };
 
-   await editQuestion("POST", `${EDIT_QUESTION}/${question._id}`, updatedData); 
+   await editQuestion("PATCH", `${EDIT_QUESTION}/${question._id}`, updatedData); 
    question.questionTitle = updatedQuestion;
    question.tags = updatedData.tags;
    setEditMode(false);
@@ -96,7 +96,7 @@ const QuestionPage = () => {
   
   const authorName = question.author?.email?.split('@')[0] || "Unknown";
   const timeAgo = question.createdAt ? formatDistanceToNow(new Date(question.createdAt), { addSuffix: true }) : "";
-  const isAuthor = userId === (question.author?._id || question.author);
+  const isAuthor = userId && (question.author?._id || question.author) && userId === (question.author?._id || question.author);
 
   return (
     <div className="min-h-screen bg-bg-primary pt-6 pb-12 px-4 sm:px-6 lg:px-8">

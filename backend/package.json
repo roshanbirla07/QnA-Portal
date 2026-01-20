@@ -17,6 +17,7 @@
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.3",
+    "punycode": "^2.3.1",
     "qna-portal-root": "file:.."
   },
   "keywords": [],

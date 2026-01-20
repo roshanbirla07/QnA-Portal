@@ -18,94 +18,56 @@ const Signup = () => {
         password
     };
     signupUser("POST",SIGNUP_USER,formData, navigate, setToken);
-    alert('Login submitted!');
+    alert('Signup successful!');
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#f5f5f5',
-      }}
-    >
-      <div
-        style={{
-          width: '400px',
-          padding: '2rem',
-          borderRadius: '8px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          backgroundColor: '#fff',
-          border: '1px solid #ddd',
-        }}
-      >
-        <h1
-          style={{
-            fontSize: '2rem',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            marginBottom: '1.5rem',
-          }}
-        >
-          Signup
+    <div className="flex items-center justify-center min-h-screen bg-bg-primary relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-primary-blue/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-accent-pink/20 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="glass-card w-full max-w-md p-8 relative z-10 border border-white/10">
+        <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-primary-blue to-accent-pink bg-clip-text text-transparent">
+          Sign Up
         </h1>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ fontWeight: 'bold', display: 'block' }}>Email:</label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{
-                width: '100%',
-                padding: '0.8rem',
-                marginTop: '0.5rem',
-                fontSize: '1rem',
-                borderRadius: '4px',
-                border: '1px solid #ddd',
-              }}
+              className="w-full px-4 py-3 bg-bg-secondary/50 border border-white/10 rounded-xl focus:outline-none focus:border-primary-blue text-text-primary transition-colors"
+              placeholder="Enter your email"
             />
           </div>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ fontWeight: 'bold', display: 'block' }}>Password:</label>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={{
-                width: '100%',
-                padding: '0.8rem',
-                marginTop: '0.5rem',
-                fontSize: '1rem',
-                borderRadius: '4px',
-                border: '1px solid #ddd',
-              }}
+              className="w-full px-4 py-3 bg-bg-secondary/50 border border-white/10 rounded-xl focus:outline-none focus:border-primary-blue text-text-primary transition-colors"
+              placeholder="Create a password"
             />
           </div>
           
           <button
             type="submit"
-            style={{
-              width: '100%',
-              padding: '0.8rem',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              color: '#fff',
-              backgroundColor: '#007BFF',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-            }}
+            className="w-full py-3 px-4 bg-gradient-to-r from-primary-blue to-accent-pink text-white font-bold rounded-xl shadow-lg hover:opacity-90 transition-opacity"
           >
-            Signup
+            SIGN UP
           </button>
         </form>
         
+        <div className="mt-6 text-center text-text-secondary">
+           Already have an account? <Link to="/login" className="text-primary-blue hover:text-accent-pink transition-colors">Login</Link>
+        </div>
       </div>
     </div>
   );

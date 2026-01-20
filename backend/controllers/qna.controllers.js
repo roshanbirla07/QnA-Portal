@@ -153,6 +153,11 @@ const editQuestion = asyncHandler(async (req, res) => {
       question.tags = tags;
     }
 
+    // If user is not admin, reset status to pending for re-approval
+    if (req.user.roleType !== "admin") {
+      question.status = "pending";
+    }
+
     const updatedQuestion = await question.save();
 
     return res

@@ -124,7 +124,7 @@ const Home = () => {
                                 <QuestionCard 
                                     question={question} 
                                     isAdmin={admin}
-                                    isAuthor={userId === (question.author?._id || question.author)}
+                                    isAuthor={userId && (question.author?._id || question.author) && userId === (question.author?._id || question.author)}
                                     onDelete={handleDelete}
                                     onEdit={handleEdit}
                                 />
