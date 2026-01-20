@@ -1,3 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-bg-primary text-text-primary font-sans antialiased;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-bg-card backdrop-blur-md border border-white/10 rounded-2xl shadow-lg;
+  }
+  
+  .glass-button {
+    @apply px-4 py-2 rounded-lg bg-primary-purple/20 hover:bg-primary-purple/30 border border-primary-purple/30 text-primary-purple transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply px-6 py-2 rounded-full bg-gradient-to-r from-primary-blue to-primary-purple text-white font-medium hover:shadow-glow transform hover:-translate-y-0.5 transition-all duration-300;
+  }
+  
+  .input-field {
+    @apply w-full bg-bg-secondary border border-gray-700 text-text-primary rounded-lg px-4 py-3 focus:outline-none focus:border-primary-purple focus:ring-1 focus:ring-primary-purple transition-colors;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-bg-primary;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-700 rounded-full hover:bg-gray-600;
+}

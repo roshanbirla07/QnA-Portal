@@ -41,3 +41,8 @@ export const editQuestion = async (method, url, updatedData) => {
 
     return;
 }
+
+export const incrementView = async (method, url) => {
+    await apiConnector(method, url);
+    return;
+};

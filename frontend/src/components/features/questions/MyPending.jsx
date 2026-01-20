@@ -1,123 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import { approveQuestion, fetchQuestion } from '../../../services/qna.api';
-import { APPROVE_QUESTION, PENDING_QUESTIONS } from '../../../services/apis';
+import React, { useState, useEffect } from "react";
+import { PENDING_QUESTIONS, APPROVE_QUESTION } from "../../../services/apis"; // Need APPROVE_QUESTION api
+import { approveQuestion } from "../../../services/qna.api"; // Need to export this
+import QuestionCard from "../../common/QuestionCard";
+import { useNavigate } from "react-router-dom";
 
 const MyPending = () => {
-  const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
+    const payload = token ? JSON.parse(atob(token.split(".")[1])) : {};
+    const { roleType } = payload;
+    const isAdmin = roleType === "admin";
 
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0); // Add refresh key
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    useEffect(() => {
+        const fetchPendingQuestions = async () => {
+             try {
+                const response = await fetch(PENDING_QUESTIONS, {
+                    method: "GET",
+                    credentials: "include",
+                });
+        
+                if (!response.ok) {
+                    throw new Error("Failed to Fetch Data");
+                }
+                const result = await response.json();
+                setData(result.data);
+              } catch (error) {
+                console.error("Error fetching pending questions:", error);
+                setError(error.message);
+              } finally {
+                setLoading(false);
+              }
+        };
+        fetchPendingQuestions();
+    }, [refreshKey]);
 
-    const fetchData = async () => {
-      try {
-        console.log("Fetching pending questions...");
-        const result = await fetchQuestion('GET', PENDING_QUESTIONS);
-        setData(result); // fetchQuestion already returns the data
-        console.log(result, "Fetched pending questions");
-      } catch (err) {
-        console.error("Error fetching pending questions:", err);
-        setError(err.message); // Update state with error message
-      } finally {
-        setLoading(false); // Stop loading spinner
-      }
+    const handleApprove = async (questionId) => {
+        if(!window.confirm("Approve this question?")) return;
+        try {
+            await approveQuestion("POST", APPROVE_QUESTION, { questionId, status: "approved" });
+            setRefreshKey(prev => prev + 1);
+        } catch (error) {
+            console.error(error);
+        }
     };
 
-    fetchData();
-  }, [token]);
+    const handleReject = async (questionId) => {
+        if(!window.confirm("Reject this question?")) return;
+        try {
+            await approveQuestion("POST", APPROVE_QUESTION, { questionId, status: "rejected" });
+            setRefreshKey(prev => prev + 1);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
-  const handleApprove = async (questionId) => {
-    try {
-      await approveQuestion("POST", APPROVE_QUESTION, {
-        questionId,
-        status: "approved",
-      });
-      // Refresh the list after approval
-      const result = await fetchQuestion('GET', PENDING_QUESTIONS);
-      setData(result);
-    } catch (err) {
-      console.error("Error approving question:", err);
-    }
-  };
+    return (
+        <div className="min-h-screen bg-bg-primary pt-6 pb-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+                <h1 className="text-3xl font-bold text-text-primary mb-8 border-b border-white/10 pb-4">
+                    {isAdmin ? "Admin Dashboard - Pending Approvals" : "My Pending Questions"}
+                </h1>
 
-  const handleReject = async (questionId) => {
-    try {
-      await approveQuestion("POST", APPROVE_QUESTION, {
-        questionId,
-        status: "rejected",
-      });
-      // Refresh the list after rejection
-      const result = await fetchQuestion('GET', PENDING_QUESTIONS);
-      setData(result);
-    } catch (err) {
-      console.error("Error rejecting question:", err);
-    }
-  };
-
-  if (!token) {
-    return <div className="m-10">Please log in to view pending questions.</div>;
-  }
-
-  let admin = false;
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    admin = payload.roleType === "admin";
-  } catch (e) {
-    console.error("Error parsing token:", e);
-  }
-
-  if (loading) {
-    return <div className="m-10">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="m-10">Error: {error}</div>;
-  }
-
-  return (
-    <div>
-      <div className="flex flex-col m-10">
-        {data?.length === 0 ? (
-          <div className="text-gray-500">No pending questions found.</div>
-        ) : (
-          data?.map((value, index) => (
-            <div key={value._id} className="my-5 border-b-2 py-5">
-              <div className="text-2xl cursor-pointer hover:underline">
-                Q{index + 1}. {value.questionTitle}
-              </div>
-              <div className="flex my-2">
-                {value?.tags?.map((tt, idx) => (
-                  <div key={idx} className="px-2 text-gray-600">{tt}</div>
-                ))}
-              </div>
-              {admin && (
-                <div className="flex">
-                  <button
-                    className="text-green-600 mt-2 hover:underline px-8"
-                    onClick={() => handleApprove(value._id)}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    className="text-red-600 mt-2 hover:underline px-8"
-                    onClick={() => handleReject(value._id)}
-                  >
-                    Reject
-                  </button>
-                </div>
-              )}
+                {loading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-purple"></div>
+                    </div>
+                ) : error ? (
+                    <div className="text-center text-red-400">Error: {error}</div>
+                ) : (
+                    <>
+                        {data.length === 0 ? (
+                            <div className="text-center text-text-muted py-12 bg-bg-secondary/50 rounded-lg border border-dashed border-gray-700">
+                                No pending questions.
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {data.map((question) => (
+                                    <QuestionCard 
+                                        key={question._id}
+                                        question={question}
+                                        isAdmin={isAdmin}
+                                        onApprove={isAdmin ? handleApprove : null}
+                                        onReject={isAdmin ? handleReject : null}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default MyPending;

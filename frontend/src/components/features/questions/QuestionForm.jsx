@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { postQuestion } from "../../../services/qna.api";
 import { POST_QUESTION } from "../../../services/apis";
 import { useNavigate } from "react-router-dom";
+import { FiX, FiCheck } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 
 const QuestionForm = ({ setNewPostPopup, newPostPopup }) => {
   const [question, setQuestion] = useState("");
@@ -9,70 +11,94 @@ const QuestionForm = ({ setNewPostPopup, newPostPopup }) => {
   const navigate = useNavigate();
 
   const submitHandler = (e) => {
-    e.preventDefault(); // Prevent default form submission
-    console.log("before ", tags);
-    const arrTags = tags.split(",").map((tag) => tag.trim()); // Trim whitespace
-    console.log("after ", arrTags);
+    e.preventDefault(); 
+    if(!question.trim() || !tags.trim()) return;
+
+    const arrTags = tags.split(",").map((tag) => tag.trim()); 
 
     const formData = {
       questionTitle: question,
       tags: arrTags,
     };
     postQuestion("POST", POST_QUESTION, formData, navigate);
-    setNewPostPopup(false); // Close popup after submission
+    setNewPostPopup(false); 
   };
 
   return (
-    <>
+    <AnimatePresence>
       {newPostPopup && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-            <h2 className="text-2xl font-semibold mb-6 text-center">Submit a Question</h2>
-            <form className="space-y-4" onSubmit={submitHandler}>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Problem Statement
-                </label>
-                <textarea
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Describe the problem in detail"
-                  rows="4"
-                  onChange={(e) => setQuestion(e.target.value)}
-                  value={question}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={`Enter tags separated by commas, e.g., "stock market, crypto, liquidity"`}
-                    onChange={(e) => setTags(e.target.value)}
-                    value={tags}
-                  />
+        <div className="fixed inset-0 min-h-screen flex items-center justify-center z-50 px-4">
+             {/* Backdrop */}
+             <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                onClick={() => setNewPostPopup(false)}
+             />
+
+             {/* Modal */}
+             <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative bg-bg-secondary border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl"
+             >
+                {/* Header */}
+                <div className="bg-gradient-to-r from-primary-purple to-primary-blue p-6 text-white flex justify-between items-center">
+                    <h2 className="text-xl font-bold">Ask a Question</h2>
+                    <button onClick={() => setNewPostPopup(false)} className="text-white/80 hover:text-white transition-colors">
+                        <FiX className="text-xl" />
+                    </button>
                 </div>
-              </div>
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition duration-300"
-                  onClick={() => setNewPostPopup(false)} // Close popup
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
-                >
-                  Submit
-                </button>
-              </div>
-            </form>
-          </div>
+
+                <div className="p-6">
+                    <form className="space-y-6" onSubmit={submitHandler}>
+                        <div>
+                            <label className="block text-sm font-medium text-text-secondary mb-2">
+                                Your Question (Markdown supported)
+                            </label>
+                            <textarea
+                                className="input-field min-h-[150px] resize-y"
+                                placeholder="Describe your question in detail..."
+                                rows="6"
+                                onChange={(e) => setQuestion(e.target.value)}
+                                value={question}
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-text-secondary mb-2">Tags</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                placeholder="javascript, react, backend (comma separated)"
+                                onChange={(e) => setTags(e.target.value)}
+                                value={tags}
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-4">
+                             <button
+                                type="button"
+                                className="px-4 py-2 rounded-lg text-text-secondary hover:bg-white/5 transition-colors"
+                                onClick={() => setNewPostPopup(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="btn-primary flex items-center gap-2"
+                            >
+                                <FiCheck /> Submit Question
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </motion.div>
         </div>
       )}
-    </>
+    </AnimatePresence>
   );
 };
 

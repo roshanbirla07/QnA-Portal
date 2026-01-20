@@ -1,92 +1,99 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { deleteQuestion } from "../../../services/qna.api";
+import { APPROVED_QUESTIONS, DELETE_QUESTION } from "../../../services/apis";
+import QuestionCard from "../../common/QuestionCard";
 import { useNavigate } from "react-router-dom";
-import { useState,useEffect } from "react";
-import { APPROVED_QUESTIONS } from "../../../services/apis";
+
 const MyPosts = () => {
-  
-
-  const navigate = useNavigate();
-
-  const token = localStorage.getItem('token');
-  const payload = JSON.parse(atob(token.split(".")[1]));
-  const admin = payload.roleType === "admin";
-  const [selectedQuestion, setSelectedQuestion] = useState(null);
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+    const token = localStorage.getItem("token");
+    const payload = token ? JSON.parse(atob(token.split(".")[1])) : {};
+    const { userId } = payload;
+    
+    // We already know user is author of their own posts by definition of this page
+    const isAuthor = true; 
+    
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchMyQuestions = async () => {
       try {
-        console.log("Fetching data...");
         const response = await fetch(APPROVED_QUESTIONS, {
-          method: 'GET',
-          credentials: 'include', // Include cookies
+            method: "GET",
+            credentials: "include",
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch data');
+            throw new Error("Failed to Fetch Data");
         }
-
         const result = await response.json();
-        setData(result.data); // Update state with fetched data
-        console.log(result, "Fetched data");
-      } catch (err) {
-        setError(err.message); // Update state with error message
+        setData(result.data);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        setError(error.message);
       } finally {
-        setLoading(false); // Stop loading spinner
+        setLoading(false);
       }
     };
+    fetchMyQuestions();
+  }, [refreshKey]);
 
-    fetchData();
-  }, []);
- 
-  const clickHandler = (question) => {
-    console.log(question)
-    navigate(`/question`, { state: { question } });
+  const handleDelete = async (questionId) => {
+    if(!window.confirm("Are you sure you want to delete this question?")) return;
+    
+    await deleteQuestion(
+        "DELETE",
+        DELETE_QUESTION,
+        { questionId },
+        () => {
+            setRefreshKey((prev) => prev + 1);
+        }
+    );
   };
+  
+  const navigate = useNavigate();
+  const handleEdit = (question) => {
+       navigate(`/question`, { state: { question, editMode: true } });
+  }
 
-
-  // Edit handler: Navigates to the edit page with the selected question details
-  const editHandler = (question) => {
-    navigate(`/edit-question/${question.id}`, { state: question });
-  };
-
-  const deleteHandler = (id) => {
-    console.log(`Delete question with ID: ${id}`); // Example: Add your delete logic here
-  };
 
   return (
-    <div>
-      <div className="flex flex-col m-10">
-        {data.map((value) => (
-          <div key={value._id} className="my-5 border-b-2 py-5" 
-             onClick={() => clickHandler(value)}
-          >
-            <div className="text-2xl cursor-pointer hover:underline">Q. {value.questionTitle}</div>
-            <div className="flex my-2">
-              {value?.tags?.map((tt, idx) => (
-                <div key={idx} className="px-2 text-gray-600">{tt}</div>
-              ))}
-            </div>
-            {admin && (
-              <div className="flex">
-                <button
-                  className="text-green-600 mt-2 hover:underline px-8"
-                  onClick={() => editHandler(value)} // Pass the question details to editHandler
-                >
-                  Edit
-                </button>
-                <button
-                  className="text-red-600 mt-2 hover:underline px-8"
-                  onClick={() => deleteHandler(value.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+    <div className="min-h-screen bg-bg-primary pt-6 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-text-primary mb-8 border-b border-white/10 pb-4">
+            My Questions
+        </h1>
+
+        {loading ? (
+             <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-purple"></div>
+             </div>
+        ) : error ? (
+            <div className="text-center text-red-400">Error: {error}</div>
+        ) : (
+            <>
+                {data.length === 0 ? (
+                    <div className="text-center text-text-muted py-12 bg-bg-secondary/50 rounded-lg border border-dashed border-gray-700">
+                        You haven't posted any questions yet.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {data.map((question) => (
+                            <QuestionCard 
+                                key={question._id}
+                                question={question} 
+                                isAdmin={false}
+                                isAuthor={true}
+                                onDelete={handleDelete}
+                                onEdit={handleEdit}
+                            />
+                        ))}
+                    </div>
+                )}
+            </>
+        )}
       </div>
     </div>
   );
