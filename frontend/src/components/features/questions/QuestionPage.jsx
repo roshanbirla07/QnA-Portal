@@ -3,7 +3,7 @@ import { fetchComments, postComment } from "../../../services/comment.api";
 import { DELETE_QUESTION, EDIT_QUESTION, FETCH_COMMENTS, POST_COMMENT, INCREMENT_VIEW } from "../../../services/apis";
 import { useLocation, useNavigate } from "react-router-dom";
 import { deleteQuestion, editQuestion, incrementView } from "../../../services/qna.api";
-import { FiClock, FiMessageSquare, FiEye, FiShare2, FiEdit2, FiTrash2, FiSend, FiCheck } from "react-icons/fi";
+import { FiClock, FiMessageSquare, FiEye, FiShare2, FiEdit2, FiTrash2, FiSend, FiCheck } from "react-icons/fi"; 
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -16,7 +16,7 @@ const QuestionPage = () => {
 
   const token = localStorage.getItem('token');
   const payload = token ? JSON.parse(atob(token.split(".")[1])) : {};
-  const { roleType, userId } = payload;
+  const { userId } = payload;
   const { question } = location.state || {};
 
   // State management

@@ -14,7 +14,7 @@ const MyPending = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0); // Add refresh key
-]
+
     useEffect(() => {
         const fetchPendingQuestions = async () => {
              try {

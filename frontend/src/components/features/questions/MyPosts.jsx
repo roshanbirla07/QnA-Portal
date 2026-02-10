@@ -6,9 +6,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const MyPosts = () => {
-    const token = localStorage.getItem("token");
-    const payload = token ? JSON.parse(atob(token.split(".")[1])) : {};
-    
+   
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
