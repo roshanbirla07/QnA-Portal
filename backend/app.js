@@ -5,15 +5,28 @@ import userRouter from "./routes/user.routes.js";
 import qnaRouter from "./routes/qna.routes.js";
 import commentRouter from "./routes/comment.routes.js";
 import { RESPONSE_MESSAGES } from "./constants/responseMessages.js";
+import config from "./stageconfig.js";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
+const allowedOrigins = config.corsOrigin.split(",");
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS blocked"));
+    }
+  },
+  credentials: true,
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"]
+}));
+
+app.options("*", cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
