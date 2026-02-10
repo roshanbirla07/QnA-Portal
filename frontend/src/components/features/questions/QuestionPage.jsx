@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { formatDistanceToNow } from "date-fns";
+import toast from "react-hot-toast";
 
 const QuestionPage = () => {
   const location = useLocation();
@@ -44,7 +45,7 @@ const QuestionPage = () => {
       if(question?._id) {
           incrementView("PATCH", `${INCREMENT_VIEW}/${question._id}`)
             .then(() => setViews(v => v + 1))
-            .catch(err => console.error("Failed to increment view", err));
+            .catch((err) => toast.error(err.message || "Failed to increment view"));
       }
   }, [question?._id]);
 
@@ -66,18 +67,24 @@ const QuestionPage = () => {
     }
   }, [question, refreshKey]);
 
-  const handleAddComment = () => {
-    if(!newComment.trim()) return;
-    
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+
     const formData = {
       comment: newComment,
       questionId: question._id,
     };
-    postComment("POST", POST_COMMENT, formData, () => {
-      setRefreshKey((prev) => prev + 1);
-    });
-    setNewComment("");
-    setShowCommentBox(false);
+
+    try {
+      const response = await postComment("POST", POST_COMMENT, formData, () => {
+        setRefreshKey((prev) => prev + 1);
+      });
+      toast.success(response.message || "Answer posted successfully");
+      setNewComment("");
+      setShowCommentBox(false);
+    } catch (error) {
+      toast.error(error.message || "Unable to post answer");
+    }
   };
 
   const handleUpdateQuestion = async () => {
@@ -86,10 +93,15 @@ const QuestionPage = () => {
       tags: updatedTags.split(",").map((tag) => tag.trim()),
     };
 
-   await editQuestion("PATCH", `${EDIT_QUESTION}/${question._id}`, updatedData); 
-   question.questionTitle = updatedQuestion;
-   question.tags = updatedData.tags;
-   setEditMode(false);
+   try {
+    const response = await editQuestion("PATCH", `${EDIT_QUESTION}/${question._id}`, updatedData);
+    toast.success(response.message || "Question updated successfully");
+    question.questionTitle = updatedQuestion;
+    question.tags = updatedData.tags;
+    setEditMode(false);
+   } catch (error) {
+    toast.error(error.message || "Unable to update question");
+   }
   };
   
   if (!question) return null;
@@ -193,7 +205,14 @@ const QuestionPage = () => {
                                 <button onClick={() => setEditMode(true)} className="p-2 text-text-muted hover:text-primary-blue transition-colors" title="Edit">
                                     <FiEdit2 />
                                 </button>
-                                <button onClick={() => deleteQuestion("DELETE", DELETE_QUESTION, { questionId: question._id},  () => navigate("/"))} className="p-2 text-text-muted hover:text-red-500 transition-colors" title="Delete">
+                                <button onClick={async () => {
+                                  try {
+                                    const response = await deleteQuestion("DELETE", DELETE_QUESTION, { questionId: question._id }, () => navigate("/"));
+                                    toast.success(response.message || "Question deleted successfully");
+                                  } catch (error) {
+                                    toast.error(error.message || "Unable to delete question");
+                                  }
+                                }} className="p-2 text-text-muted hover:text-red-500 transition-colors" title="Delete">
                                     <FiTrash2 />
                                 </button>
                             </>

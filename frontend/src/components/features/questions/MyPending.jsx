@@ -3,6 +3,7 @@ import { PENDING_QUESTIONS, APPROVE_QUESTION } from "../../../services/apis"; //
 import { approveQuestion } from "../../../services/qna.api"; // Need to export this
 import QuestionCard from "../../common/QuestionCard";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const MyPending = () => {
     const token = localStorage.getItem("token");
@@ -42,20 +43,22 @@ const MyPending = () => {
     const handleApprove = async (questionId) => {
         if(!window.confirm("Approve this question?")) return;
         try {
-            await approveQuestion("POST", APPROVE_QUESTION, { questionId, status: "approved" });
+            const response = await approveQuestion("POST", APPROVE_QUESTION, { questionId, status: "approved" });
+            toast.success(response.message || "Question approved successfully");
             setRefreshKey(prev => prev + 1);
         } catch (error) {
-            console.error(error);
+            toast.error(error.message || "Unable to approve question");
         }
     };
 
     const handleReject = async (questionId) => {
         if(!window.confirm("Reject this question?")) return;
         try {
-            await approveQuestion("POST", APPROVE_QUESTION, { questionId, status: "rejected" });
+            const response = await approveQuestion("POST", APPROVE_QUESTION, { questionId, status: "rejected" });
+            toast.success(response.message || "Question rejected successfully");
             setRefreshKey(prev => prev + 1);
         } catch (error) {
-            console.error(error);
+            toast.error(error.message || "Unable to reject question");
         }
     };
 

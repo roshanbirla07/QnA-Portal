@@ -1,20 +1,34 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-    withCredentials: true,
+  withCredentials: true,
 });
 
-const apiConnector = (method,url,bodyData,headerData,paramsData) => {
-    return axiosInstance({
-        method: `${method}`,
-        withCredentials: true,
-        url: `${url}`,
-        data: bodyData ? bodyData : null,
-        headers: headerData ? headerData : null,
-        params: paramsData ? paramsData : null,
-    });
+const getErrorMessage = (error) => {
+  return (
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.message ||
+    "Something went wrong"
+  );
 };
 
-export {
-    apiConnector,
-}
+const apiConnector = async (method, url, bodyData, headerData, paramsData) => {
+  try {
+    return await axiosInstance({
+      method,
+      withCredentials: true,
+      url,
+      data: bodyData || null,
+      headers: headerData || null,
+      params: paramsData || null,
+    });
+  } catch (error) {
+    const normalizedError = new Error(getErrorMessage(error));
+    normalizedError.statusCode = error?.response?.status;
+    normalizedError.response = error?.response?.data;
+    throw normalizedError;
+  }
+};
+
+export { apiConnector };

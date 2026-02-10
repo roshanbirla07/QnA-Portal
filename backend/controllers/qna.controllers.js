@@ -38,7 +38,7 @@ const postQuestion = asyncHandler(async (req, res) => {
     const { questionTitle, tags } = req.body;
     console.log(tags, typeof (tags));
     if (!questionTitle || !tags) {
-      throw new ApiError(401, "All Fields are Required");
+      throw new ApiError(400, "All fields are required");
     }
     const question = await QnA.create({
       questionTitle,
@@ -46,18 +46,21 @@ const postQuestion = asyncHandler(async (req, res) => {
       tags,
     });
     return res
-      .status(200)
-      .json(new ApiResponse(200, question, "Question Posted Successfully"));
+      .status(201)
+      .json(new ApiResponse(201, question, "Question posted successfully"));
   } catch (error) {
     console.error(error.message);
-    return res.status(500).json(error);
+    if (error instanceof ApiError) {
+      return res.status(error.statusCode).json(new ApiResponse(error.statusCode, {}, error.message));
+    }
+    return res.status(500).json(new ApiResponse(500, {}, "Internal Server Error"));
   }
 });
 
 const approveQuestion = asyncHandler(async (req, res) => {
   try {
     const { questionId, status } = req.body;
-    if (!questionId) throw new ApiError(401, "Question Id is Required");
+    if (!questionId) throw new ApiError(400, "Question id is required");
     const updatedQuestion = await QnA.findByIdAndUpdate(
       new mongoose.Types.ObjectId(questionId),
       {
@@ -77,7 +80,10 @@ const approveQuestion = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(error.message);
 
-    return res.status(500).json(error);
+    if (error instanceof ApiError) {
+      return res.status(error.statusCode).json(new ApiResponse(error.statusCode, {}, error.message));
+    }
+    return res.status(500).json(new ApiResponse(500, {}, "Internal Server Error"));
   }
 });
 
@@ -102,7 +108,8 @@ const approvedQuestions = asyncHandler(async (req, res) => {
       );
   } catch (error) {
     console.error(error.message);
-    return res.status(error.statusCode).json(error);
+    const statusCode = error instanceof ApiError ? error.statusCode : 500;
+    return res.status(statusCode).json(new ApiResponse(statusCode, {}, error.message || "Internal Server Error"));
   }
 });
 
@@ -128,7 +135,8 @@ const pendingQuestions = asyncHandler(async (req, res) => {
       );
   } catch (error) {
     console.error(error.message, "jjjkk");
-    return res.status(error.statusCode).json(error);
+    const statusCode = error instanceof ApiError ? error.statusCode : 500;
+    return res.status(statusCode).json(new ApiResponse(statusCode, {}, error.message || "Internal Server Error"));
   }
 });
 
@@ -179,7 +187,7 @@ const editQuestion = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(error.message);
     if (error instanceof ApiError) {
-      return res.status(error.statusCode).json(error);
+      return res.status(error.statusCode).json(new ApiResponse(error.statusCode, {}, error.message));
     }
     return res
       .status(500)
@@ -193,13 +201,14 @@ const deleteQuestion = asyncHandler(async (req, res) => {
     const { questionId } = req.body;
     if (!questionId) throw new ApiError(400, "Question Id is required");
     const deletedQuestion = await QnA.findByIdAndDelete(questionId);
-    if (!deletedQuestion) throw new ApiError(501, "Question id is invalid");
+    if (!deletedQuestion) throw new ApiError(404, "Question not found");
     return res
       .status(200)
       .json(new ApiResponse(200, {}, "Question deleted Successfully"));
   } catch (error) {
     console.error(error.message);
-    return res.status(error.statusCode).json(error);
+    const statusCode = error instanceof ApiError ? error.statusCode : 500;
+    return res.status(statusCode).json(new ApiResponse(statusCode, {}, error.message || "Internal Server Error"));
   }
 });
 

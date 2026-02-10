@@ -5,12 +5,14 @@ import { Navbar } from "./components/layout";
 import { PrivateRoute } from "./components/common";
 import { Route, Routes } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext.jsx";
-// import OpenRoute from './components/Auth/OpenRoute.jsx';
+import { Toaster } from "react-hot-toast";
+
 function App() {
   const { token } = useAuth();
-  console.log(token);
+
   return (
     <>
+      <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
       {token !== null && <Navbar />}
       <Routes>
         <Route
@@ -21,56 +23,12 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/pendings"
-          element={
-            // <PrivateRoute>
-            <MyPending />
-            // </PrivateRoute>
-          }
-        />
-        <Route
-          path="/myposts"
-          element={
-            // <PrivateRoute>
-            <MyPosts />
-            // </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/login"
-          element={
-            // <PrivateRoute>
-            <Login />
-            // </PrivateRoute>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            // <PrivateRoute>
-            <SignUp />
-            // </PrivateRoute>
-          }
-        />
-        <Route
-          path="/question"
-          element={
-            // <PrivateRoute>
-            <QuestionPage />
-            // </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/submitquestion"
-          element={
-            // <PrivateRoute>
-            <QuestionForm />
-            // </PrivateRoute>
-          }
-        />
+        <Route path="/pendings" element={<MyPending />} />
+        <Route path="/myposts" element={<MyPosts />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/question" element={<QuestionPage />} />
+        <Route path="/submitquestion" element={<QuestionForm />} />
       </Routes>
     </>
   );

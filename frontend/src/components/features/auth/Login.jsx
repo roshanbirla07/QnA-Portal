@@ -4,20 +4,25 @@ import { LOGIN_USER } from '../../../services/apis';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../../contexts/AuthContext";
 import { Link } from "react-router-dom";
+import toast from 'react-hot-toast';
 
 const LoginPage = () => {
   const { setToken } = useAuth();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const navigate = useNavigate();
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission
-    const formData = {
-        email,
-        password
-    };
-    loginUser("POST",LOGIN_USER,formData, navigate, setToken);
-    alert('Login submitted!');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = { email, password };
+
+    try {
+      const response = await loginUser("POST", LOGIN_USER, formData, navigate, setToken);
+      toast.success(response.message || "Login successful");
+    } catch (error) {
+      toast.error(error.message || "Unable to login");
+    }
   };
 
   return (
@@ -68,7 +73,7 @@ const LoginPage = () => {
           Submit
         </button>
       </form>
-      <div>Don't have Account ? <Link to="/signup">Signup</Link></div> 
+      <div>Don't have Account ? <Link to="/signup">Signup</Link></div>
     </div>
   );
 };

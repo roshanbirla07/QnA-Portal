@@ -3,6 +3,7 @@ import { deleteQuestion } from "../../../services/qna.api";
 import { APPROVED_QUESTIONS, DELETE_QUESTION } from "../../../services/apis";
 import QuestionCard from "../../common/QuestionCard";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const MyPosts = () => {
     const token = localStorage.getItem("token");
@@ -43,14 +44,19 @@ const MyPosts = () => {
   const handleDelete = async (questionId) => {
     if(!window.confirm("Are you sure you want to delete this question?")) return;
     
-    await deleteQuestion(
+    try {
+      const response = await deleteQuestion(
         "DELETE",
         DELETE_QUESTION,
         { questionId },
         () => {
-            setRefreshKey((prev) => prev + 1);
+          setRefreshKey((prev) => prev + 1);
         }
-    );
+      );
+      toast.success(response.message || "Question deleted successfully");
+    } catch (error) {
+      toast.error(error.message || "Unable to delete question");
+    }
   };
   
   const navigate = useNavigate();

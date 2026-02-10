@@ -4,8 +4,7 @@ import { SIGNUP_USER } from '../../../services/apis';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Link } from "react-router-dom";
-
-
+import toast from "react-hot-toast";
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -13,14 +12,20 @@ const Signup = () => {
   
   const { setToken } = useAuth();
   const navigate = useNavigate();
-  const handleSubmit = (e) => {
-    e.preventDefault(); 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     const formData = {
-        email,
-        password
+      email,
+      password
     };
-    signupUser("POST",SIGNUP_USER,formData, navigate, setToken);
-    alert('Signup successful!');
+
+    try {
+      const response = await signupUser("POST", SIGNUP_USER, formData, navigate, setToken);
+      toast.success(response.message || "Signup successful");
+    } catch (error) {
+      toast.error(error.message || "Unable to signup");
+    }
   };
 
   return (
