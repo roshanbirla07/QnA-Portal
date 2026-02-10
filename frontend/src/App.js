@@ -2,33 +2,23 @@ import "./App.css";
 import { Home, MyPending, MyPosts, QuestionForm, QuestionPage } from "./components/features/questions";
 import { SignUp, Login } from "./components/features/auth";
 import { Navbar } from "./components/layout";
-import { PrivateRoute } from "./components/common";
+import { PrivateRoute, OpenRoute } from "./components/common";
 import { Route, Routes } from "react-router-dom";
-import { useAuth } from "./contexts/AuthContext.jsx";
 import { Toaster } from "react-hot-toast";
 
 function App() {
-  const { token } = useAuth();
-
   return (
     <>
       <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
-      {token !== null && <Navbar />}
+      <Navbar />
       <Routes>
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Home />
-            </PrivateRoute>
-          }
-        />
-        <Route path="/pendings" element={<MyPending />} />
-        <Route path="/myposts" element={<MyPosts />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/question" element={<QuestionPage />} />
-        <Route path="/submitquestion" element={<QuestionForm />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/pendings" element={<PrivateRoute><MyPending /></PrivateRoute>} />
+        <Route path="/myposts" element={<PrivateRoute><MyPosts /></PrivateRoute>} />
+        <Route path="/login" element={<OpenRoute><Login /></OpenRoute>} />
+        <Route path="/signup" element={<OpenRoute><SignUp /></OpenRoute>} />
+        <Route path="/question" element={<PrivateRoute><QuestionPage /></PrivateRoute>} />
+        <Route path="/submitquestion" element={<PrivateRoute><QuestionForm /></PrivateRoute>} />
       </Routes>
     </>
   );

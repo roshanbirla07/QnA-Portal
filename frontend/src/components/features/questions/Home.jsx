@@ -8,7 +8,14 @@ import toast from "react-hot-toast";
 
 const Home = () => {
   const token = localStorage.getItem("token");
-  const payload = token ? JSON.parse(atob(token.split(".")[1])) : {};
+  let payload = {};
+
+  try {
+    payload = token ? JSON.parse(atob(token.split(".")[1])) : {};
+  } catch (error) {
+    payload = {};
+  }
+
   const { roleType, userId } = payload;
   const admin = roleType === "admin";
   
@@ -33,8 +40,7 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("Fetching questions...");
-        const url = searchTerm ? `${FETCH_QUESTIONS}?search=${ encodeURIComponent(debouncedSearch)}` : FETCH_QUESTIONS;
+        const url = debouncedSearch ? `${FETCH_QUESTIONS}?search=${encodeURIComponent(debouncedSearch)}` : FETCH_QUESTIONS;
         
         const response = await fetch(url, {
           method: "GET",

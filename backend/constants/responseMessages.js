@@ -1,0 +1,37 @@
+export const RESPONSE_MESSAGES = {
+  INTERNAL_SERVER_ERROR: "Internal Server Error",
+  ALL_FIELDS_REQUIRED: "All fields are required",
+
+  USER_ALREADY_EXISTS: "User already exists. Please login",
+  USER_NOT_FOUND: "User does not exist. Kindly signup",
+  INVALID_PASSWORD: "Invalid password",
+  SIGNUP_SUCCESS: "User signed up successfully",
+  LOGIN_SUCCESS: "User logged in successfully",
+  LOGOUT_SUCCESS: "User logged out successfully",
+  SIGNUP_FAILED: "Something went wrong during signup",
+  LOGIN_FAILED: "Something went wrong during login",
+  LOGOUT_FAILED: "Something went wrong during logout",
+
+  QUESTIONS_FETCHED: "Questions fetched successfully",
+  QUESTION_POSTED: "Question posted successfully",
+  QUESTION_ID_REQUIRED: "Question id is required",
+  QUESTION_UPDATED: "Question updated successfully",
+  QUESTION_DELETED: "Question deleted successfully",
+  QUESTION_NOT_FOUND: "Question not found",
+  INVALID_QUESTION_ID: "Invalid question ID",
+  EDIT_NOT_ALLOWED: "You are not authorized to edit this question",
+  TAGS_MUST_BE_ARRAY: "Tags must be an array",
+  TAGS_LIMIT_EXCEEDED: "Tags cannot exceed the limit of 10",
+  APPROVED_QUESTIONS_FETCHED: "Approved questions fetched successfully",
+  PENDING_QUESTIONS_FETCHED: "Pending questions fetched successfully",
+  VIEW_INCREMENTED: "View incremented",
+  STATS_FETCHED: "Stats fetched successfully",
+  STATS_FETCH_FAILED: "Error fetching stats",
+  VIEW_INCREMENT_FAILED: "Error incrementing view",
+
+  COMMENT_POSTED: "Comment posted successfully",
+  COMMENTS_FETCHED: "Comments fetched successfully",
+
+  UNAUTHORIZED: "Unauthorized access",
+  PAGE_NOT_FOUND: "Page not found",
+};
