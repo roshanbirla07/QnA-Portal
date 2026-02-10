@@ -1,9 +1,11 @@
-const BASE_URL = "http://localhost:3001";
-// const BASE_URL = "https://qna-hexawealth.onrender.com";
+const DEFAULT_BASE_URL = "http://localhost:3001";// const BASE_URL = "https://qna-hexawealth.onrender.com";
 
-const USER_ROUTER = BASE_URL + "/api/v1/user";
-const QNA_ROUTER = BASE_URL + "/api/v1/qna";
-const COMMENT_ROUTER = BASE_URL + "/api/v1/comment";
+const API_BASE_URL =
+  (process.env.REACT_APP_API_BASE_URL || DEFAULT_BASE_URL).replace(/\/$/, "");
+
+const USER_ROUTER = `${API_BASE_URL}/api/v1/user`;
+const QNA_ROUTER = `${API_BASE_URL}/api/v1/qna`;
+const COMMENT_ROUTER = `${API_BASE_URL}/api/v1/comment`;
 
 export const SIGNUP_USER = USER_ROUTER + "/signup";
 export const LOGIN_USER = USER_ROUTER + "/login";
