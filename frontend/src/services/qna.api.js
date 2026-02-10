@@ -1,48 +1,42 @@
 import { apiConnector } from "./apiConnector";
 
-
-
 export const postQuestion = async (method, url, formData, navigate) => {
-    const response = await apiConnector(method, url, formData);
-    if (!response.data.success)
-        throw new Error(response.data.message);
-    navigate("/");
+  const response = await apiConnector(method, url, formData);
+  if (!response.data.success) throw new Error(response.data.message);
+
+  navigate("/");
+  return response.data;
 };
 
 export const fetchQuestion = async (method, url) => {
-    const response = await apiConnector(method, url);
-    if (!response.data.success)
-        throw new Error(response.data.message);
-    return response.data.data;
+  const response = await apiConnector(method, url);
+  if (!response.data.success) throw new Error(response.data.message);
+  return response.data.data;
 };
 
 export const deleteQuestion = async (method, url, formData, onDeleteSuccess) => {
+  const response = await apiConnector(method, url, formData);
+  if (!response.data.success) throw new Error(response.data.message);
 
-
-    const response = await apiConnector(method, url, formData);
-    if (!response.data.success)
-        throw new Error(response.data.message);
-    onDeleteSuccess();
-    return;
-}
+  onDeleteSuccess();
+  return response.data;
+};
 
 export const approveQuestion = async (method, url, body) => {
-    const response = await apiConnector(method, url, body);
-    if (!response.data.success)
-        throw new Error(response.data.message);
-    return;
+  const response = await apiConnector(method, url, body);
+  if (!response.data.success) throw new Error(response.data.message);
+  return response.data;
 };
 
 export const editQuestion = async (method, url, updatedData) => {
-    const response = await apiConnector(method, url, updatedData);
+  const response = await apiConnector(method, url, updatedData);
 
-    if (!response.data.success)
-        throw new Error(response.data.message);
+  if (!response.data.success) throw new Error(response.data.message);
 
-    return;
-}
+  return response.data;
+};
 
 export const incrementView = async (method, url) => {
-    await apiConnector(method, url);
-    return;
+  const response = await apiConnector(method, url);
+  return response.data;
 };

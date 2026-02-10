@@ -8,18 +8,17 @@ const postComment = asyncHandler(async (req, res) => {
     try {
         const { comment, questionId } = req.body;
         if(!comment || !questionId) {
-            throw new ApiError(401, "All fields are required");
+            throw new ApiError(400, "All fields are required");
         }
         const authorId = req.user.id;
         const newComment = await Comment.create({ comment, questionId, authorId });
-        return res.status(200).json(
-            new ApiResponse(200, newComment, "Comment posted successfully")
+        return res.status(201).json(
+            new ApiResponse(201, newComment, "Comment posted successfully")
         );
     } catch (error) {
         console.error(error.message);
-        return res.status(error.statusCode).json(
-            error
-        );
+        const statusCode = error instanceof ApiError ? error.statusCode : 500;
+        return res.status(statusCode).json(new ApiResponse(statusCode, {}, error.message || "Internal Server Error"));
     }
 });
 

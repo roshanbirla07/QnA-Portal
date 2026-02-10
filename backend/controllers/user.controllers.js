@@ -16,14 +16,14 @@ const signupUser = asyncHandler(async (req, res) => {
     const { email, password, roleType = "user" } = req.body;
 
     if (!email || !password || !roleType) {
-      throw new ApiError(402, "All Fields are required");
+      throw new ApiError(400, "All fields are required");
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
-        .status(202)
-        .json(new ApiResponse(202, {}, "User already exists. Please Login"));
+        .status(409)
+        .json(new ApiResponse(409, {}, "User already exists. Please login"));
     }
 
     const user = await User.create({
@@ -42,15 +42,14 @@ const signupUser = asyncHandler(async (req, res) => {
     });
 
     return res
-      .status(200)
-      .json(new ApiResponse(200, { respUser, token }, "User Signed up Successfully"));
+      .status(201)
+      .json(new ApiResponse(201, { respUser, token }, "User signed up successfully"));
   } catch (error) {
     console.error("Signup Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Something went wrong during signup",
-      error: error.toString()
-    });
+    const statusCode = error instanceof ApiError ? error.statusCode : 500;
+    return res
+      .status(statusCode)
+      .json(new ApiResponse(statusCode, {}, error.message || "Something went wrong during signup"));
   }
 });
 
@@ -59,7 +58,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      throw new ApiError(402, "All fields are required");
+      throw new ApiError(400, "All fields are required");
     }
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
@@ -87,11 +86,10 @@ const loginUser = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, { respUser, token }, "User logged in successfully"));
   } catch (error) {
     console.error("Login Error:", error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || "Something went wrong during login",
-      error: error.toString()
-    });
+    const statusCode = error instanceof ApiError ? error.statusCode : 500;
+    return res
+      .status(statusCode)
+      .json(new ApiResponse(statusCode, {}, error.message || "Something went wrong during login"));
   }
 });
 
@@ -108,7 +106,7 @@ const logoutUser = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, {}, "User logged out successfully"));
   } catch (error) {
     console.error(error.message);
-    return res.status(500).json(error);
+    return res.status(500).json(new ApiResponse(500, {}, "Something went wrong during logout"));
   }
 });
 

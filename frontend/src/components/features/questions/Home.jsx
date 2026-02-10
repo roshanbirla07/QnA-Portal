@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { deleteQuestion, fetchQuestion } from "../../../services/qna.api"; // Check if fetchQuestion is exported or use custom fetch
+import { useNavigate } from "react-router-dom";
+import { deleteQuestion } from "../../../services/qna.api";
 import { DELETE_QUESTION, FETCH_QUESTIONS } from "../../../services/apis";
 import QuestionCard from "../../common/QuestionCard";
 import { FiSearch, FiFilter } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 const Home = () => {
   const token = localStorage.getItem("token");
@@ -59,14 +60,19 @@ const Home = () => {
   const handleDelete = async (questionId) => {
     if(!window.confirm("Are you sure you want to delete this question?")) return;
     
-    await deleteQuestion(
+    try {
+      const response = await deleteQuestion(
         "DELETE",
         DELETE_QUESTION,
         { questionId },
         () => {
-            setRefreshKey((prev) => prev + 1);
+          setRefreshKey((prev) => prev + 1);
         }
-    );
+      );
+      toast.success(response.message || "Question deleted successfully");
+    } catch (error) {
+      toast.error(error.message || "Unable to delete question");
+    }
   };
   
   const handleEdit = (question) => {

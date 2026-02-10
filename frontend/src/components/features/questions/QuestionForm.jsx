@@ -4,24 +4,33 @@ import { POST_QUESTION } from "../../../services/apis";
 import { useNavigate } from "react-router-dom";
 import { FiX, FiCheck } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 const QuestionForm = ({ setNewPostPopup, newPostPopup }) => {
   const [question, setQuestion] = useState("");
   const [tags, setTags] = useState("");
   const navigate = useNavigate();
 
-  const submitHandler = (e) => {
-    e.preventDefault(); 
-    if(!question.trim() || !tags.trim()) return;
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    if (!question.trim() || !tags.trim()) return;
 
-    const arrTags = tags.split(",").map((tag) => tag.trim()); 
+    const arrTags = tags.split(",").map((tag) => tag.trim());
 
     const formData = {
       questionTitle: question,
       tags: arrTags,
     };
-    postQuestion("POST", POST_QUESTION, formData, navigate);
-    setNewPostPopup(false); 
+
+    try {
+      const response = await postQuestion("POST", POST_QUESTION, formData, navigate);
+      toast.success(response.message || "Question submitted");
+      if (setNewPostPopup) {
+        setNewPostPopup(false);
+      }
+    } catch (error) {
+      toast.error(error.message || "Unable to submit question");
+    }
   };
 
   return (
