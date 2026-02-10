@@ -25,7 +25,7 @@ const Navbar = () => {
       console.log(err);
     } finally {
       clearAuth();
-      navigate("/login");
+      navigate("/signup");
     }
   };
 
