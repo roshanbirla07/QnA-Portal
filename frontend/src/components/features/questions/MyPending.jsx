@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { PENDING_QUESTIONS, APPROVE_QUESTION } from "../../../services/apis"; // Need APPROVE_QUESTION api
 import { approveQuestion } from "../../../services/qna.api"; // Need to export this
 import QuestionCard from "../../common/QuestionCard";
-import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const MyPending = () => {
@@ -15,8 +14,7 @@ const MyPending = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0); // Add refresh key
-    const navigate = useNavigate();
-
+]
     useEffect(() => {
         const fetchPendingQuestions = async () => {
              try {

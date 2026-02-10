@@ -8,10 +8,6 @@ import toast from "react-hot-toast";
 const MyPosts = () => {
     const token = localStorage.getItem("token");
     const payload = token ? JSON.parse(atob(token.split(".")[1])) : {};
-    const { userId } = payload;
-    
-    // We already know user is author of their own posts by definition of this page
-    const isAuthor = true; 
     
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
