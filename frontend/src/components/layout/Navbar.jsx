@@ -21,7 +21,7 @@ const Navbar = () => {
     } catch (err) {
       console.log(err);
     } finally {
-      navigate("/login");
+      navigate("/");
     }
   };
 
