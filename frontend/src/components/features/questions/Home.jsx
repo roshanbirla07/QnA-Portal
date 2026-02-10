@@ -19,12 +19,23 @@ const Home = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+
+  // Debounce search term
+  useEffect(() => {
+      const handler = setTimeout(() => {
+          setDebouncedSearch(searchTerm);
+      }, 500);
+      return () => clearTimeout(handler);
+  }, [searchTerm]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         console.log("Fetching questions...");
-        // Using direct fetch as in previous code, or can use service wrapper if available
-        const response = await fetch(FETCH_QUESTIONS, {
+        const url = searchTerm ? `${FETCH_QUESTIONS}?search=${ encodeURIComponent(debouncedSearch)}` : FETCH_QUESTIONS;
+        
+        const response = await fetch(url, {
           method: "GET",
           credentials: "include",
         });
@@ -43,7 +54,7 @@ const Home = () => {
     };
 
     fetchData();
-  }, [refreshKey]);
+  }, [refreshKey, debouncedSearch]);
 
   const handleDelete = async (questionId) => {
     if(!window.confirm("Are you sure you want to delete this question?")) return;
@@ -59,16 +70,8 @@ const Home = () => {
   };
   
   const handleEdit = (question) => {
-      // Navigate to edit page or open modal
-      // For now assuming navigating to question page then edit
-      // Or we can create specific edit route
        navigate(`/question`, { state: { question, editMode: true } });
   }
-
-  const filteredData = data.filter(q => 
-    q.questionTitle.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    q.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
 
   return (
     <div className="min-h-screen bg-bg-primary pt-6 pb-12 px-4 sm:px-6 lg:px-8">
@@ -113,13 +116,13 @@ const Home = () => {
             </div>
         ) : (
              <>
-                {filteredData.length === 0 ? (
+                {data.length === 0 ? (
                     <div className="text-center text-text-muted py-12">
                         No questions found matching your search.
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredData.map((question) => (
+                        {data.map((question) => (
                             <div key={question._id} className="animate-fade-in">
                                 <QuestionCard 
                                     question={question} 

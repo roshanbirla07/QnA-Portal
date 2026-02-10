@@ -64,8 +64,8 @@ const loginUser = asyncHandler(async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
       return res
-        .status(404)
-        .json(new ApiResponse(404, {}, "User does not exist. Kindly signup"));
+        .status(401)
+        .json(new ApiResponse(401, {}, "User does not exist. Kindly signup"));
     }
 
     const isPasswordValid = await existingUser.isPasswordCorrect(password);

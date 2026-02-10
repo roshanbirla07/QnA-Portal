@@ -7,7 +7,18 @@ import mongoose from "mongoose";
 
 const fetchQuestions = asyncHandler(async (req, res) => {
   try {
-    const questions = await QnA.find({ status: "approved" })
+    const { search } = req.query;
+    const query = { status: "approved" };
+
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      query.$or = [
+        { questionTitle: searchRegex },
+        { tags: searchRegex }
+      ];
+    }
+
+    const questions = await QnA.find(query)
       .populate("author", "email")
       .populate("answerCount")
       .sort({ createdAt: -1 });
