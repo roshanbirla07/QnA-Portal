@@ -32,6 +32,7 @@ const corsOptions = {
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   optionsSuccessStatus: 204,
+  sameSite: "none"
 };
 
 app.use(cors(corsOptions));
