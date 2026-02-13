@@ -39,8 +39,9 @@ const signupUser = asyncHandler(async (req, res) => {
     const token = generateToken(user._id, roleType);
     res.cookie("authToken", token, {
       httpOnly: true,
-      secure: config.nodeEnv === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     return res
@@ -79,8 +80,9 @@ const loginUser = asyncHandler(async (req, res) => {
 
     res.cookie("authToken", token, {
       httpOnly: true,
-      secure: config.nodeEnv === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     return res
@@ -100,7 +102,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   try {
     res.clearCookie("authToken", {
       httpOnly: true,
-      secure: config.nodeEnv === "production",
+      secure: true,
+      sameSite: "none"
     });
 
     return res
