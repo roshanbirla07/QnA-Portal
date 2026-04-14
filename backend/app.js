@@ -24,11 +24,12 @@ const isAllowedOrigin = (origin) => {
 };
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (isAllowedOrigin(origin)) return callback(null, true);
+  // origin: (origin, callback) => {
+  //   if (isAllowedOrigin(origin)) return callback(null, true);
 
-   return callback(null, false);
-  },
+  //  return callback(null, false);
+  // },
+  origin: true;
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   optionsSuccessStatus: 204
