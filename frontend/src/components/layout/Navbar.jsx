@@ -5,6 +5,7 @@ import { FiHome, FiList, FiUser, FiLogOut, FiMenu, FiX, FiPlus, FiLogIn } from "
 import { motion, AnimatePresence } from "framer-motion";
 import QuestionForm from "../features/questions/QuestionForm";
 import { useAuth } from "../../contexts/AuthContext";
+import { getAuthHeaders } from "../../utils/request";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const Navbar = () => {
     try {
       await fetch(LOGOUT_USER, {
         method: "POST",
+        headers: getAuthHeaders(),
         credentials: "include",
       });
     } catch (err) {

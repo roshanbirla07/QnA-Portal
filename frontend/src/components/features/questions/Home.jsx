@@ -5,16 +5,12 @@ import { DELETE_QUESTION, FETCH_QUESTIONS } from "../../../services/apis";
 import QuestionCard from "../../common/QuestionCard";
 import { FiSearch, FiFilter } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { decodeToken } from "../../../utils/auth";
+import { getAuthHeaders } from "../../../utils/request";
 
 const Home = () => {
   const token = localStorage.getItem("token");
-  let payload = {};
-
-  try {
-    payload = token ? JSON.parse(atob(token.split(".")[1])) : {};
-  } catch (error) {
-    payload = {};
-  }
+  const payload = decodeToken(token);
 
   const { roleType, userId } = payload;
   const admin = roleType === "admin";
@@ -44,6 +40,7 @@ const Home = () => {
         
         const response = await fetch(url, {
           method: "GET",
+          headers: getAuthHeaders(),
           credentials: "include",
         });
 
@@ -82,7 +79,7 @@ const Home = () => {
   };
   
   const handleEdit = (question) => {
-       navigate(`/question`, { state: { question, editMode: true } });
+       navigate(`/question/${question._id}`, { state: { question, editMode: true } });
   }
 
   return (

@@ -4,6 +4,7 @@ import { APPROVED_QUESTIONS, DELETE_QUESTION } from "../../../services/apis";
 import QuestionCard from "../../common/QuestionCard";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { getAuthHeaders } from "../../../utils/request";
 
 const MyPosts = () => {
    
@@ -17,6 +18,7 @@ const MyPosts = () => {
       try {
         const response = await fetch(APPROVED_QUESTIONS, {
             method: "GET",
+            headers: getAuthHeaders(),
             credentials: "include",
         });
 
@@ -55,7 +57,7 @@ const MyPosts = () => {
   
   const navigate = useNavigate();
   const handleEdit = (question) => {
-       navigate(`/question`, { state: { question, editMode: true } });
+       navigate(`/question/${question._id}`, { state: { question, editMode: true } });
   }
 
 

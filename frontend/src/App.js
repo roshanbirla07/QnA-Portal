@@ -17,7 +17,7 @@ function App() {
         <Route path="/myposts" element={<PrivateRoute><MyPosts /></PrivateRoute>} />
         <Route path="/login" element={<OpenRoute><Login /></OpenRoute>} />
         <Route path="/signup" element={<OpenRoute><SignUp /></OpenRoute>} />
-        <Route path="/question" element={<PrivateRoute><QuestionPage /></PrivateRoute>} />
+        <Route path="/question/:questionId?" element={<PrivateRoute><QuestionPage /></PrivateRoute>} />
         <Route path="/submitquestion" element={<PrivateRoute><QuestionForm /></PrivateRoute>} />
       </Routes>
     </>

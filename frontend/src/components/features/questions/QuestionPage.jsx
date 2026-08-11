@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { fetchComments, postComment } from "../../../services/comment.api";
-import { DELETE_QUESTION, EDIT_QUESTION, FETCH_COMMENTS, POST_COMMENT, INCREMENT_VIEW } from "../../../services/apis";
-import { useLocation, useNavigate } from "react-router-dom";
-import { deleteQuestion, editQuestion, incrementView } from "../../../services/qna.api";
+import { DELETE_QUESTION, EDIT_QUESTION, FETCH_COMMENTS, POST_COMMENT, INCREMENT_VIEW, FETCH_QUESTION } from "../../../services/apis";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { deleteQuestion, editQuestion, fetchQuestion, incrementView } from "../../../services/qna.api";
 import { FiClock, FiMessageSquare, FiEye, FiShare2, FiEdit2, FiTrash2, FiSend, FiCheck } from "react-icons/fi"; 
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
+import { decodeToken } from "../../../utils/auth";
 
 const QuestionPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { questionId } = useParams();
 
   const token = localStorage.getItem('token');
-  const payload = token ? JSON.parse(atob(token.split(".")[1])) : {};
-  const { userId } = payload;
+  const payload = decodeToken(token);
+  const { userId, roleType } = payload;
   const { question } = location.state || {};
 
   // State management
@@ -28,34 +30,55 @@ const QuestionPage = () => {
   const [editMode, setEditMode] = useState(location.state?.editMode || false);
   const [updatedQuestion, setUpdatedQuestion] = useState(question?.questionTitle || "");
   const [updatedTags, setUpdatedTags] = useState(question?.tags?.join(", ") || "");
+  const [currentQuestion, setCurrentQuestion] = useState(question);
   
   // Stats state (local state to show immediate updates)
   const [views, setViews] = useState(question?.views || 0);
 
-  // Redirect if no question
+  // Load question from route state, or fetch it for direct links/refreshes.
   useEffect(() => {
-    if (!question) {
-      navigate("/");
+    if (question) {
+      return;
     }
-  }, [question, navigate]);
+
+    if (!questionId) {
+      navigate("/");
+      return;
+    }
+
+    const fetchQuestionById = async () => {
+      try {
+        const response = await fetchQuestion("GET", `${FETCH_QUESTION}/${questionId}`);
+        setCurrentQuestion(response);
+        setUpdatedQuestion(response.questionTitle || "");
+        setUpdatedTags(response.tags?.join(", ") || "");
+        setViews(response.views || 0);
+      } catch (error) {
+        toast.error(error.message || "Unable to load question");
+        navigate("/");
+      }
+    };
+
+    fetchQuestionById();
+  }, [question, questionId, navigate]);
 
   // Increment view on mount
   useEffect(() => {
-      if(question?._id) {
-          incrementView("PATCH", `${INCREMENT_VIEW}/${question._id}`)
+      if(currentQuestion?._id) {
+          incrementView("PATCH", `${INCREMENT_VIEW}/${currentQuestion._id}`)
             .then(() => setViews(v => v + 1))
             .catch((err) => toast.error(err.message || "Failed to increment view"));
       }
-  }, [question?._id]);
+  }, [currentQuestion?._id]);
 
   // Fetch comments
   useEffect(() => {
-    if (question) {
+    if (currentQuestion?._id) {
       const fetchHandler = async () => {
         try {
             const response = await fetchComments(
             "GET",
-            FETCH_COMMENTS + `/${question._id}`
+            FETCH_COMMENTS + `/${currentQuestion._id}`
             );
             setComments(response);
         } catch (error) {
@@ -64,14 +87,14 @@ const QuestionPage = () => {
       };
       fetchHandler();
     }
-  }, [question, refreshKey]);
+  }, [currentQuestion?._id, refreshKey]);
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
     const formData = {
       comment: newComment,
-      questionId: question._id,
+      questionId: currentQuestion._id,
     };
 
     try {
@@ -89,25 +112,25 @@ const QuestionPage = () => {
   const handleUpdateQuestion = async () => {
     const updatedData = {
       questionTitle: updatedQuestion,
-      tags: updatedTags.split(",").map((tag) => tag.trim()),
+      tags: updatedTags.split(",").map((tag) => tag.trim()).filter(Boolean),
     };
 
    try {
-    const response = await editQuestion("PATCH", `${EDIT_QUESTION}/${question._id}`, updatedData);
+    const response = await editQuestion("PATCH", `${EDIT_QUESTION}/${currentQuestion._id}`, updatedData);
     toast.success(response.message || "Question updated successfully");
-    question.questionTitle = updatedQuestion;
-    question.tags = updatedData.tags;
+    setCurrentQuestion(response.data);
     setEditMode(false);
    } catch (error) {
     toast.error(error.message || "Unable to update question");
    }
   };
   
-  if (!question) return null;
+  if (!currentQuestion) return null;
   
-  const authorName = question.author?.email?.split('@')[0] || "Unknown";
-  const timeAgo = question.createdAt ? formatDistanceToNow(new Date(question.createdAt), { addSuffix: true }) : "";
-  const isAuthor = userId && (question.author?._id || question.author) && userId === (question.author?._id || question.author);
+  const authorName = currentQuestion?.author?.email?.split('@')[0] || "Unknown";
+  const timeAgo = currentQuestion?.createdAt ? formatDistanceToNow(new Date(currentQuestion.createdAt), { addSuffix: true }) : "";
+  const isAuthor = userId && (currentQuestion?.author?._id || currentQuestion?.author) && userId === (currentQuestion.author?._id || currentQuestion.author);
+  const isAdmin = roleType === "admin";
 
   return (
     <div className="min-h-screen bg-bg-primary pt-6 pb-12 px-4 sm:px-6 lg:px-8">
@@ -182,7 +205,7 @@ const QuestionPage = () => {
                         }
                         }}
                     >
-                        {question.questionTitle}
+                        {currentQuestion.questionTitle}
                     </ReactMarkdown>
                  </div>
              )}
@@ -191,7 +214,7 @@ const QuestionPage = () => {
             {!editMode && (
                 <div className="border-t border-white/5 pt-6 flex flex-wrap justify-between items-center gap-4">
                     <div className="flex flex-wrap gap-2">
-                        {question.tags?.map((tag, idx) => (
+                        {currentQuestion.tags?.map((tag, idx) => (
                             <span key={idx} className="px-3 py-1 rounded-full bg-primary-purple/10 text-primary-purple text-xs font-medium border border-primary-purple/20">
                                 {tag}
                             </span>
@@ -199,14 +222,15 @@ const QuestionPage = () => {
                     </div>
 
                     <div className="flex gap-2">
-                        {isAuthor && (
+                        {(isAuthor || isAdmin) && (
                             <>
                                 <button onClick={() => setEditMode(true)} className="p-2 text-text-muted hover:text-primary-blue transition-colors" title="Edit">
                                     <FiEdit2 />
                                 </button>
                                 <button onClick={async () => {
+                                  if (!window.confirm("Are you sure you want to delete this question?")) return;
                                   try {
-                                    const response = await deleteQuestion("DELETE", DELETE_QUESTION, { questionId: question._id }, () => navigate("/"));
+                                    const response = await deleteQuestion("DELETE", DELETE_QUESTION, { questionId: currentQuestion._id }, () => navigate("/"));
                                     toast.success(response.message || "Question deleted successfully");
                                   } catch (error) {
                                     toast.error(error.message || "Unable to delete question");
@@ -253,17 +277,21 @@ const QuestionPage = () => {
 
             <div className="space-y-4">
                 {comments && comments.length > 0 ? (
-                    comments.map((comment) => (
+                    comments.map((comment) => {
+                      const commentAuthor = comment.authorId?.email?.split("@")[0] || "Unknown";
+                      const commentTime = comment.createdAt ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true }) : "recently";
+
+                      return (
                         <div key={comment._id} className="p-4 rounded-xl bg-bg-secondary/50 border border-white/5 hover:border-white/10 transition-colors">
                             <div className="prose prose-invert prose-sm max-w-none text-text-secondary">
                                 <ReactMarkdown>{comment.comment}</ReactMarkdown>
                             </div>
                             <div className="mt-2 text-xs text-text-muted flex justify-end">
-                                {/* If we had author/time for comments, show here */}
-                                Posted recently
+                                Posted by {commentAuthor} {commentTime}
                             </div>
                         </div>
-                    ))
+                      );
+                    })
                 ) : (
                     <div className="text-center text-text-muted py-8">
                         No answers yet. Be the first to help!

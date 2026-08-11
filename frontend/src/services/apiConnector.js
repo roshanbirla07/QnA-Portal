@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getAuthHeaders } from "../utils/request";
 
 axios.defaults.withCredentials = true;
 const axiosInstance = axios.create({
@@ -21,7 +22,10 @@ const apiConnector = async (method, url, bodyData, headerData, paramsData) => {
       withCredentials: true,
       url,
       data: bodyData || null,
-      headers: headerData || null,
+      headers: {
+        ...getAuthHeaders(),
+        ...(headerData || {}),
+      },
       params: paramsData || null,
     });
   } catch (error) {

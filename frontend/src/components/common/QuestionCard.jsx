@@ -16,7 +16,7 @@ const QuestionCard = ({ question, isAdmin, isAuthor, onDelete, onEdit, onApprove
     <div className="glass-card p-6 hovered-card transition-all duration-300 hover:-translate-y-1 hover:shadow-glow flex flex-col h-full group">
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
-        <Link to="/question" state={{ question }} className="flex-1">
+        <Link to={`/question/${_id}`} state={{ question }} className="flex-1">
           <h3 className="text-xl font-semibold text-text-primary group-hover:text-primary-purple transition-colors line-clamp-2">
             {questionTitle}
           </h3>

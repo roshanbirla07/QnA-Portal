@@ -3,10 +3,12 @@ import { PENDING_QUESTIONS, APPROVE_QUESTION } from "../../../services/apis"; //
 import { approveQuestion } from "../../../services/qna.api"; // Need to export this
 import QuestionCard from "../../common/QuestionCard";
 import toast from "react-hot-toast";
+import { decodeToken } from "../../../utils/auth";
+import { getAuthHeaders } from "../../../utils/request";
 
 const MyPending = () => {
     const token = localStorage.getItem("token");
-    const payload = token ? JSON.parse(atob(token.split(".")[1])) : {};
+    const payload = decodeToken(token);
     const { roleType } = payload;
     const isAdmin = roleType === "admin";
 
@@ -20,6 +22,7 @@ const MyPending = () => {
              try {
                 const response = await fetch(PENDING_QUESTIONS, {
                     method: "GET",
+                    headers: getAuthHeaders(),
                     credentials: "include",
                 });
         

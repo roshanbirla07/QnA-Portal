@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import QnA from "../schemas/qna.schema.js";
 import User from "../schemas/user.schema.js";
+import Comment from "../schemas/comment.schema.js";
 import mongoose from "mongoose";
 import logger from "../utils/logger.js";
 import { RESPONSE_MESSAGES } from "../constants/responseMessages.js";
@@ -13,7 +14,8 @@ const fetchQuestions = asyncHandler(async (req, res) => {
     const query = { status: "approved" };
 
     if (search) {
-      const searchRegex = new RegExp(search, "i");
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const searchRegex = new RegExp(escapedSearch, "i");
       query.$or = [{ questionTitle: searchRegex }, { tags: searchRegex }];
     }
 
@@ -36,10 +38,19 @@ const postQuestion = asyncHandler(async (req, res) => {
       throw new ApiError(400, RESPONSE_MESSAGES.ALL_FIELDS_REQUIRED);
     }
 
+    if (!Array.isArray(tags)) {
+      throw new ApiError(400, RESPONSE_MESSAGES.TAGS_MUST_BE_ARRAY);
+    }
+
+    const normalizedTags = tags.map((tag) => String(tag).trim()).filter(Boolean);
+    if (normalizedTags.length > 10) {
+      throw new ApiError(400, RESPONSE_MESSAGES.TAGS_LIMIT_EXCEEDED);
+    }
+
     const question = await QnA.create({
-      questionTitle,
+      questionTitle: questionTitle.trim(),
       author: req.user.id,
-      tags,
+      tags: normalizedTags,
     });
 
     return res.status(201).json(new ApiResponse(201, question, RESPONSE_MESSAGES.QUESTION_POSTED));
@@ -56,12 +67,22 @@ const approveQuestion = asyncHandler(async (req, res) => {
   try {
     const { questionId, status } = req.body;
     if (!questionId) throw new ApiError(400, RESPONSE_MESSAGES.QUESTION_ID_REQUIRED);
+    if (!mongoose.Types.ObjectId.isValid(questionId)) {
+      throw new ApiError(400, RESPONSE_MESSAGES.INVALID_QUESTION_ID);
+    }
+    if (!["approved", "rejected"].includes(status)) {
+      throw new ApiError(400, RESPONSE_MESSAGES.INVALID_QUESTION_STATUS);
+    }
 
     const updatedQuestion = await QnA.findByIdAndUpdate(
-      new mongoose.Types.ObjectId(questionId),
+      questionId,
       { $set: { status } },
       { new: true }
     );
+
+    if (!updatedQuestion) {
+      throw new ApiError(404, RESPONSE_MESSAGES.QUESTION_NOT_FOUND);
+    }
 
     return res.status(200).json(new ApiResponse(200, updatedQuestion, RESPONSE_MESSAGES.QUESTION_UPDATED));
   } catch (error) {
@@ -126,12 +147,13 @@ const editQuestion = asyncHandler(async (req, res) => {
       throw new ApiError(404, RESPONSE_MESSAGES.QUESTION_NOT_FOUND);
     }
 
-    if (question.author.toString() !== userId) {
+    const isAdmin = req.user.roleType === "admin";
+    if (!isAdmin && question.author.toString() !== userId) {
       throw new ApiError(403, RESPONSE_MESSAGES.EDIT_NOT_ALLOWED);
     }
 
     if (questionTitle) {
-      question.questionTitle = questionTitle;
+      question.questionTitle = questionTitle.trim();
     }
 
     if (tags) {
@@ -141,14 +163,17 @@ const editQuestion = asyncHandler(async (req, res) => {
       if (tags.length > 10) {
         throw new ApiError(400, RESPONSE_MESSAGES.TAGS_LIMIT_EXCEEDED);
       }
-      question.tags = tags;
+      question.tags = tags.map((tag) => String(tag).trim()).filter(Boolean);
     }
 
-    if (req.user.roleType !== "admin") {
+    if (!isAdmin) {
       question.status = "pending";
     }
 
-    const updatedQuestion = await question.save();
+    await question.save();
+    const updatedQuestion = await QnA.findById(questionId)
+      .populate("author", "email")
+      .populate("answerCount");
 
     return res.status(200).json(new ApiResponse(200, updatedQuestion, RESPONSE_MESSAGES.QUESTION_UPDATED));
   } catch (error) {
@@ -164,9 +189,20 @@ const deleteQuestion = asyncHandler(async (req, res) => {
   try {
     const { questionId } = req.body;
     if (!questionId) throw new ApiError(400, RESPONSE_MESSAGES.QUESTION_ID_REQUIRED);
+    if (!mongoose.Types.ObjectId.isValid(questionId)) {
+      throw new ApiError(400, RESPONSE_MESSAGES.INVALID_QUESTION_ID);
+    }
 
-    const deletedQuestion = await QnA.findByIdAndDelete(questionId);
-    if (!deletedQuestion) throw new ApiError(404, RESPONSE_MESSAGES.QUESTION_NOT_FOUND);
+    const question = await QnA.findById(questionId);
+    if (!question) throw new ApiError(404, RESPONSE_MESSAGES.QUESTION_NOT_FOUND);
+
+    const isAdmin = req.user.roleType === "admin";
+    if (!isAdmin && question.author.toString() !== req.user.id) {
+      throw new ApiError(403, RESPONSE_MESSAGES.DELETE_NOT_ALLOWED);
+    }
+
+    await Comment.deleteMany({ questionId });
+    await question.deleteOne();
 
     return res.status(200).json(new ApiResponse(200, {}, RESPONSE_MESSAGES.QUESTION_DELETED));
   } catch (error) {
@@ -181,11 +217,43 @@ const deleteQuestion = asyncHandler(async (req, res) => {
 const incrementView = asyncHandler(async (req, res) => {
   try {
     const { questionId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(questionId)) {
+      throw new ApiError(400, RESPONSE_MESSAGES.INVALID_QUESTION_ID);
+    }
     const question = await QnA.findByIdAndUpdate(questionId, { $inc: { views: 1 } }, { new: true });
+    if (!question) {
+      throw new ApiError(404, RESPONSE_MESSAGES.QUESTION_NOT_FOUND);
+    }
     return res.status(200).json(new ApiResponse(200, question, RESPONSE_MESSAGES.VIEW_INCREMENTED));
   } catch (error) {
     logger.error("Failed to increment view", { error: error.message, questionId: req.params?.questionId });
-    return res.status(500).json(new ApiResponse(500, {}, RESPONSE_MESSAGES.VIEW_INCREMENT_FAILED));
+    const statusCode = error instanceof ApiError ? error.statusCode : 500;
+    return res.status(statusCode).json(new ApiResponse(statusCode, {}, error.message || RESPONSE_MESSAGES.VIEW_INCREMENT_FAILED));
+  }
+});
+
+const fetchQuestionById = asyncHandler(async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(questionId)) {
+      throw new ApiError(400, RESPONSE_MESSAGES.INVALID_QUESTION_ID);
+    }
+
+    const question = await QnA.findById(questionId)
+      .populate("author", "email")
+      .populate("answerCount");
+
+    if (!question) {
+      throw new ApiError(404, RESPONSE_MESSAGES.QUESTION_NOT_FOUND);
+    }
+
+    return res.status(200).json(new ApiResponse(200, question, RESPONSE_MESSAGES.QUESTION_FETCHED));
+  } catch (error) {
+    logger.error("Failed to fetch question", { error: error.message, questionId: req.params?.questionId });
+    const statusCode = error instanceof ApiError ? error.statusCode : 500;
+    return res
+      .status(statusCode)
+      .json(new ApiResponse(statusCode, {}, error.message || RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR));
   }
 });
 
@@ -206,6 +274,7 @@ const getAdminStats = asyncHandler(async (req, res) => {
 
 export {
   fetchQuestions,
+  fetchQuestionById,
   postQuestion,
   approveQuestion,
   approvedQuestions,

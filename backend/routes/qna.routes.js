@@ -1,9 +1,10 @@
 import express from "express";
 import authMiddleware from "../middlewares/auth.middleware.js";
-import { approvedQuestions, approveQuestion, deleteQuestion, editQuestion, fetchQuestions, pendingQuestions, postQuestion, incrementView, getAdminStats } from "../controllers/qna.controllers.js";
+import { approvedQuestions, approveQuestion, deleteQuestion, editQuestion, fetchQuestionById, fetchQuestions, pendingQuestions, postQuestion, incrementView, getAdminStats } from "../controllers/qna.controllers.js";
 const qnaRouter = express.Router();
 
 qnaRouter.route("/fetchQuestions").get(fetchQuestions);
+qnaRouter.route("/fetchQuestion/:questionId").get(authMiddleware(["user", "admin"]), fetchQuestionById);
 qnaRouter.route("/postQuestion").post(authMiddleware(), postQuestion);
 qnaRouter.route("/deleteQuestion").delete(authMiddleware(["user", "admin"]), deleteQuestion);
 qnaRouter.route("/approveQuestion").post(authMiddleware(["admin"]), approveQuestion);

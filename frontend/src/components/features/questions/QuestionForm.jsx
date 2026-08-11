@@ -35,16 +35,18 @@ const QuestionForm = ({ setNewPostPopup, newPostPopup }) => {
 
   return (
     <AnimatePresence>
-      {newPostPopup && (
-        <div className="fixed inset-0 min-h-screen flex items-center justify-center z-50 px-4">
+      {(newPostPopup || newPostPopup === undefined) && (
+        <div className={`${newPostPopup === undefined ? "min-h-screen bg-bg-primary pt-24" : "fixed inset-0 min-h-screen"} flex items-center justify-center z-50 px-4`}>
              {/* Backdrop */}
-             <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                onClick={() => setNewPostPopup(false)}
-             />
+             {newPostPopup !== undefined && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    onClick={() => setNewPostPopup(false)}
+                />
+             )}
 
              {/* Modal */}
              <motion.div 
@@ -56,7 +58,7 @@ const QuestionForm = ({ setNewPostPopup, newPostPopup }) => {
                 {/* Header */}
                 <div className="bg-gradient-to-r from-primary-purple to-primary-blue p-6 text-white flex justify-between items-center">
                     <h2 className="text-xl font-bold">Ask a Question</h2>
-                    <button onClick={() => setNewPostPopup(false)} className="text-white/80 hover:text-white transition-colors">
+                    <button onClick={() => setNewPostPopup ? setNewPostPopup(false) : navigate("/")} className="text-white/80 hover:text-white transition-colors">
                         <FiX className="text-xl" />
                     </button>
                 </div>
@@ -91,7 +93,7 @@ const QuestionForm = ({ setNewPostPopup, newPostPopup }) => {
                              <button
                                 type="button"
                                 className="px-4 py-2 rounded-lg text-text-secondary hover:bg-white/5 transition-colors"
-                                onClick={() => setNewPostPopup(false)}
+                                onClick={() => setNewPostPopup ? setNewPostPopup(false) : navigate("/")}
                             >
                                 Cancel
                             </button>

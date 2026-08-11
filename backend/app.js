@@ -9,6 +9,8 @@ import config from "./stageconfig.js";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 const isVercelQnaOrigin = (origin) => {
   return /^https:\/\/qn-a-hexa-wealth(?:-[a-z0-9-]+)?\.vercel\.app$/i.test(origin);
 };

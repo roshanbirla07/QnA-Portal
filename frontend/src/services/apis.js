@@ -12,6 +12,7 @@ export const LOGIN_USER = USER_ROUTER + "/login";
 export const LOGOUT_USER = USER_ROUTER + "/logout";
 
 export const FETCH_QUESTIONS = QNA_ROUTER + "/fetchQuestions";
+export const FETCH_QUESTION = QNA_ROUTER + "/fetchQuestion";
 export const POST_QUESTION = QNA_ROUTER + "/postQuestion";
 export const DELETE_QUESTION = QNA_ROUTER + "/deleteQuestion";
 export const APPROVE_QUESTION = QNA_ROUTER + "/approveQuestion";

@@ -4,6 +4,7 @@ const commentSchema = new mongoose.Schema({
     comment: {
         type: String,
         required: true,
+        trim: true,
     },
     questionId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -15,6 +16,8 @@ const commentSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
+}, {
+    timestamps: true,
 });
 
 const Comment = mongoose.model("Comment", commentSchema);

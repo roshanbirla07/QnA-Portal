@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import Cookies from "js-cookie";
+import { decodeToken, isTokenExpired } from "../utils/auth";
 
 
 const AuthContext = createContext();
@@ -7,7 +8,8 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => {
     // Retrieve the token from localStorage on app load
-    return localStorage.getItem('token') || null;
+    const storedToken = localStorage.getItem('token');
+    return storedToken && !isTokenExpired(storedToken) ? storedToken : null;
   });
   
   const logoutUser = () => {
@@ -19,12 +21,21 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (token) {
       localStorage.setItem('token', token);
-      const payload = JSON.parse(atob(token.split(".")[1]));
+      const payload = decodeToken(token);
+      if (!payload.exp) {
+        logoutUser();
+        return undefined;
+      }
       const expirationTime = payload.exp * 1000;
+      const delay = expirationTime - Date.now();
+      if (delay <= 0) {
+        logoutUser();
+        return undefined;
+      }
 
       const timer = setTimeout(() => {
         logoutUser();
-      }, expirationTime - Date.now());
+      }, delay);
 
       return () => clearTimeout(timer); // Clear timer on unmount
     }

@@ -13,15 +13,24 @@ const generateToken = (userId, roleType) => {
   });
 };
 
+const authCookieOptions = {
+  httpOnly: true,
+  secure: config.cookieSecure,
+  sameSite: config.cookieSameSite,
+  maxAge: 7 * 24 * 60 * 60 * 1000
+};
+
 const signupUser = asyncHandler(async (req, res) => {
   try {
-    const { email, password, roleType = "user" } = req.body;
+    const { email, password } = req.body;
+    const roleType = "user";
 
-    if (!email || !password || !roleType) {
+    if (!email || !password) {
       throw new ApiError(400, RESPONSE_MESSAGES.ALL_FIELDS_REQUIRED);
     }
 
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res
         .status(409)
@@ -29,7 +38,7 @@ const signupUser = asyncHandler(async (req, res) => {
     }
 
     const user = await User.create({
-      email,
+      email: normalizedEmail,
       password,
       roleType,
     });
@@ -37,12 +46,7 @@ const signupUser = asyncHandler(async (req, res) => {
     const respUser = await User.findById(user._id).select("-password");
 
     const token = generateToken(user._id, roleType);
-    res.cookie("authToken", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    res.cookie("authToken", token, authCookieOptions);
 
     return res
       .status(201)
@@ -63,7 +67,7 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!email || !password) {
       throw new ApiError(400, RESPONSE_MESSAGES.ALL_FIELDS_REQUIRED);
     }
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: email.trim().toLowerCase() });
     if (!existingUser) {
       return res
         .status(401)
@@ -78,12 +82,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const token = generateToken(existingUser._id, existingUser.roleType);
     const respUser = await User.findById(existingUser._id).select("-password");
 
-    res.cookie("authToken", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    res.cookie("authToken", token, authCookieOptions);
 
     return res
       .status(200)
@@ -102,8 +101,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   try {
     res.clearCookie("authToken", {
       httpOnly: true,
-      secure: true,
-      sameSite: "none"
+      secure: config.cookieSecure,
+      sameSite: config.cookieSameSite
     });
 
     return res

@@ -13,6 +13,7 @@ export const RESPONSE_MESSAGES = {
   LOGOUT_FAILED: "Something went wrong during logout",
 
   QUESTIONS_FETCHED: "Questions fetched successfully",
+  QUESTION_FETCHED: "Question fetched successfully",
   QUESTION_POSTED: "Question posted successfully",
   QUESTION_ID_REQUIRED: "Question id is required",
   QUESTION_UPDATED: "Question updated successfully",
@@ -20,6 +21,8 @@ export const RESPONSE_MESSAGES = {
   QUESTION_NOT_FOUND: "Question not found",
   INVALID_QUESTION_ID: "Invalid question ID",
   EDIT_NOT_ALLOWED: "You are not authorized to edit this question",
+  DELETE_NOT_ALLOWED: "You are not authorized to delete this question",
+  INVALID_QUESTION_STATUS: "Question status must be approved or rejected",
   TAGS_MUST_BE_ARRAY: "Tags must be an array",
   TAGS_LIMIT_EXCEEDED: "Tags cannot exceed the limit of 10",
   APPROVED_QUESTIONS_FETCHED: "Approved questions fetched successfully",
