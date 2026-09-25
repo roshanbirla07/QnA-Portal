@@ -8,6 +8,7 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "seed:admin": "node scripts/create-admin.js",
+    "migrate:qna-posts": "node scripts/migrate-qna-to-posts.js",
     "lint": "eslint ."
   },
   "dependencies": {
