@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import QuestionCard from "../../common/QuestionCard";
 import { TOPICS_ROUTER } from "../../../services/apis";
@@ -12,7 +12,7 @@ const TopicPage = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(
@@ -27,9 +27,9 @@ const TopicPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug, sort]);
 
-  useEffect(() => { load(); }, [slug, sort]);
+  useEffect(() => { load(); }, [load]);
 
   const toggleFollow = async () => {
     try {
