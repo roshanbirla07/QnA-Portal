@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import connectDB from "../db/connection.js";
 import User from "../schemas/user.schema.js";
-import config from "../stageconfig.js";
+import config from "../config/variables.js";
 
 const ADMIN_EMAIL = config.adminEmail;
 const ADMIN_PASSWORD = config.adminPassword;
@@ -12,7 +12,7 @@ if (
   ADMIN_EMAIL.startsWith("REPLACE_WITH_") ||
   ADMIN_PASSWORD.startsWith("REPLACE_WITH_")
 ) {
-  console.error("Set adminEmail and adminPassword in backend/stageconfig.js");
+  console.error("Set admin credentials in the active backend config file");
   process.exit(1);
 }
 
