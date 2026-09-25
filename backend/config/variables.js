@@ -1,52 +1,31 @@
-import fs from "fs";
-import path from "path";
-import { pathToFileURL } from "url";
-
-const configDir = path.dirname(new URL(import.meta.url).pathname);
-
-// Load lowest -> highest priority.
-// Effective priority: prod > stage > dev > local
-const configFiles = [
-  "local_config.js",
-  "dev_config.js",
-  "stage_config.js",
-  "prod_config.js",
-];
-
 let config = {};
 
-for (const fileName of configFiles) {
-  const filePath = path.join(configDir, fileName);
-
-  if (!fs.existsSync(filePath)) {
-    continue;
-  }
-
-  const loaded = await import(pathToFileURL(filePath).href);
-
-  config = {
-    ...config,
-    ...(loaded.default || loaded),
-  };
+try {
+  const localConfig = await import("./local_config.js");
+  config = { ...config, ...(localConfig.default || localConfig) };
+} catch (error) {
+  if (error.code !== "ERR_MODULE_NOT_FOUND") throw error;
 }
 
-const requiredKeys = [
-  "port",
-  "mongodbUri",
-  "jwtSecret",
-  "corsOrigins",
-  "cookieSecure",
-  "cookieSameSite",
-];
+try {
+  const devConfig = await import("./dev_config.js");
+  config = { ...config, ...(devConfig.default || devConfig) };
+} catch (error) {
+  if (error.code !== "ERR_MODULE_NOT_FOUND") throw error;
+}
 
-const missingKeys = requiredKeys.filter(
-  (key) => config[key] === undefined || config[key] === null || config[key] === ""
-);
+try {
+  const stageConfig = await import("./stage_config.js");
+  config = { ...config, ...(stageConfig.default || stageConfig) };
+} catch (error) {
+  if (error.code !== "ERR_MODULE_NOT_FOUND") throw error;
+}
 
-if (missingKeys.length) {
-  throw new Error(
-    `Missing config values: ${missingKeys.join(", ")}. Add the required instance config file under backend/config.`
-  );
+try {
+  const prodConfig = await import("./prod_config.js");
+  config = { ...config, ...(prodConfig.default || prodConfig) };
+} catch (error) {
+  if (error.code !== "ERR_MODULE_NOT_FOUND") throw error;
 }
 
 export default config;
