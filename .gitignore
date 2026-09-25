@@ -80,5 +80,8 @@ backend/config/local_config.js
 backend/config/dev_config.js
 backend/config/stage_config.js
 backend/config/prod_config.js
-frontend/public/runtime_config.js
 
+frontend/public/local_config.js
+frontend/public/dev_config.js
+frontend/public/stage_config.js
+frontend/public/prod_config.js
