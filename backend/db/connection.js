@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { DB_NAME } from "../constants.js";
-import config from "../stageconfig.js";
+import config from "../config/variables.js";
 
 const buildMongoUri = (uri, dbName) => {
   const [baseUri, queryString] = uri.split("?", 2);

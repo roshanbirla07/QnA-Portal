@@ -1,7 +1,6 @@
-const DEFAULT_BASE_URL = "http://localhost:3001";// const BASE_URL = "  m";
+import config from "../config/variables";
 
-const API_BASE_URL =
-  (process.env.REACT_APP_API_BASE_URL || DEFAULT_BASE_URL).replace(/\/$/, "");
+const API_BASE_URL = config.apiBaseUrl.replace(/\/$/, "");
 
 const USER_ROUTER = `${API_BASE_URL}/api/v1/user`;
 const QNA_ROUTER = `${API_BASE_URL}/api/v1/qna`;

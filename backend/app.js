@@ -10,7 +10,7 @@ import interactionRouter from "./routes/interaction.routes.js";
 import feedRouter from "./routes/feed.routes.js";
 import profileRouter from "./routes/profile.routes.js";
 import { RESPONSE_MESSAGES } from "./constants/responseMessages.js";
-import config from "./stageconfig.js";
+import config from "./config/variables.js";
 
 const app = express();
 app.set("trust proxy", 1);

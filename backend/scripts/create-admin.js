@@ -1,19 +1,23 @@
-import dotenv from "dotenv";
-dotenv.config({ path: "./.env" });
-
 import mongoose from "mongoose";
 import connectDB from "../db/connection.js";
 import User from "../schemas/user.schema.js";
+import config from "../config/variables.js";
 
-const { ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
+const ADMIN_EMAIL = config.adminEmail;
+const ADMIN_PASSWORD = config.adminPassword;
 
-if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-  console.error("ADMIN_EMAIL and ADMIN_PASSWORD are required");
+if (
+  !ADMIN_EMAIL ||
+  !ADMIN_PASSWORD ||
+  ADMIN_EMAIL.startsWith("REPLACE_WITH_") ||
+  ADMIN_PASSWORD.startsWith("REPLACE_WITH_")
+) {
+  console.error("Set admin credentials in the active backend config file");
   process.exit(1);
 }
 
 if (ADMIN_PASSWORD.length < 12) {
-  console.error("ADMIN_PASSWORD must be at least 12 characters");
+  console.error("adminPassword must be at least 12 characters");
   process.exit(1);
 }
 
@@ -26,7 +30,7 @@ const main = async () => {
 
     if (existingAdmin) {
       existingAdmin.roleType = "admin";
-      if (process.env.ADMIN_RESET_PASSWORD === "true") {
+      if (config.adminResetPassword) {
         existingAdmin.password = ADMIN_PASSWORD;
       }
       await existingAdmin.save();
