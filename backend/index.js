@@ -1,5 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config({ path: "./.env" });
 import app from "./app.js";
 import connectDB from "./db/connection.js";
 import config from "./stageconfig.js";
