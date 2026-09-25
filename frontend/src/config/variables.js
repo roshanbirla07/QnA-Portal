@@ -1,16 +1,19 @@
-const runtimeConfigs = window.__APP_CONFIG__ || {};
+const configs = require.context(".", false, /_config\.js$/);
 
-const config = {
-  ...(runtimeConfigs.local || {}),
-  ...(runtimeConfigs.dev || {}),
-  ...(runtimeConfigs.stage || {}),
-  ...(runtimeConfigs.prod || {}),
-};
+const priority = [
+  "./prod_config.js",
+  "./stage_config.js",
+  "./dev_config.js",
+  "./local_config.js",
+];
 
-if (config.apiBaseUrl === undefined || config.apiBaseUrl === null) {
-  throw new Error(
-    "Missing frontend apiBaseUrl. Add the appropriate instance config file."
-  );
+let config = {};
+
+for (const file of priority) {
+  if (configs.keys().includes(file)) {
+    config = configs(file);
+    break;
+  }
 }
 
 export default config;
