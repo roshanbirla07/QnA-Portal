@@ -1,4 +1,4 @@
-import config from "../stageconfig";
+import config from "../config/variables";
 
 const API_BASE_URL = config.apiBaseUrl.replace(/\/$/, "");
 
