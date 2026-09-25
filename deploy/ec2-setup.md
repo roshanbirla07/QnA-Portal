@@ -22,6 +22,12 @@ npm ci
 # Create backend/config/stage_config.js with named exports for port,
 # mongodbUri, jwtSecret, corsOrigins, cookieSecure, and cookieSameSite.
 # Replace placeholders with your own values. Keep this ignored file on the instance.
+# For Atlas passwords containing @ or other URI special characters, use:
+# export const mongodbUri = "mongodb+srv://cluster0.example.mongodb.net/?appName=Cluster0";
+# export const mongodbUsername = "your-database-user";
+# export const mongodbPassword = "your-raw-password";
+# The optional mongodbAuthSource defaults to "admin" with separate credentials.
+# Remove username and password from mongodbUri when using these fields.
 # Example: export const corsOrigins = ["https://your-domain.com"];
 # backend/config/variables.js selects prod_config.js first, then stage_config.js,
 # then dev_config.js, then local_config.js. Remove a higher-priority config
