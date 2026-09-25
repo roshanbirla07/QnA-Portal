@@ -29,7 +29,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "prestart": "node scripts/select-config.cjs",
+    "prebuild": "node scripts/select-config.cjs"
   },
   "eslintConfig": {
     "extends": [
