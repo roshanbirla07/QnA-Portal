@@ -84,4 +84,3 @@ frontend/src/config/local_config.js
 frontend/src/config/dev_config.js
 frontend/src/config/stage_config.js
 frontend/src/config/prod_config.js
-frontend/src/config/active_config.js
