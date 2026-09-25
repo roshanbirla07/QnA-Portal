@@ -1,5 +1,5 @@
 import "./App.css";
-import { Home, MyPending, MyPosts, QuestionForm, QuestionPage } from "./components/features/questions";
+import { Home, MyPending, MyPosts, QuestionForm, QuestionPage, TopicPage } from "./components/features/questions";
 import { SignUp, Login } from "./components/features/auth";
 import { Navbar } from "./components/layout";
 import { PrivateRoute, OpenRoute } from "./components/common";
@@ -13,6 +13,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/topics/:slug" element={<TopicPage />} />
         <Route path="/pendings" element={<PrivateRoute><MyPending /></PrivateRoute>} />
         <Route path="/myposts" element={<PrivateRoute><MyPosts /></PrivateRoute>} />
         <Route path="/login" element={<OpenRoute><Login /></OpenRoute>} />
