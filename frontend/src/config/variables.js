@@ -1,21 +1,18 @@
-import localConfig from "./localconfig";
-import stageConfig from "./stageconfig";
-import prodConfig from "./prodconfig";
-
-// Keep this aligned with the backend deployment environment.
-const ACTIVE_ENV = "stage";
-
-const configs = {
-  local: localConfig,
-  stage: stageConfig,
-  prod: prodConfig,
+const defaults = {
+  // Same-origin deployment works without any frontend config file.
+  apiBaseUrl: "",
 };
 
-const config = configs[ACTIVE_ENV];
+// Runtime config can be injected on the instance before the app bundle loads.
+// Priority: prod > stage > dev > local
+const runtimeConfigs = window.__APP_CONFIG__ || {};
 
-if (!config) {
-  throw new Error(`Unsupported ACTIVE_ENV: ${ACTIVE_ENV}`);
-}
+const config = {
+  ...defaults,
+  ...(runtimeConfigs.local || {}),
+  ...(runtimeConfigs.dev || {}),
+  ...(runtimeConfigs.stage || {}),
+  ...(runtimeConfigs.prod || {}),
+};
 
-export { ACTIVE_ENV };
 export default config;
