@@ -1,4 +1,4 @@
-const DEFAULT_BASE_URL = "http://localhost:3001";// const BASE_URL = "  m";
+const DEFAULT_BASE_URL = "http://localhost:3001";
 
 const API_BASE_URL =
   (process.env.REACT_APP_API_BASE_URL || DEFAULT_BASE_URL).replace(/\/$/, "");
@@ -6,6 +6,7 @@ const API_BASE_URL =
 const USER_ROUTER = `${API_BASE_URL}/api/v1/user`;
 const QNA_ROUTER = `${API_BASE_URL}/api/v1/qna`;
 const COMMENT_ROUTER = `${API_BASE_URL}/api/v1/comment`;
+export const TOPICS_ROUTER = `${API_BASE_URL}/api/v1/topics`;
 
 export const SIGNUP_USER = USER_ROUTER + "/signup";
 export const LOGIN_USER = USER_ROUTER + "/login";
