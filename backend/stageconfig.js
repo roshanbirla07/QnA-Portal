@@ -1,29 +1,27 @@
-const requiredInProduction = (name, fallback) => {
-    const value = process.env[name] || fallback;
-
-    if (process.env.NODE_ENV === "production" && !process.env[name]) {
-        throw new Error(`${name} is required in production`);
-    }
-
-    return value;
-};
-
-const nodeEnv = process.env.NODE_ENV || "development";
-
 const config = {
-    jwtSecret: requiredInProduction("JWT_SECRET", "dev-only-secret"),
-    nodeEnv,
-    port: process.env.PORT || 3001,
-    corsOrigins: (process.env.CORS_ORIGINS || "http://localhost:3000")
-        .split(",")
-        .map((origin) => origin.trim().replace(/^(["'])(.*)\1$/, "$2"))
-        .filter(Boolean),
-    allowVercelPreviewOrigins: process.env.ALLOW_VERCEL_PREVIEW_ORIGINS === "true",
-    mongodbUri: requiredInProduction("MONGODB_URI", "mongodb://127.0.0.1:27017"),
-    cookieSecure: process.env.COOKIE_SECURE
-        ? process.env.COOKIE_SECURE === "true"
-        : nodeEnv === "production",
-    cookieSameSite: process.env.COOKIE_SAME_SITE || (nodeEnv === "production" ? "none" : "lax")
+    nodeEnv: "production",
+    port: 3001,
+
+    // Replace these placeholders with actual production values before deployment.
+    jwtSecret: "REPLACE_WITH_PRODUCTION_JWT_SECRET",
+    mongodbUri: "REPLACE_WITH_PRODUCTION_MONGODB_URI",
+
+    // Frontend and backend are served from the same EC2 host.
+    // Replace YOUR_ELASTIC_IP after associating the Elastic IP.
+    corsOrigins: [
+        "http://YOUR_ELASTIC_IP"
+    ],
+
+    allowVercelPreviewOrigins: false,
+
+    // Plain HTTP while accessing the app by Elastic IP.
+    cookieSecure: false,
+    cookieSameSite: "lax",
+
+    // Used by npm run seed:admin
+    adminEmail: "REPLACE_WITH_ADMIN_EMAIL",
+    adminPassword: "REPLACE_WITH_ADMIN_PASSWORD",
+    adminResetPassword: false
 };
 
 export default config;
