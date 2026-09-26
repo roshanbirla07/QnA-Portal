@@ -9,6 +9,7 @@ import answerRouter from "./routes/answer.routes.js";
 import interactionRouter from "./routes/interaction.routes.js";
 import feedRouter from "./routes/feed.routes.js";
 import profileRouter from "./routes/profile.routes.js";
+import topicRouter from "./routes/topic.routes.js";
 import { RESPONSE_MESSAGES } from "./constants/responseMessages.js";
 import config from "./config/variables.js";
 
@@ -35,17 +36,19 @@ app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(cookieParser());
 
-// Legacy endpoints kept during migration.
 app.use("/api/v1/user", userRouter);
+
+// Compatibility routes: these now use the canonical Post model internally.
 app.use("/api/v1/qna", qnaRouter);
 app.use("/api/v1/comment", commentRouter);
 
-// Developer publishing platform APIs.
+// Developer knowledge platform APIs.
 app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/questions", answerRouter);
 app.use("/api/v1/interactions", interactionRouter);
 app.use("/api/v1/feed", feedRouter);
 app.use("/api/v1/profiles", profileRouter);
+app.use("/api/v1/topics", topicRouter);
 
 app.get("/", (req, res) => res.status(200).json({ message: "service is running fine." }));
 app.use("*", (req, res) => res.status(404).json({ statusCode: 404, message: RESPONSE_MESSAGES.PAGE_NOT_FOUND }));

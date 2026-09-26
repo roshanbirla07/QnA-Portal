@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Post from "../schemas/post.schema.js";
 import ApiError from "../utils/ApiError.js";
+import { ensureTopics, refreshTopicPostCounts } from "./topic.service.js";
 
 const normalizeTags = (tags = []) => {
   if (!Array.isArray(tags)) throw new ApiError(400, "Tags must be an array");
@@ -17,7 +18,6 @@ const makeUniqueSlug = async (title, excludedId = null) => {
   const base = slugify(title) || "post";
   let slug = base;
   let suffix = 2;
-
   while (await Post.exists({ slug, ...(excludedId ? { _id: { $ne: excludedId } } : {}) })) {
     slug = `${base}-${suffix++}`;
   }
@@ -42,7 +42,10 @@ const createPost = async ({ user, payload }) => {
   if (!["draft", "published"].includes(status)) throw new ApiError(400, "Invalid initial status");
   if (type === "question" && coverImage) throw new ApiError(400, "Question posts do not support cover images");
 
+  const normalizedTags = normalizeTags(tags);
+  await ensureTopics(normalizedTags);
   const slug = await makeUniqueSlug(title);
+
   const post = await Post.create({
     type,
     title: title.trim(),
@@ -53,20 +56,21 @@ const createPost = async ({ user, payload }) => {
     excerpt: excerpt?.trim() || contentText.trim().slice(0, 240),
     coverImage: type === "article" ? coverImage : undefined,
     author: user.id,
-    tags: normalizeTags(tags),
+    tags: normalizedTags,
     status,
     readingTime: calculateReadingTime(contentText),
     publishedAt: status === "published" ? new Date() : undefined,
   });
+
+  if (status === "published") await refreshTopicPostCounts(normalizedTags);
   return post;
 };
 
 const getPostBySlug = async ({ slug, requesterId }) => {
   const post = await Post.findOne({ slug }).populate("author", "email username displayName avatar bio");
   if (!post || post.status === "deleted") throw new ApiError(404, "Post not found");
-
   const isOwner = requesterId && post.author?._id?.toString() === requesterId;
-  if (!["published"].includes(post.status) && !isOwner) throw new ApiError(404, "Post not found");
+  if (![ "published" ].includes(post.status) && !isOwner) throw new ApiError(404, "Post not found");
   return post;
 };
 
@@ -76,15 +80,24 @@ const updatePost = async ({ postId, user, payload }) => {
   if (!post || post.status === "deleted") throw new ApiError(404, "Post not found");
   ensurePostOwner(post, user);
 
+  const oldTags = [...post.tags];
   const editable = ["title", "subtitle", "content", "contentText", "excerpt", "coverImage"];
   editable.forEach((key) => {
     if (payload[key] !== undefined) post[key] = typeof payload[key] === "string" ? payload[key].trim() : payload[key];
   });
-  if (payload.tags !== undefined) post.tags = normalizeTags(payload.tags);
+
+  if (payload.tags !== undefined) {
+    post.tags = normalizeTags(payload.tags);
+    await ensureTopics(post.tags);
+  }
   if (payload.title) post.slug = await makeUniqueSlug(payload.title, post._id);
   if (payload.contentText !== undefined) post.readingTime = calculateReadingTime(payload.contentText);
   if (post.type === "question") post.coverImage = undefined;
+
   await post.save();
+  if (post.status === "published" && payload.tags !== undefined) {
+    await refreshTopicPostCounts([...oldTags, ...post.tags]);
+  }
   return post;
 };
 
@@ -94,9 +107,12 @@ const publishPost = async ({ postId, user }) => {
   if (!post || post.status === "deleted") throw new ApiError(404, "Post not found");
   ensurePostOwner(post, user);
   if (!post.title?.trim() || !post.contentText?.trim()) throw new ApiError(400, "Post is incomplete");
+
+  await ensureTopics(post.tags);
   post.status = "published";
   post.publishedAt = post.publishedAt || new Date();
   await post.save();
+  await refreshTopicPostCounts(post.tags);
   return post;
 };
 
@@ -105,8 +121,11 @@ const archivePost = async ({ postId, user }) => {
   const post = await Post.findById(postId);
   if (!post) throw new ApiError(404, "Post not found");
   ensurePostOwner(post, user);
+
+  const tags = [...post.tags];
   post.status = "deleted";
   await post.save();
+  await refreshTopicPostCounts(tags);
 };
 
 export {
