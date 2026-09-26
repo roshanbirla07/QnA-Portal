@@ -1,6 +1,7 @@
 import Topic from "../schemas/topic.schema.js";
 import TopicFollow from "../schemas/topicFollow.schema.js";
 import Post from "../schemas/post.schema.js";
+import ReputationEvent from "../schemas/reputation-event.schema.js";
 import ApiError from "../utils/ApiError.js";
 
 const normalizeTopicSlug = (value) => String(value || "")
@@ -61,7 +62,22 @@ const getTopicPage = async ({ slug, sort = "top", type, limit = 20, userId }) =>
     ? Boolean(await TopicFollow.exists({ userId, topicId: topic._id }))
     : false;
 
-  const topContributors = await Post.aggregate([
+  const topContributors = await ReputationEvent.aggregate([
+    { $lookup: { from: "posts", localField: "sourceId", foreignField: "_id", as: "sourcePost" } },
+    { $lookup: { from: "answers", localField: "sourceId", foreignField: "_id", as: "sourceAnswer" } },
+    { $lookup: { from: "posts", localField: "sourceAnswer.questionId", foreignField: "_id", as: "answerPost" } },
+    { $project: { userId: 1, points: 1, tags: { $cond: [{ $eq: ["$sourceType", "post"] }, { $arrayElemAt: ["$sourcePost.tags", 0] }, { $arrayElemAt: ["$answerPost.tags", 0] }] } } },
+    { $unwind: "$tags" },
+    { $match: { tags: normalizedSlug } },
+    { $group: { _id: "$userId", reputation: { $sum: "$points" }, events: { $sum: 1 } } },
+    { $sort: { reputation: -1, events: -1 } },
+    { $limit: 5 },
+    { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "user" } },
+    { $unwind: "$user" },
+    { $project: { _id: 0, userId: "$_id", reputation: 1, events: 1, username: "$user.username", displayName: "$user.displayName", avatar: "$user.avatar" } },
+  ]);
+
+  const contributionStats = await Post.aggregate([
     { $match: { status: "published", tags: normalizedSlug } },
     { $group: { _id: "$author", score: { $sum: "$score" }, posts: { $sum: 1 } } },
     { $sort: { score: -1, posts: -1 } },
@@ -71,7 +87,7 @@ const getTopicPage = async ({ slug, sort = "top", type, limit = 20, userId }) =>
     { $project: { _id: 0, userId: "$_id", score: 1, posts: 1, username: "$user.username", displayName: "$user.displayName", avatar: "$user.avatar" } },
   ]);
 
-  return { topic, isFollowing, posts, topContributors };
+  return { topic, isFollowing, posts, topContributors, contributionStats };
 };
 
 const followTopic = async ({ userId, slug }) => {
