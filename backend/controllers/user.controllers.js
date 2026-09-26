@@ -3,7 +3,7 @@ import User from "../schemas/user.schema.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import config from "../stageconfig.js";
+import config from "../config/variables.js";
 import logger from "../utils/logger.js";
 import { RESPONSE_MESSAGES } from "../constants/responseMessages.js";
 
@@ -96,7 +96,6 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-// Logout Controller
 const logoutUser = asyncHandler(async (req, res) => {
   try {
     res.clearCookie("authToken", {
