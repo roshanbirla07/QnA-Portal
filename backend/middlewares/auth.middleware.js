@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import ApiError from "../utils/ApiError.js";
 import User from "../schemas/user.schema.js";
-import config from "../stageconfig.js";
+import config from "../config/variables.js";
 import logger from "../utils/logger.js";
 import { RESPONSE_MESSAGES } from "../constants/responseMessages.js";
 
