@@ -5,6 +5,10 @@ import Vote from "../schemas/vote.schema.js";
 import Bookmark from "../schemas/bookmark.schema.js";
 import Follow from "../schemas/follow.schema.js";
 import ApiError from "../utils/ApiError.js";
+import {
+  ensureVoteCanAffectReputation,
+  recordVoteReputationEvent,
+} from "./reputation.service.js";
 
 const resolveVoteTarget = async (targetType, targetId) => {
   if (!mongoose.Types.ObjectId.isValid(targetId)) throw new ApiError(400, "Invalid target id");
@@ -17,6 +21,8 @@ const applyVote = async ({ userId, targetType, targetId, value }) => {
   if (![-1, 0, 1].includes(Number(value))) throw new ApiError(400, "Vote value must be -1, 0 or 1");
   const target = await resolveVoteTarget(targetType, targetId);
   if (!target) throw new ApiError(404, "Vote target not found");
+
+  ensureVoteCanAffectReputation({ actorId: userId, targetType, target });
 
   const existing = await Vote.findOne({ userId, targetType, targetId });
   const nextValue = Number(value);
@@ -35,6 +41,14 @@ const applyVote = async ({ userId, targetType, targetId, value }) => {
   if (delta !== 0) {
     target.score += delta;
     await target.save();
+
+    await recordVoteReputationEvent({
+      actorId: userId,
+      targetType,
+      target,
+      previousValue,
+      nextValue,
+    });
   }
 
   return { score: target.score, userVote: nextValue };
