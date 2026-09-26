@@ -2,13 +2,13 @@
 
 ## Completed in repo
 
-- [x] Remove production dependency on hardcoded MongoDB/JWT secrets.
-- [x] Make backend config environment-driven.
+- [x] Keep instance-specific MongoDB/JWT values in ignored backend config files.
+- [x] Select backend config from prod, stage, dev, or local instance files.
 - [x] Support MongoDB SRV URIs with query strings.
 - [x] Add deploy-safe cookie configuration for HTTP dev and HTTPS production.
 - [x] Send bearer auth headers from the frontend so auth works even when secure cookies are unavailable on HTTP dev EC2.
-- [x] Add backend `.env.example`.
-- [x] Add frontend `.env.example`.
+- [x] Add backend config loader for ignored instance files.
+- [x] Add frontend runtime config loader for ignored instance files.
 - [x] Add PM2 ecosystem config for backend process management.
 - [x] Add one-time admin seed script.
 - [x] Add frontend smoke test dependencies and app render test.
@@ -21,8 +21,8 @@
 - [ ] Open security group ports: `22`, `80`, `443`.
 - [ ] Install Node.js LTS, npm, nginx, git, and PM2.
 - [ ] Clone repository to `/var/www/qna-portal`.
-- [ ] Create `backend/.env` from `backend/.env.example`.
-- [ ] Create `frontend/.env` from `frontend/.env.example`.
+- [ ] Create ignored `backend/config/stage_config.js` with MongoDB, JWT, origin, and cookie values.
+- [ ] Create ignored `frontend/public/stage_config.js` with `apiBaseUrl`.
 - [ ] Run `npm ci` at repo root.
 - [ ] Build frontend with `npm run build --prefix frontend`.
 - [ ] Serve frontend build with nginx.
@@ -32,7 +32,7 @@
 - [ ] Create first admin with `npm run seed:admin --prefix backend`.
 - [ ] Attach domain DNS record to EC2 public IP.
 - [ ] Install TLS certificate with Certbot.
-- [ ] Set `COOKIE_SECURE=true`, `COOKIE_SAME_SITE=none`, and exact `CORS_ORIGINS` once HTTPS is active.
+- [ ] Set the cookie options and allowed origins in the active backend config once HTTPS is active.
 - [ ] Run production smoke tests after deployment.
 
 ## Inputs still needed
