@@ -2,6 +2,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import Bookmark from "../schemas/bookmark.schema.js";
 import { applyVote, toggleBookmark, toggleFollow } from "../services/interaction.service.js";
+import { getUserReputationLedger } from "../services/reputation.service.js";
 
 const vote = asyncHandler(async (req, res) => {
   const result = await applyVote({
@@ -47,4 +48,12 @@ const unfollow = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, result, "User unfollowed"));
 });
 
-export { vote, bookmark, unbookmark, listBookmarks, follow, unfollow };
+const reputationLedger = asyncHandler(async (req, res) => {
+  const result = await getUserReputationLedger({
+    userId: req.user.id,
+    limit: req.query.limit,
+  });
+  return res.status(200).json(new ApiResponse(200, result, "Reputation ledger fetched successfully"));
+});
+
+export { vote, bookmark, unbookmark, listBookmarks, follow, unfollow, reputationLedger };

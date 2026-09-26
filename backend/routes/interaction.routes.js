@@ -7,11 +7,13 @@ import {
   listBookmarks,
   follow,
   unfollow,
+  reputationLedger,
 } from "../controllers/interaction.controllers.js";
 
 const router = Router();
 
 router.post("/votes", authMiddleware(), vote);
+router.get("/reputation", authMiddleware(), reputationLedger);
 router.get("/bookmarks", authMiddleware(), listBookmarks);
 router.post("/bookmarks/:postId", authMiddleware(), bookmark);
 router.delete("/bookmarks/:postId", authMiddleware(), unbookmark);
