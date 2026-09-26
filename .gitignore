@@ -74,3 +74,13 @@ Thumbs.db
 # Monorepo specific
 .turbo
 .vercel
+
+# Instance-only configuration
+backend/config/local_config.js
+backend/config/dev_config.js
+backend/config/stage_config.js
+backend/config/prod_config.js
+frontend/src/config/local_config.js
+frontend/src/config/dev_config.js
+frontend/src/config/stage_config.js
+frontend/src/config/prod_config.js
