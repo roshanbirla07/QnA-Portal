@@ -1,5 +1,6 @@
 import Topic from "../schemas/topic.schema.js";
 import TopicFollow from "../schemas/topicFollow.schema.js";
+import TopicReputation from "../schemas/topic-reputation.schema.js";
 import Post from "../schemas/post.schema.js";
 import ApiError from "../utils/ApiError.js";
 
@@ -61,17 +62,26 @@ const getTopicPage = async ({ slug, sort = "top", type, limit = 20, userId }) =>
     ? Boolean(await TopicFollow.exists({ userId, topicId: topic._id }))
     : false;
 
-  const topContributors = await Post.aggregate([
-    { $match: { status: "published", tags: normalizedSlug } },
-    { $group: { _id: "$author", score: { $sum: "$score" }, posts: { $sum: 1 } } },
-    { $sort: { score: -1, posts: -1 } },
-    { $limit: 5 },
-    { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "user" } },
-    { $unwind: "$user" },
-    { $project: { _id: 0, userId: "$_id", score: 1, posts: 1, username: "$user.username", displayName: "$user.displayName", avatar: "$user.avatar" } },
-  ]);
+  const topContributors = await TopicReputation.find({ topicId: topic._id, reputation: { $ne: 0 } })
+    .populate("userId", "username displayName avatar headline")
+    .sort({ reputation: -1, eventCount: -1, updatedAt: 1 })
+    .limit(10)
+    .lean();
 
-  return { topic, isFollowing, posts, topContributors };
+  return {
+    topic,
+    isFollowing,
+    posts,
+    topContributors: topContributors.map((item) => ({
+      userId: item.userId?._id,
+      username: item.userId?.username,
+      displayName: item.userId?.displayName,
+      avatar: item.userId?.avatar,
+      headline: item.userId?.headline,
+      reputation: item.reputation,
+      events: item.eventCount,
+    })),
+  };
 };
 
 const followTopic = async ({ userId, slug }) => {
