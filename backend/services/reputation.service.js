@@ -1,4 +1,8 @@
+import Answer from "../schemas/answer.schema.js";
+import Post from "../schemas/post.schema.js";
 import ReputationEvent from "../schemas/reputation-event.schema.js";
+import Topic from "../schemas/topic.schema.js";
+import TopicReputation from "../schemas/topic-reputation.schema.js";
 import User from "../schemas/user.schema.js";
 import ApiError from "../utils/ApiError.js";
 
@@ -14,6 +18,39 @@ const ensureVoteCanAffectReputation = ({ actorId, targetType, target }) => {
     throw new ApiError(400, "You cannot vote on your own content");
   }
   return ownerId;
+};
+
+const getSourceTopicSlugs = async ({ targetType, target }) => {
+  if (targetType === "post") {
+    const post = target.tags ? target : await Post.findById(target._id).select("tags");
+    return post?.tags || [];
+  }
+
+  const answer = target.questionId
+    ? target
+    : await Answer.findById(target._id).select("questionId");
+  if (!answer?.questionId) return [];
+
+  const question = await Post.findById(answer.questionId).select("tags");
+  return question?.tags || [];
+};
+
+const applyTopicReputationDelta = async ({ userId, targetType, target, points }) => {
+  const slugs = [...new Set((await getSourceTopicSlugs({ targetType, target }))
+    .map((value) => String(value || "").trim().toLowerCase())
+    .filter(Boolean))];
+
+  if (!slugs.length || points === 0) return;
+
+  const topics = await Topic.find({ slug: { $in: slugs } }).select("_id slug");
+  await Promise.all(topics.map((topic) => TopicReputation.updateOne(
+    { userId, topicId: topic._id },
+    {
+      $inc: { reputation: points, eventCount: 1 },
+      $setOnInsert: { userId, topicId: topic._id },
+    },
+    { upsert: true }
+  )));
 };
 
 const recordVoteReputationEvent = async ({
@@ -39,10 +76,10 @@ const recordVoteReputationEvent = async ({
     points,
   });
 
-  await User.updateOne(
-    { _id: userId },
-    { $inc: { reputation: points } }
-  );
+  await Promise.all([
+    User.updateOne({ _id: userId }, { $inc: { reputation: points } }),
+    applyTopicReputationDelta({ userId, targetType, target, points }),
+  ]);
 
   return event;
 };
@@ -50,11 +87,15 @@ const recordVoteReputationEvent = async ({
 const getUserReputationLedger = async ({ userId, limit = 50 }) => {
   const boundedLimit = Math.min(Math.max(Number(limit) || 20, 1), 100);
 
-  const [user, events] = await Promise.all([
+  const [user, events, topicReputation] = await Promise.all([
     User.findById(userId).select("reputation"),
     ReputationEvent.find({ userId })
       .sort({ createdAt: -1 })
       .limit(boundedLimit)
+      .lean(),
+    TopicReputation.find({ userId })
+      .populate("topicId", "name slug")
+      .sort({ reputation: -1, eventCount: -1 })
       .lean(),
   ]);
 
@@ -62,6 +103,7 @@ const getUserReputationLedger = async ({ userId, limit = 50 }) => {
 
   return {
     reputation: user.reputation || 0,
+    topicReputation,
     events,
   };
 };
