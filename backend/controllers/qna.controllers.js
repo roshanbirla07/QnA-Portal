@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import logger from "../utils/logger.js";
 import { RESPONSE_MESSAGES } from "../constants/responseMessages.js";
 import { createPost, updatePost, archivePost } from "../services/post.service.js";
+import { recordUniquePostView } from "../services/post-view.service.js";
 
 const toLegacyStatus = (status) => {
   if (status === "published") return "approved";
@@ -158,13 +159,18 @@ const incrementView = asyncHandler(async (req, res) => {
   try {
     const { questionId } = req.params;
     ensureQuestionId(questionId);
-    const post = await Post.findOneAndUpdate(
-      { _id: questionId, type: "question", status: { $ne: "deleted" } },
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-    if (!post) throw new ApiError(404, RESPONSE_MESSAGES.QUESTION_NOT_FOUND);
-    return res.status(200).json(new ApiResponse(200, toLegacyQuestion(post), RESPONSE_MESSAGES.VIEW_INCREMENTED));
+
+    const { post, recorded } = await recordUniquePostView({
+      postId: questionId,
+      viewerKey: `user:${req.user.id}`,
+      type: "question",
+    });
+
+    return res.status(200).json(new ApiResponse(
+      200,
+      { ...toLegacyQuestion(post), viewRecorded: recorded },
+      recorded ? RESPONSE_MESSAGES.VIEW_INCREMENTED : "View already recorded"
+    ));
   } catch (error) {
     logger.error("Failed to increment view", { error: error.message, questionId: req.params?.questionId });
     const statusCode = error instanceof ApiError ? error.statusCode : 500;

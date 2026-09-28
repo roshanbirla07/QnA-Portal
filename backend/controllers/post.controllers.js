@@ -9,6 +9,7 @@ import {
   publishPost,
   archivePost,
 } from "../services/post.service.js";
+import { resolveViewerKey, recordUniquePostView } from "../services/post-view.service.js";
 
 const create = asyncHandler(async (req, res) => {
   const post = await createPost({ user: req.user, payload: req.body });
@@ -49,13 +50,17 @@ const listMine = asyncHandler(async (req, res) => {
 });
 
 const incrementView = asyncHandler(async (req, res) => {
-  const post = await Post.findOneAndUpdate(
-    { slug: req.params.slug, status: "published" },
-    { $inc: { views: 1 } },
-    { new: true }
-  ).select("slug views");
+  const post = await Post.findOne({ slug: req.params.slug, status: "published" }).select("_id slug views");
   if (!post) throw new ApiError(404, "Post not found");
-  return res.status(200).json(new ApiResponse(200, post, "View recorded"));
+
+  const viewerKey = resolveViewerKey(req, res);
+  const result = await recordUniquePostView({ postId: post._id, viewerKey });
+
+  return res.status(200).json(new ApiResponse(200, {
+    slug: result.post.slug,
+    views: result.post.views,
+    recorded: result.recorded,
+  }, result.recorded ? "View recorded" : "View already recorded"));
 });
 
 export { create, getBySlug, update, publish, remove, listMine, incrementView };

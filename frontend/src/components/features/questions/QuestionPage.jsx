@@ -66,8 +66,11 @@ const QuestionPage = () => {
   useEffect(() => {
       if(currentQuestion?._id) {
           incrementView("PATCH", `${INCREMENT_VIEW}/${currentQuestion._id}`)
-            .then(() => setViews(v => v + 1))
-            .catch((err) => toast.error(err.message || "Failed to increment view"));
+            .then((response) => {
+              const serverViews = response?.data?.views;
+              if (typeof serverViews === "number") setViews(serverViews);
+            })
+            .catch((err) => toast.error(err.message || "Failed to record view"));
       }
   }, [currentQuestion?._id]);
 
