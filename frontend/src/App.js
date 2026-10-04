@@ -9,6 +9,7 @@ import CompanyReviewsPage from "./components/features/companies/CompanyReviewsPa
 import SalaryInsightsPage from "./components/features/companies/SalaryInsightsPage";
 import CompaniesPage from "./components/features/companies/CompaniesPage";
 import ReferralsPage from "./components/features/jobs/ReferralsPage";
+import CommunitiesPage from "./components/features/community/CommunitiesPage";
 import ConnectionsPage from "./components/features/community/ConnectionsPage";
 import JobBoard from "./components/features/jobs/JobBoard";
 import { PrivateRoute, OpenRoute } from "./components/common";
@@ -30,6 +31,8 @@ function App() {
         <Route path="/companies" element={<CompaniesPage />} />
         <Route path="/companies/:slug" element={<CompaniesPage />} />
         <Route path="/referrals" element={<ReferralsPage />} />
+        <Route path="/communities" element={<CommunitiesPage />} />
+        <Route path="/communities/:slug" element={<CommunitiesPage />} />
         <Route path="/connections" element={<PrivateRoute><ConnectionsPage /></PrivateRoute>} />
         <Route path="/jobs/share" element={<PrivateRoute><ShareJob /></PrivateRoute>} />
         <Route path="/jobs" element={<JobBoard />} />
