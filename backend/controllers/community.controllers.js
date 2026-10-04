@@ -8,6 +8,7 @@ import CommunityJob from "../schemas/community-job.schema.js";
 import Topic from "../schemas/topic.schema.js";
 import Post from "../schemas/post.schema.js";
 import Job from "../schemas/job.schema.js";
+import Project from "../schemas/project.schema.js";
 import { discoverExperts } from "../services/expert.service.js";
 
 const slugify = (value) => String(value || "").trim().toLowerCase()
@@ -45,7 +46,7 @@ const detail = asyncHandler(async (req, res) => {
   const item = await Community.findOne({ slug: req.params.slug });
   if (!item) throw new ApiError(404, "Community not found");
   const filter = { status: "published", tags: { $in: item.topics } };
-  const [questions, articles, jobs, experts] = await Promise.all([
+  const [questions, articles, jobs, experts, projects] = await Promise.all([
     Post.find({ ...filter, type: "question" }).sort({ createdAt: -1 }).limit(12)
       .select("title slug excerpt tags score answerCount createdAt"),
     Post.find({ ...filter, type: "article" }).sort({ createdAt: -1 }).limit(12)
@@ -53,9 +54,11 @@ const detail = asyncHandler(async (req, res) => {
     CommunityJob.find({ communityId: item._id }).sort({ createdAt: -1 }).limit(12)
       .populate({ path: "jobId", match: { status: "published" }, select: "title company location sourceUrl" }),
     discoverExperts({ topicSlug: item.topics[0], limit: 8 }),
+    Project.find({ communityId: item._id }).sort({ createdAt: -1 }).limit(12)
+      .select("title description tags status createdAt"),
   ]);
   const result = { ...item.toObject(), questions, articles,
-    jobs: jobs.map((row) => row.jobId).filter(Boolean), people: experts.experts };
+    jobs: jobs.map((row) => row.jobId).filter(Boolean), people: experts.experts, projects };
   return res.status(200).json(new ApiResponse(200, result, "Community fetched"));
 });
 
