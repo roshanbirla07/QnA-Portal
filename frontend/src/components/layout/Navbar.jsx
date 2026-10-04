@@ -60,6 +60,7 @@ const Navbar = () => {
 
             <div className="hidden md:flex items-center gap-2">
               <NavLink to="/" icon={FiHome}>Home</NavLink>
+              <NavLink to="/reviews" icon={FiList}>Reviews</NavLink>
 
               {isAuthenticated ? (
                 <>
