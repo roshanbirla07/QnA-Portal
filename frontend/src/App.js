@@ -16,6 +16,7 @@ import ProjectsPage from "./components/features/community/ProjectsPage";
 import RankingsPage from "./components/features/community/RankingsPage";
 import SearchPage from "./components/features/search/SearchPage";
 import SemanticSearchPage from "./components/features/search/SemanticSearchPage";
+import KnowledgeAssistantPage from "./components/features/search/KnowledgeAssistantPage";
 import PublicPostPage from "./components/features/search/PublicPostPage";
 import ConnectionsPage from "./components/features/community/ConnectionsPage";
 import JobBoard from "./components/features/jobs/JobBoard";
@@ -47,6 +48,7 @@ function App() {
         <Route path="/rankings" element={<RankingsPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/semantic-search" element={<SemanticSearchPage />} />
+        <Route path="/assistant" element={<KnowledgeAssistantPage />} />
         <Route path="/posts/:slug" element={<PublicPostPage />} />
         <Route path="/connections" element={<PrivateRoute><ConnectionsPage /></PrivateRoute>} />
         <Route path="/jobs/share" element={<PrivateRoute><ShareJob /></PrivateRoute>} />
