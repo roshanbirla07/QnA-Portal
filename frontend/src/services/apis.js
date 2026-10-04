@@ -16,6 +16,8 @@ export const REFERRALS_ROUTER = `${API_BASE_URL}/api/v1/referrals`;
 export const COMMUNITIES_ROUTER = `${API_BASE_URL}/api/v1/communities`;
 export const PROJECTS_ROUTER = `${API_BASE_URL}/api/v1/projects`;
 export const RANKINGS_ROUTER = `${API_BASE_URL}/api/v1/rankings`;
+export const SEARCH_ROUTER = `${API_BASE_URL}/api/v1/search`;
+export const POSTS_ROUTER = `${API_BASE_URL}/api/v1/posts`;
 export const CONNECTIONS_ROUTER = `${API_BASE_URL}/api/v1/connections`;
 
 export const SIGNUP_USER = USER_ROUTER + "/signup";

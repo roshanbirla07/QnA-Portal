@@ -4,7 +4,7 @@ import { apiConnector } from "../../services/apiConnector";
 import { TOPICS_ROUTER } from "../../services/apis";
 
 const sections = [
-  { title: "Discover", links: [["Home", "/"], ["Questions", "/"], ["Topics", "/communities"], ["Experts", "/experts"]] },
+  { title: "Discover", links: [["Home", "/"], ["Search", "/search"], ["Topics", "/communities"], ["Experts", "/experts"]] },
   { title: "Career", links: [["Jobs", "/jobs"], ["Companies", "/companies"], ["Salaries", "/salaries"], ["Interviews", "/interviews"], ["Reviews", "/reviews"]] },
   { title: "Community", links: [["Communities", "/communities"], ["Projects", "/projects"], ["Rankings", "/rankings"], ["Connections", "/connections"], ["Referrals", "/referrals"]] },
 ];

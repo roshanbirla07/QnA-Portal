@@ -27,7 +27,7 @@ const Navbar = ({ onMenuToggle }) => {
       <div className="mx-auto flex h-full max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:px-8">
         <button type="button" className="icon-button lg:hidden" aria-label="Open menu" onClick={onMenuToggle}><FiMenu /></button>
         <Link to="/" className="shrink-0 text-xl font-bold tracking-tight text-text-primary">QnA<span className="text-primary-blue"> Portal</span></Link>
-        <form onSubmit={(event) => { event.preventDefault(); navigate(search.trim() ? `/?search=${encodeURIComponent(search.trim())}` : "/"); }}
+        <form onSubmit={(event) => { event.preventDefault(); navigate(search.trim() ? `/search?q=${encodeURIComponent(search.trim())}` : "/search"); }}
           className="relative ml-auto hidden w-full max-w-md md:block">
           <FiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input type="search" aria-label="Search questions" placeholder="Search questions, topics and jobs" className="input-field w-full pl-10 py-2"
