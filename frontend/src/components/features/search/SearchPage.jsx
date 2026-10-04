@@ -37,6 +37,7 @@ const SearchPage = () => {
   const updatePage = (next) => setParams({ ...Object.fromEntries(params.entries()), page: String(next) });
   return <main className="max-w-5xl mx-auto px-4 py-10 text-text-primary space-y-6">
     <header><h1 className="text-3xl font-bold">Search</h1><p className="text-text-secondary mt-2">Explore public questions, articles and community jobs.</p></header>
+    <Link to="/semantic-search" className="text-primary-blue">Explore semantic search →</Link>
     <form onSubmit={(event) => { event.preventDefault(); setParams(Object.fromEntries(Object.entries(form).filter(([, value]) => value.trim()))); }}
       className="grid gap-3 md:grid-cols-5">
       <input aria-label="Search keywords" value={form.q} maxLength={120} onChange={(event) => setForm({ ...form, q: event.target.value })} className="input-field md:col-span-2" placeholder="Search keywords" />

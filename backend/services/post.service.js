@@ -3,6 +3,7 @@ import Post from "../schemas/post.schema.js";
 import ApiError from "../utils/ApiError.js";
 import { ensureTopics, refreshTopicPostCounts } from "./topic.service.js";
 import { syncPublicPost } from "./search-index.service.js";
+import { syncVectorPost } from "./vector-search.service.js";
 
 const normalizeTags = (tags = []) => {
   if (!Array.isArray(tags)) throw new ApiError(400, "Tags must be an array");
@@ -66,6 +67,7 @@ const createPost = async ({ user, payload }) => {
   if (status === "published") {
     await refreshTopicPostCounts(normalizedTags);
     void syncPublicPost(post);
+  void syncVectorPost(post);
   }
   return post;
 };
@@ -103,6 +105,7 @@ const updatePost = async ({ postId, user, payload }) => {
     await refreshTopicPostCounts([...oldTags, ...post.tags]);
   }
   if (post.status === "published") void syncPublicPost(post);
+  void syncVectorPost(post);
   return post;
 };
 
@@ -119,6 +122,7 @@ const publishPost = async ({ postId, user }) => {
   await post.save();
   await refreshTopicPostCounts(post.tags);
   void syncPublicPost(post);
+  void syncVectorPost(post);
   return post;
 };
 
@@ -133,6 +137,7 @@ const archivePost = async ({ postId, user }) => {
   await post.save();
   await refreshTopicPostCounts(tags);
   void syncPublicPost(post);
+  void syncVectorPost(post);
 };
 
 export {

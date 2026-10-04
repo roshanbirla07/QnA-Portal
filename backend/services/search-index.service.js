@@ -71,4 +71,4 @@ const search = ({ q, kind, tag, company, from, size, autocomplete }) => {
     sort: q ? [{ _score: "desc" }, { createdAt: "desc" }] : [{ createdAt: "desc" }] });
 };
 
-export { configured, createIndex, removeIndex, indexPost, indexJob, syncPublicPost, syncPublicJob, search };
+export { request, configured, createIndex, removeIndex, indexPost, indexJob, syncPublicPost, syncPublicJob, search };
