@@ -10,6 +10,7 @@ import interactionRouter from "./routes/interaction.routes.js";
 import feedRouter from "./routes/feed.routes.js";
 import profileRouter from "./routes/profile.routes.js";
 import topicRouter from "./routes/topic.routes.js";
+import expertRouter from "./routes/expert.routes.js";
 import jobRouter from "./routes/job.routes.js";
 import { RESPONSE_MESSAGES } from "./constants/responseMessages.js";
 import config from "./config/variables.js";
@@ -50,6 +51,7 @@ app.use("/api/v1/interactions", interactionRouter);
 app.use("/api/v1/feed", feedRouter);
 app.use("/api/v1/profiles", profileRouter);
 app.use("/api/v1/topics", topicRouter);
+app.use("/api/v1/experts", expertRouter);
 app.use("/api/v1/jobs", jobRouter);
 
 app.get("/", (req, res) => res.status(200).json({ message: "service is running fine." }));
