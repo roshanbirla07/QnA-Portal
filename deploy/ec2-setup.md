@@ -60,3 +60,17 @@ After DNS points to EC2:
 sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d your-domain.com
 ```
+
+## Periodic job source checks
+
+After the application is configured and running, install the six-hour timer on the EC2 host. Adjust the service's `User`, `WorkingDirectory`, and npm path if your deployment differs from the example above.
+
+```bash
+sudo cp deploy/qna-stale-jobs.{service,timer} /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now qna-stale-jobs.timer
+sudo systemctl start qna-stale-jobs.service
+sudo journalctl -u qna-stale-jobs.service -n 50 --no-pager
+```
+
+Each run checks at most 100 published listings not checked in the previous 24 hours. A successful title preview marks a listing verified. Two consecutive failures flag it as possibly closed for review; a check never automatically closes or removes it. On sites that block automated requests, the flag may need manual review.

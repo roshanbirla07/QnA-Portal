@@ -33,6 +33,7 @@ const answerSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 answerSchema.index({ questionId: 1, accepted: -1, score: -1, createdAt: 1 });
+answerSchema.index({ status: 1, accepted: 1 });
 
 const Answer = mongoose.model("Answer", answerSchema);
 export default Answer;
