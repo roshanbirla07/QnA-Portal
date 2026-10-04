@@ -2,6 +2,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import Job from "../schemas/job.schema.js";
+import mongoose from "mongoose";
 import { normalizeJobUrl, previewJob } from "../services/job-preview.service.js";
 
 const preview = asyncHandler(async (req, res) => {
@@ -26,4 +27,32 @@ const publish = asyncHandler(async (req, res) => {
   }
 });
 
-export { preview, publish };
+const list = asyncHandler(async (req, res) => {
+  const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 20, 1), 50);
+  const page = Math.min(Math.max(Number.parseInt(req.query.page, 10) || 1, 1), 50);
+  const filter = { status: "published" };
+  const q = String(req.query.q || "").trim().slice(0, 80);
+  if (q) filter.$text = { $search: q };
+  for (const field of ["company", "location"]) {
+    const value = String(req.query[field] || "").trim().slice(0, 80).replace(/[^a-z0-9 -]/gi, "");
+    if (value) filter[field] = { $regex: value, $options: "i" };
+  }
+  const [items, total] = await Promise.all([
+    Job.find(filter).sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit)
+      .select("title company location description sourceUrl submittedBy createdAt status"),
+    Job.countDocuments(filter),
+  ]);
+  return res.status(200).json(new ApiResponse(200, {
+    items, total, page, limit, hasMore: page < 50 && page * limit < total,
+  }, "Jobs fetched successfully"));
+});
+
+const getById = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) throw new ApiError(400, "Invalid job id");
+  const job = await Job.findOne({ _id: req.params.id, status: "published" })
+    .populate("submittedBy", "username displayName");
+  if (!job) throw new ApiError(404, "Job not found");
+  return res.status(200).json(new ApiResponse(200, job, "Job fetched successfully"));
+});
+
+export { preview, publish, list, getById };
