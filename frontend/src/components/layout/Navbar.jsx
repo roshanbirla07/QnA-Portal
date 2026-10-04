@@ -1,183 +1,54 @@
-import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FiMenu, FiSearch, FiPlus, FiSun, FiMoon, FiLogOut } from "react-icons/fi";
 import { LOGOUT_USER } from "../../services/apis";
-import { FiHome, FiList, FiUser, FiLogOut, FiMenu, FiX, FiPlus, FiLogIn, FiBriefcase } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
-import QuestionForm from "../features/questions/QuestionForm";
 import { useAuth } from "../../contexts/AuthContext";
 import { getAuthHeaders } from "../../utils/request";
+import QuestionForm from "../features/questions/QuestionForm";
 
-const Navbar = () => {
+const Navbar = ({ onMenuToggle }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { token, logoutUser: clearAuth } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   const [newPostPopup, setNewPostPopup] = useState(false);
-
-  const isAuthenticated = Boolean(token);
-
-  const logoutUser = async () => {
-    try {
-      await fetch(LOGOUT_USER, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        credentials: "include",
-      });
-    } catch (err) {
-      console.log(err);
-    } finally {
-      clearAuth();
-      navigate("/signup");
-    }
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+  const logout = async () => {
+    try { await fetch(LOGOUT_USER, { method: "POST", headers: getAuthHeaders(), credentials: "include" }); }
+    catch (error) { /* Local credentials must still be cleared if the server is unavailable. */ }
+    finally { clearAuth(); navigate("/login"); }
   };
 
-  const NavLink = ({ to, icon: Icon, children }) => {
-    const isActive = location.pathname === to;
-    return (
-      <Link
-        to={to}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-          isActive
-            ? "bg-primary-purple/20 text-primary-purple font-medium"
-            : "text-text-secondary hover:text-text-primary hover:bg-white/5"
-        }`}
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        <Icon className="text-lg" />
-        <span>{children}</span>
-      </Link>
-    );
-  };
-
-  return (
-    <>
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-bg-primary/80 backdrop-blur-lg border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-primary-blue to-accent-pink bg-clip-text text-transparent">
-              QnA Portal
-            </Link>
-
-            <div className="hidden md:flex items-center gap-2">
-              <NavLink to="/" icon={FiHome}>Home</NavLink>
-              <NavLink to="/experts" icon={FiUser}>Experts</NavLink>
-              <NavLink to="/interviews" icon={FiList}>Interviews</NavLink>
-              <NavLink to="/reviews" icon={FiList}>Reviews</NavLink>
-              <NavLink to="/salaries" icon={FiList}>Salaries</NavLink>
-              <NavLink to="/companies" icon={FiBriefcase}>Companies</NavLink>
-              <NavLink to="/communities" icon={FiUser}>Communities</NavLink>
-              <NavLink to="/projects" icon={FiList}>Projects</NavLink>
-              <NavLink to="/rankings" icon={FiList}>Rankings</NavLink>
-              <NavLink to="/search" icon={FiList}>Search</NavLink>
-              <NavLink to="/jobs" icon={FiBriefcase}>Jobs</NavLink>
-
-              {isAuthenticated ? (
-                <>
-                  <NavLink to="/myposts" icon={FiList}>My Questions</NavLink>
-                  <NavLink to="/pendings" icon={FiUser}>Pending</NavLink>
-                  <NavLink to="/connections" icon={FiUser}>Connections</NavLink>
-                  <NavLink to="/referrals" icon={FiUser}>Referrals</NavLink>
-                  <NavLink to="/jobs/share" icon={FiBriefcase}>Share Job</NavLink>
-
-                  <button
-                    onClick={() => setNewPostPopup(true)}
-                    className="ml-4 btn-primary flex items-center gap-2"
-                  >
-                    <FiPlus /> Ask Question
-                  </button>
-
-                  <button
-                    onClick={logoutUser}
-                    className="ml-2 p-2 text-text-muted hover:text-red-500 transition-colors"
-                    title="Logout"
-                  >
-                    <FiLogOut className="text-xl" />
-                  </button>
-                </>
-              ) : (
-                <Link to="/login" className="ml-2 btn-primary flex items-center gap-2">
-                  <FiLogIn /> Login
-                </Link>
-              )}
-            </div>
-
-            <div className="md:hidden">
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="text-text-primary p-2"
-              >
-                {mobileMenuOpen ? <FiX className="text-2xl" /> : <FiMenu className="text-2xl" />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-bg-secondary border-b border-white/10 overflow-hidden"
-            >
-              <div className="px-4 pt-2 pb-6 space-y-2">
-                <NavLink to="/" icon={FiHome}>Home</NavLink>
-                {isAuthenticated ? (
-                  <>
-                    <NavLink to="/myposts" icon={FiList}>My Questions</NavLink>
-                    <NavLink to="/pendings" icon={FiUser}>Pending</NavLink>
-                    <button
-                      onClick={() => {
-                        setNewPostPopup(true);
-                        setMobileMenuOpen(false);
-                      }}
-                      className="w-full mt-4 btn-primary flex justify-center items-center gap-2"
-                    >
-                      <FiPlus /> Ask Question
-                    </button>
-                    <button
-                      onClick={logoutUser}
-                      className="w-full mt-2 flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-white/5 rounded-lg"
-                    >
-                      <FiLogOut /> Logout
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 btn-primary"
-                  >
-                    <FiLogIn /> Login
-                  </Link>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
-
-      <div className="h-16" />
-
-      {isAuthenticated && (
-        <div className="md:hidden fixed bottom-6 right-6 z-50">
-          <button
-            onClick={() => setNewPostPopup(true)}
-            className="w-14 h-14 rounded-full bg-gradient-to-r from-primary-blue to-primary-purple text-white shadow-lg flex items-center justify-center text-2xl"
-          >
-            <FiPlus />
+  return <>
+    <header className="sticky top-0 z-50 h-16 border-b bg-bg-card backdrop-blur-md" style={{ borderColor: "var(--line)" }}>
+      <div className="mx-auto flex h-full max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <button type="button" className="icon-button lg:hidden" aria-label="Open menu" onClick={onMenuToggle}><FiMenu /></button>
+        <Link to="/" className="shrink-0 text-xl font-bold tracking-tight text-text-primary">QnA<span className="text-primary-blue"> Portal</span></Link>
+        <form onSubmit={(event) => { event.preventDefault(); navigate(search.trim() ? `/search?q=${encodeURIComponent(search.trim())}` : "/search"); }}
+          className="relative ml-auto hidden w-full max-w-md md:block">
+          <FiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <input type="search" aria-label="Search questions" placeholder="Search questions, topics and jobs" className="input-field w-full pl-10 py-2"
+            value={search} onChange={(event) => setSearch(event.target.value)} />
+        </form>
+        <div className="ml-auto flex items-center gap-2 md:ml-2">
+          <button type="button" className="icon-button" aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
+            {theme === "light" ? <FiMoon /> : <FiSun />}
           </button>
+          {token ? <>
+            <button type="button" className="btn-primary hidden items-center gap-2 sm:inline-flex" onClick={() => setNewPostPopup(true)}><FiPlus /> Ask</button>
+            <button type="button" className="icon-button" aria-label="Log out" onClick={logout}><FiLogOut /></button>
+          </> : <Link className="btn-primary" to="/login">Sign in</Link>}
         </div>
-      )}
-
-      {isAuthenticated && newPostPopup && (
-        <QuestionForm
-          setNewPostPopup={setNewPostPopup}
-          newPostPopup={newPostPopup}
-        />
-      )}
-    </>
-  );
+      </div>
+    </header>
+    {token && <button type="button" aria-label="Ask a question" onClick={() => setNewPostPopup(true)}
+      className="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary-blue text-white shadow-lg sm:hidden"><FiPlus /></button>}
+    {token && newPostPopup && <QuestionForm setNewPostPopup={setNewPostPopup} newPostPopup={newPostPopup} />}
+  </>;
 };
 
 export default Navbar;
