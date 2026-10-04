@@ -63,6 +63,7 @@ const Navbar = () => {
               <NavLink to="/experts" icon={FiUser}>Experts</NavLink>
               <NavLink to="/interviews" icon={FiList}>Interviews</NavLink>
               <NavLink to="/reviews" icon={FiList}>Reviews</NavLink>
+              <NavLink to="/salaries" icon={FiList}>Salaries</NavLink>
               <NavLink to="/jobs" icon={FiBriefcase}>Jobs</NavLink>
 
               {isAuthenticated ? (
