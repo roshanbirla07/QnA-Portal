@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { apiConnector } from "../../../services/apiConnector";
 import { JOBS_ROUTER } from "../../../services/apis";
+import JobCommunity from "./JobCommunity";
 
 const JobBoard = () => {
   const { jobId } = useParams();
@@ -77,7 +78,7 @@ const JobBoard = () => {
         <>
           <Link to="/jobs" className="text-primary-blue hover:underline">← All jobs</Link>
           {loading ? <p className="mt-6">Loading job…</p> : error ? <p role="alert" className="mt-6 text-red-400">{error}</p> :
-            detail && <div className="mt-6">{card(detail)}</div>}
+            detail && <div className="mt-6">{card(detail)}<JobCommunity jobId={detail._id} /></div>}
         </>
       ) : (
         <>
