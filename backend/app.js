@@ -16,6 +16,7 @@ import companyReviewRouter from "./routes/company-review.routes.js";
 import salaryRouter from "./routes/salary.routes.js";
 import companyRouter from "./routes/company.routes.js";
 import referralRouter from "./routes/referral.routes.js";
+import communityRouter from "./routes/community.routes.js";
 import connectionRouter from "./routes/connection.routes.js";
 import jobRouter from "./routes/job.routes.js";
 import { RESPONSE_MESSAGES } from "./constants/responseMessages.js";
@@ -63,6 +64,7 @@ app.use("/api/v1/company-reviews", companyReviewRouter);
 app.use("/api/v1/salaries", salaryRouter);
 app.use("/api/v1/companies", companyRouter);
 app.use("/api/v1/referrals", referralRouter);
+app.use("/api/v1/communities", communityRouter);
 app.use("/api/v1/connections", connectionRouter);
 app.use("/api/v1/jobs", jobRouter);
 
