@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { LOGOUT_USER } from "../../services/apis";
-import { FiHome, FiList, FiUser, FiLogOut, FiMenu, FiX, FiPlus, FiLogIn } from "react-icons/fi";
+import { FiHome, FiList, FiUser, FiLogOut, FiMenu, FiX, FiPlus, FiLogIn, FiBriefcase } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import QuestionForm from "../features/questions/QuestionForm";
 import { useAuth } from "../../contexts/AuthContext";
@@ -65,6 +65,7 @@ const Navbar = () => {
                 <>
                   <NavLink to="/myposts" icon={FiList}>My Questions</NavLink>
                   <NavLink to="/pendings" icon={FiUser}>Pending</NavLink>
+                  <NavLink to="/jobs/share" icon={FiBriefcase}>Share Job</NavLink>
 
                   <button
                     onClick={() => setNewPostPopup(true)}
