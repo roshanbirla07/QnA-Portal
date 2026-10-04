@@ -12,6 +12,7 @@ export const INTERVIEWS_ROUTER = `${API_BASE_URL}/api/v1/interviews`;
 export const COMPANY_REVIEWS_ROUTER = `${API_BASE_URL}/api/v1/company-reviews`;
 export const SALARIES_ROUTER = `${API_BASE_URL}/api/v1/salaries`;
 export const COMPANIES_ROUTER = `${API_BASE_URL}/api/v1/companies`;
+export const REFERRALS_ROUTER = `${API_BASE_URL}/api/v1/referrals`;
 export const CONNECTIONS_ROUTER = `${API_BASE_URL}/api/v1/connections`;
 
 export const SIGNUP_USER = USER_ROUTER + "/signup";
