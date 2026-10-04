@@ -12,6 +12,8 @@ import ReferralsPage from "./components/features/jobs/ReferralsPage";
 import CommunitiesPage from "./components/features/community/CommunitiesPage";
 import ProjectsPage from "./components/features/community/ProjectsPage";
 import RankingsPage from "./components/features/community/RankingsPage";
+import SearchPage from "./components/features/search/SearchPage";
+import PublicPostPage from "./components/features/search/PublicPostPage";
 import ConnectionsPage from "./components/features/community/ConnectionsPage";
 import JobBoard from "./components/features/jobs/JobBoard";
 import { PrivateRoute, OpenRoute } from "./components/common";
@@ -38,6 +40,8 @@ function App() {
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/:id" element={<ProjectsPage />} />
         <Route path="/rankings" element={<RankingsPage />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/posts/:slug" element={<PublicPostPage />} />
         <Route path="/connections" element={<PrivateRoute><ConnectionsPage /></PrivateRoute>} />
         <Route path="/jobs/share" element={<PrivateRoute><ShareJob /></PrivateRoute>} />
         <Route path="/jobs" element={<JobBoard />} />

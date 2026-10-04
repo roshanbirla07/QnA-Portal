@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Post from "../schemas/post.schema.js";
 import ApiError from "../utils/ApiError.js";
 import { ensureTopics, refreshTopicPostCounts } from "./topic.service.js";
+import { syncPublicPost } from "./search-index.service.js";
 
 const normalizeTags = (tags = []) => {
   if (!Array.isArray(tags)) throw new ApiError(400, "Tags must be an array");
@@ -62,12 +63,15 @@ const createPost = async ({ user, payload }) => {
     publishedAt: status === "published" ? new Date() : undefined,
   });
 
-  if (status === "published") await refreshTopicPostCounts(normalizedTags);
+  if (status === "published") {
+    await refreshTopicPostCounts(normalizedTags);
+    void syncPublicPost(post);
+  }
   return post;
 };
 
 const getPostBySlug = async ({ slug, requesterId }) => {
-  const post = await Post.findOne({ slug }).populate("author", "email username displayName avatar bio");
+  const post = await Post.findOne({ slug }).populate("author", "username displayName avatar bio");
   if (!post || post.status === "deleted") throw new ApiError(404, "Post not found");
   const isOwner = requesterId && post.author?._id?.toString() === requesterId;
   if (![ "published" ].includes(post.status) && !isOwner) throw new ApiError(404, "Post not found");
@@ -98,6 +102,7 @@ const updatePost = async ({ postId, user, payload }) => {
   if (post.status === "published" && payload.tags !== undefined) {
     await refreshTopicPostCounts([...oldTags, ...post.tags]);
   }
+  if (post.status === "published") void syncPublicPost(post);
   return post;
 };
 
@@ -113,6 +118,7 @@ const publishPost = async ({ postId, user }) => {
   post.publishedAt = post.publishedAt || new Date();
   await post.save();
   await refreshTopicPostCounts(post.tags);
+  void syncPublicPost(post);
   return post;
 };
 
@@ -126,6 +132,7 @@ const archivePost = async ({ postId, user }) => {
   post.status = "deleted";
   await post.save();
   await refreshTopicPostCounts(tags);
+  void syncPublicPost(post);
 };
 
 export {

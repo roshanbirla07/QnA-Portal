@@ -68,6 +68,7 @@ const Navbar = () => {
               <NavLink to="/communities" icon={FiUser}>Communities</NavLink>
               <NavLink to="/projects" icon={FiList}>Projects</NavLink>
               <NavLink to="/rankings" icon={FiList}>Rankings</NavLink>
+              <NavLink to="/search" icon={FiList}>Search</NavLink>
               <NavLink to="/jobs" icon={FiBriefcase}>Jobs</NavLink>
 
               {isAuthenticated ? (
