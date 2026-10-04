@@ -14,6 +14,7 @@ export const SALARIES_ROUTER = `${API_BASE_URL}/api/v1/salaries`;
 export const COMPANIES_ROUTER = `${API_BASE_URL}/api/v1/companies`;
 export const REFERRALS_ROUTER = `${API_BASE_URL}/api/v1/referrals`;
 export const COMMUNITIES_ROUTER = `${API_BASE_URL}/api/v1/communities`;
+export const PROJECTS_ROUTER = `${API_BASE_URL}/api/v1/projects`;
 export const CONNECTIONS_ROUTER = `${API_BASE_URL}/api/v1/connections`;
 
 export const SIGNUP_USER = USER_ROUTER + "/signup";

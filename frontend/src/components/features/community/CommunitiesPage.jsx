@@ -101,7 +101,13 @@ const CommunitiesPage = () => {
         <strong>{person.displayName || person.username}</strong><p className="text-text-secondary">{person.headline} · topic score {person.score}</p>
       </div>)}</div>{!data.people.length && <p>No contributors yet.</p>}
     </section>
-    <section><h2 className="text-2xl font-semibold mb-2">Projects</h2><p className="text-text-secondary">Community projects appear here as members publish them.</p></section>
+    <section><div className="flex justify-between gap-3 mb-2"><h2 className="text-2xl font-semibold">Projects</h2>
+      <Link to={`/projects?community=${slug}`} className="text-primary-blue">All projects →</Link></div>
+      {data.projects.length ? data.projects.map((project) => <Link key={project._id} to={`/projects/${project._id}`}
+        className="block bg-bg-secondary border border-white/10 rounded-xl p-4 mb-3">
+        <strong>{project.title}</strong><p className="text-text-secondary line-clamp-2">{project.description}</p>
+      </Link>) : <p className="text-text-secondary">No community projects yet.</p>}
+    </section>
   </main>;
 };
 
