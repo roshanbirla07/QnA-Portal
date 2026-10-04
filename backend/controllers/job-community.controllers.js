@@ -33,7 +33,7 @@ const community = asyncHandler(async (req, res) => {
 const comment = asyncHandler(async (req, res) => {
   await assertJob(req.params.id);
   const text = req.body?.text;
-  if (typeof text !== "string" || !text.trim() || text.length > 2000) {
+  if (typeof text !== "string" || !text.trim() || text.trim().length > 2000) {
     throw new ApiError(400, "Comment must be between 1 and 2000 characters");
   }
   const item = await JobComment.create({ jobId: req.params.id, authorId: req.user.id, text: text.trim() });

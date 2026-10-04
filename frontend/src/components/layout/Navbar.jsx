@@ -60,12 +60,17 @@ const Navbar = () => {
 
             <div className="hidden md:flex items-center gap-2">
               <NavLink to="/" icon={FiHome}>Home</NavLink>
+              <NavLink to="/experts" icon={FiUser}>Experts</NavLink>
+              <NavLink to="/interviews" icon={FiList}>Interviews</NavLink>
+              <NavLink to="/reviews" icon={FiList}>Reviews</NavLink>
+              <NavLink to="/salaries" icon={FiList}>Salaries</NavLink>
               <NavLink to="/jobs" icon={FiBriefcase}>Jobs</NavLink>
 
               {isAuthenticated ? (
                 <>
                   <NavLink to="/myposts" icon={FiList}>My Questions</NavLink>
                   <NavLink to="/pendings" icon={FiUser}>Pending</NavLink>
+                  <NavLink to="/connections" icon={FiUser}>Connections</NavLink>
                   <NavLink to="/jobs/share" icon={FiBriefcase}>Share Job</NavLink>
 
                   <button
