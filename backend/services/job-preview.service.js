@@ -94,4 +94,4 @@ const previewJob = async (value) => {
   });
 };
 
-export { normalizeJobUrl, extractJobMetadata, previewJob };
+export { isPublicAddress, normalizeJobUrl, extractJobMetadata, previewJob };
