@@ -5,6 +5,7 @@ import { Navbar } from "./components/layout";
 import ShareJob from "./components/features/jobs/ShareJob";
 import ExpertsPage from "./components/features/experts/ExpertsPage";
 import InterviewsPage from "./components/features/companies/InterviewsPage";
+import CompanyReviewsPage from "./components/features/companies/CompanyReviewsPage";
 import JobBoard from "./components/features/jobs/JobBoard";
 import { PrivateRoute, OpenRoute } from "./components/common";
 import { Route, Routes } from "react-router-dom";
@@ -20,6 +21,7 @@ function App() {
         <Route path="/topics/:slug" element={<TopicPage />} />
         <Route path="/experts" element={<ExpertsPage />} />
         <Route path="/interviews" element={<InterviewsPage />} />
+        <Route path="/reviews" element={<CompanyReviewsPage />} />
         <Route path="/jobs/share" element={<PrivateRoute><ShareJob /></PrivateRoute>} />
         <Route path="/jobs" element={<JobBoard />} />
         <Route path="/jobs/:jobId" element={<JobBoard />} />
