@@ -1,15 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { postQuestion } from "../../../services/qna.api";
-import { POST_QUESTION } from "../../../services/apis";
+import { POST_QUESTION, VECTOR_SEARCH_ROUTER } from "../../../services/apis";
 import { useNavigate } from "react-router-dom";
 import { FiX, FiCheck } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { apiConnector } from "../../../services/apiConnector";
 
 const QuestionForm = ({ setNewPostPopup, newPostPopup }) => {
   const [question, setQuestion] = useState("");
   const [tags, setTags] = useState("");
   const navigate = useNavigate();
+  const [similar, setSimilar] = useState([]);
+  const [checking, setChecking] = useState(false);
+  const [suggestionError, setSuggestionError] = useState("");
+
+  useEffect(() => {
+    const title = question.trim();
+    if (title.length < 12) {
+      setSimilar([]);
+      setSuggestionError("");
+      setChecking(false);
+      return;
+    }
+    let active = true;
+    setChecking(true);
+    const timer = setTimeout(async () => {
+      try {
+        const response = await apiConnector("POST", `${VECTOR_SEARCH_ROUTER}/duplicates`, { title });
+        if (active) {
+          setSimilar(response.data.data || []);
+          setSuggestionError("");
+        }
+      } catch (error) {
+        if (active) {
+          setSimilar([]);
+          setSuggestionError("Similar questions are unavailable right now.");
+        }
+      } finally {
+        if (active) setChecking(false);
+      }
+    }, 550);
+    return () => { active = false; clearTimeout(timer); };
+  }, [question]);
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -88,6 +121,25 @@ const QuestionForm = ({ setNewPostPopup, newPostPopup }) => {
                                 value={tags}
                             />
                         </div>
+
+                        {question.trim().length >= 12 && (
+                          <div className="rounded-xl border border-border bg-bg-primary p-4" aria-live="polite">
+                            <h3 className="font-semibold text-text-primary">Similar questions</h3>
+                            {checking && <p className="text-sm text-text-secondary">Checking existing questions…</p>}
+                            {!checking && suggestionError && <p className="text-sm text-text-secondary">{suggestionError}</p>}
+                            {!checking && !suggestionError && similar.length === 0 && <p className="text-sm text-text-secondary">No close matches found.</p>}
+                            {!checking && similar.length > 0 && (
+                              <ul className="mt-2 space-y-2">
+                                {similar.map((item) => (
+                                  <li key={item.id}>
+                                    <a className="text-primary-blue hover:underline" href={`/posts/${encodeURIComponent(item.slug)}`} target="_blank" rel="noopener noreferrer">{item.title}</a>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                            <p className="mt-2 text-xs text-text-secondary">You can still submit your question.</p>
+                          </div>
+                        )}
 
                         <div className="flex justify-end gap-3 pt-4">
                              <button
