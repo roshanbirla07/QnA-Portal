@@ -4,6 +4,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import Job from "../schemas/job.schema.js";
 import mongoose from "mongoose";
 import { normalizeJobUrl, previewJob } from "../services/job-preview.service.js";
+import { syncPublicJob } from "../services/search-index.service.js";
 
 const preview = asyncHandler(async (req, res) => {
   const metadata = await previewJob(req.body?.url);
@@ -20,6 +21,7 @@ const publish = asyncHandler(async (req, res) => {
   }
   try {
     const job = await Job.create({ sourceUrl, ...values, submittedBy: req.user.id });
+    void syncPublicJob(job);
     return res.status(201).json(new ApiResponse(201, job, "Job link published"));
   } catch (error) {
     if (error.code === 11000) throw new ApiError(409, "This job link has already been shared");
