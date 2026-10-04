@@ -43,7 +43,7 @@ const list = asyncHandler(async (req, res) => {
     Job.countDocuments(filter),
   ]);
   return res.status(200).json(new ApiResponse(200, {
-    items, total, page, limit, hasMore: page * limit < total,
+    items, total, page, limit, hasMore: page < 50 && page * limit < total,
   }, "Jobs fetched successfully"));
 });
 
