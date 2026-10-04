@@ -1,0 +1,10 @@
+[Unit]
+Description=Check QnA job links every six hours
+
+[Timer]
+OnCalendar=*-*-* 02,08,14,20:00:00
+Persistent=true
+Unit=qna-stale-jobs.service
+
+[Install]
+WantedBy=timers.target
