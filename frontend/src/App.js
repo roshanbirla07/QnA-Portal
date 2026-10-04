@@ -1,7 +1,9 @@
+import React, { useState } from "react";
 import "./App.css";
 import { Home, MyPending, MyPosts, QuestionForm, QuestionPage, TopicPage } from "./components/features/questions";
 import { SignUp, Login } from "./components/features/auth";
 import { Navbar } from "./components/layout";
+import AppShell from "./components/layout/AppShell";
 import ShareJob from "./components/features/jobs/ShareJob";
 import ExpertsPage from "./components/features/experts/ExpertsPage";
 import InterviewsPage from "./components/features/companies/InterviewsPage";
@@ -21,10 +23,12 @@ import { Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 function App() {
+  const [mobileOpen, setMobileOpen] = useState(false);
   return (
     <>
       <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
-      <Navbar />
+      <Navbar onMenuToggle={() => setMobileOpen((value) => !value)} />
+      <AppShell mobileOpen={mobileOpen} closeMobile={() => setMobileOpen(false)}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/topics/:slug" element={<TopicPage />} />
@@ -53,6 +57,7 @@ function App() {
         <Route path="/question/:questionId?" element={<PrivateRoute><QuestionPage /></PrivateRoute>} />
         <Route path="/submitquestion" element={<PrivateRoute><QuestionForm /></PrivateRoute>} />
       </Routes>
+      </AppShell>
     </>
   );
 }
