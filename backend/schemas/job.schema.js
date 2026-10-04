@@ -8,8 +8,13 @@ const jobSchema = new mongoose.Schema({
   description: { type: String, trim: true, maxlength: 1000 },
   submittedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
   status: { type: String, enum: ["published", "closed"], default: "published" },
+  verificationStatus: { type: String, enum: ["unverified", "verified", "possibly_closed"], default: "unverified" },
+  lastCheckedAt: { type: Date, default: null },
+  checkFailures: { type: Number, default: 0 },
+  checkNote: { type: String, maxlength: 160, default: "" },
 }, { timestamps: true });
 
 jobSchema.index({ status: 1, createdAt: -1 });
+jobSchema.index({ status: 1, lastCheckedAt: 1 });
 
 export default mongoose.model("Job", jobSchema);
