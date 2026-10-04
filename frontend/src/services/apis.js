@@ -7,6 +7,7 @@ const QNA_ROUTER = `${API_BASE_URL}/api/v1/qna`;
 const COMMENT_ROUTER = `${API_BASE_URL}/api/v1/comment`;
 export const TOPICS_ROUTER = `${API_BASE_URL}/api/v1/topics`;
 export const JOBS_ROUTER = `${API_BASE_URL}/api/v1/jobs`;
+export const EXPERTS_ROUTER = `${API_BASE_URL}/api/v1/experts`;
 export const INTERVIEWS_ROUTER = `${API_BASE_URL}/api/v1/interviews`;
 
 export const SIGNUP_USER = USER_ROUTER + "/signup";
