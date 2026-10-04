@@ -30,7 +30,7 @@ const ShareJob = () => {
     try {
       await apiConnector("POST", JOBS_ROUTER, details);
       toast.success("Job link published");
-      navigate("/");
+      navigate("/jobs");
     } catch (error) {
       toast.error(error.message);
     } finally {
