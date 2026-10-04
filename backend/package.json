@@ -11,7 +11,8 @@
     "migrate:qna-posts": "node scripts/migrate-qna-to-posts.js",
     "jobs:check-stale": "node scripts/check-stale-jobs.js",
     "lint": "eslint .",
-    "search:reindex": "node scripts/reindex-search.js"
+    "search:reindex": "node scripts/reindex-search.js",
+    "vectors:reindex": "node scripts/reindex-vectors.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
