@@ -70,6 +70,7 @@ const Navbar = () => {
                 <>
                   <NavLink to="/myposts" icon={FiList}>My Questions</NavLink>
                   <NavLink to="/pendings" icon={FiUser}>Pending</NavLink>
+                  <NavLink to="/connections" icon={FiUser}>Connections</NavLink>
                   <NavLink to="/jobs/share" icon={FiBriefcase}>Share Job</NavLink>
 
                   <button

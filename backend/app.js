@@ -14,6 +14,7 @@ import expertRouter from "./routes/expert.routes.js";
 import interviewRouter from "./routes/interview.routes.js";
 import companyReviewRouter from "./routes/company-review.routes.js";
 import salaryRouter from "./routes/salary.routes.js";
+import connectionRouter from "./routes/connection.routes.js";
 import jobRouter from "./routes/job.routes.js";
 import { RESPONSE_MESSAGES } from "./constants/responseMessages.js";
 import config from "./config/variables.js";
@@ -58,6 +59,7 @@ app.use("/api/v1/experts", expertRouter);
 app.use("/api/v1/interviews", interviewRouter);
 app.use("/api/v1/company-reviews", companyReviewRouter);
 app.use("/api/v1/salaries", salaryRouter);
+app.use("/api/v1/connections", connectionRouter);
 app.use("/api/v1/jobs", jobRouter);
 
 app.get("/", (req, res) => res.status(200).json({ message: "service is running fine." }));
