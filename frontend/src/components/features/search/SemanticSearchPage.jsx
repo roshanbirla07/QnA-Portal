@@ -18,6 +18,7 @@ const SemanticSearchPage = () => {
   return <main className="max-w-4xl mx-auto px-4 py-10 text-text-primary space-y-6">
     <header><h1 className="text-3xl font-bold">Semantic search</h1>
       <p className="text-text-secondary mt-2">Describe a topic or problem in your own words to find related public questions and articles.</p></header>
+    <Link to="/assistant" className="text-primary-blue hover:underline">Ask the knowledge assistant →</Link>
     <form onSubmit={search} className="space-y-3"><textarea required minLength={8} maxLength={2000} rows={4}
       aria-label="Describe what you are looking for" className="input-field w-full" value={text} onChange={(event) => setText(event.target.value)} />
       <button disabled={loading} className="btn-primary" type="submit">{loading ? "Searching…" : "Find related content"}</button>
