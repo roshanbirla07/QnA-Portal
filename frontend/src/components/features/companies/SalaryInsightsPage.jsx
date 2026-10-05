@@ -30,7 +30,7 @@ const SalaryInsightsPage = () => {
     let active = true;
     setLoading(true);
     setError("");
-    apiConnector("GET", `${SALARIES_ROUTER}/insights`, null, null, Object.fromEntries(params.entries()))
+    apiConnector("GET", `${SALARIES_ROUTER}/insights`, null, null, Object.fromEntries(new URLSearchParams(query)))
       .then((response) => { if (active) setItems(response.data.data); })
       .catch((reason) => { if (active) setError(reason.message); })
       .finally(() => { if (active) setLoading(false); });
@@ -107,3 +107,4 @@ const SalaryInsightsPage = () => {
 };
 
 export default SalaryInsightsPage;
+

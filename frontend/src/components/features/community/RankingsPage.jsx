@@ -21,15 +21,17 @@ const RankingsPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const query = params.toString();
+
   useEffect(() => {
     let active = true;
     setLoading(true);
-    apiConnector("GET", RANKINGS_ROUTER, null, null, Object.fromEntries(params.entries()))
+    apiConnector("GET", RANKINGS_ROUTER, null, null, Object.fromEntries(new URLSearchParams(query)))
       .then((response) => { if (active) { setData(response.data.data); setError(""); } })
       .catch((reason) => { if (active) setError(reason.message); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [params.toString()]);
+  }, [query]);
 
   return <main className="max-w-5xl mx-auto px-4 py-10 text-text-primary space-y-6">
     <header><h1 className="text-3xl font-bold">Contributor rankings</h1>
@@ -48,3 +50,4 @@ const RankingsPage = () => {
 };
 
 export default RankingsPage;
+

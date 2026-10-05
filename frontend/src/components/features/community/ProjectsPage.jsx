@@ -18,18 +18,20 @@ const ProjectsPage = () => {
   const [reload, setReload] = useState(0);
   const page = Math.max(Number.parseInt(params.get("page"), 10) || 1, 1);
 
+  const query = params.toString();
+
   useEffect(() => {
     let active = true;
     setLoading(true);
     Promise.all([apiConnector("GET", id ? `${PROJECTS_ROUTER}/${id}` : PROJECTS_ROUTER, null, null,
-      id ? null : Object.fromEntries(params.entries())),
+      id ? null : Object.fromEntries(new URLSearchParams(query))),
     token ? apiConnector("GET", `${PROJECTS_ROUTER}/me/requests`) : Promise.resolve(null)])
       .then(([result, requests]) => { if (active) {
         setData(result.data.data); setInbox(requests?.data.data || { owned: [], received: [], sent: [] }); setError("");
       } }).catch((reason) => { if (active) setError(reason.message); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [id, params.toString(), token, reload]);
+  }, [id, query, token, reload]);
 
   const refresh = () => setReload((value) => value + 1);
   const create = async (event) => {
@@ -108,3 +110,4 @@ const ProjectsPage = () => {
 };
 
 export default ProjectsPage;
+
