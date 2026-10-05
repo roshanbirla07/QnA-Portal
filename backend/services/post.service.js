@@ -73,7 +73,7 @@ const createPost = async ({ user, payload }) => {
 };
 
 const getPostBySlug = async ({ slug, requesterId }) => {
-  const post = await Post.findOne({ slug }).populate("author", "username displayName avatar bio");
+  const post = await Post.findOne({ slug }).populate("author", "username displayName avatar bio reputation headline");
   if (!post || post.status === "deleted") throw new ApiError(404, "Post not found");
   const isOwner = requesterId && post.author?._id?.toString() === requesterId;
   if (![ "published" ].includes(post.status) && !isOwner) throw new ApiError(404, "Post not found");
@@ -148,3 +148,4 @@ export {
   archivePost,
   calculateReadingTime,
 };
+

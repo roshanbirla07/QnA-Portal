@@ -48,9 +48,10 @@ const acceptAnswer = async ({ user, questionId, answerId }) => {
 const listAnswers = async ({ questionId, limit = 30 }) => {
   if (!mongoose.Types.ObjectId.isValid(questionId)) throw new ApiError(400, "Invalid question id");
   return Answer.find({ questionId, status: "published" })
-    .populate("authorId", "email username displayName avatar")
+    .populate("authorId", "username displayName avatar reputation")
     .sort({ accepted: -1, score: -1, createdAt: 1 })
     .limit(Math.min(Math.max(Number(limit) || 30, 1), 100));
 };
 
 export { createAnswer, acceptAnswer, listAnswers };
+

@@ -38,7 +38,7 @@ const fetchQuestions = asyncHandler(async (req, res) => {
       query.$or = [{ title: searchRegex }, { contentText: searchRegex }, { tags: searchRegex }];
     }
     const posts = await Post.find(query)
-      .populate("author", "email username displayName avatar")
+      .populate("author", "email username displayName avatar reputation")
       .sort({ createdAt: -1 });
     return res.status(200).json(new ApiResponse(200, posts.map(toLegacyQuestion), RESPONSE_MESSAGES.QUESTIONS_FETCHED));
   } catch (error) {
@@ -94,7 +94,7 @@ const approveQuestion = asyncHandler(async (req, res) => {
 
 const approvedQuestions = asyncHandler(async (req, res) => {
   const posts = await Post.find({ author: req.user.id, type: "question", status: "published" })
-    .populate("author", "email username displayName avatar")
+    .populate("author", "email username displayName avatar reputation")
     .sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, posts.map(toLegacyQuestion), RESPONSE_MESSAGES.APPROVED_QUESTIONS_FETCHED));
 });
@@ -103,7 +103,7 @@ const pendingQuestions = asyncHandler(async (req, res) => {
   const query = { type: "question", status: "draft" };
   if (req.user.roleType === "user") query.author = req.user.id;
   const posts = await Post.find(query)
-    .populate("author", "email username displayName avatar")
+    .populate("author", "email username displayName avatar reputation")
     .sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, posts.map(toLegacyQuestion), RESPONSE_MESSAGES.PENDING_QUESTIONS_FETCHED));
 });
@@ -129,7 +129,7 @@ const editQuestion = asyncHandler(async (req, res) => {
       post.publishedAt = undefined;
       await post.save();
     }
-    await post.populate("author", "email username displayName avatar");
+    await post.populate("author", "email username displayName avatar reputation");
     return res.status(200).json(new ApiResponse(200, toLegacyQuestion(post), RESPONSE_MESSAGES.QUESTION_UPDATED));
   } catch (error) {
     logger.error("Failed to edit question", { error: error.message, questionId: req.params?.questionId, userId: req.user?.id });
@@ -183,7 +183,7 @@ const fetchQuestionById = asyncHandler(async (req, res) => {
     const { questionId } = req.params;
     ensureQuestionId(questionId);
     const post = await Post.findOne({ _id: questionId, type: "question", status: { $ne: "deleted" } })
-      .populate("author", "email username displayName avatar");
+      .populate("author", "email username displayName avatar reputation");
     if (!post) throw new ApiError(404, RESPONSE_MESSAGES.QUESTION_NOT_FOUND);
     return res.status(200).json(new ApiResponse(200, toLegacyQuestion(post), RESPONSE_MESSAGES.QUESTION_FETCHED));
   } catch (error) {
@@ -217,3 +217,4 @@ export {
   incrementView,
   getAdminStats,
 };
+
