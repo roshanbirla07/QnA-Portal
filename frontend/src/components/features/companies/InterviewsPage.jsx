@@ -29,7 +29,7 @@ const InterviewsPage = () => {
     let active = true;
     setLoading(true);
     setError("");
-    apiConnector("GET", INTERVIEWS_ROUTER, null, null, Object.fromEntries(params.entries()))
+    apiConnector("GET", INTERVIEWS_ROUTER, null, null, Object.fromEntries(new URLSearchParams(query)))
       .then((response) => { if (active) setData(response.data.data); })
       .catch((reason) => { if (active) setError(reason.message); })
       .finally(() => { if (active) setLoading(false); });
@@ -131,3 +131,4 @@ const InterviewsPage = () => {
 };
 
 export default InterviewsPage;
+

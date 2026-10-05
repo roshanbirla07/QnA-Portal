@@ -16,9 +16,11 @@ const ReferralsPage = () => {
   const [error, setError] = useState("");
   const [reload, setReload] = useState(0);
 
+  const query = params.toString();
+
   useEffect(() => {
     let active = true;
-    Promise.all([apiConnector("GET", `${REFERRALS_ROUTER}/offers`, null, null, Object.fromEntries(params.entries())),
+    Promise.all([apiConnector("GET", `${REFERRALS_ROUTER}/offers`, null, null, Object.fromEntries(new URLSearchParams(query))),
       token ? apiConnector("GET", `${REFERRALS_ROUTER}/me`) : Promise.resolve(null)])
       .then(([publicResult, privateResult]) => {
         if (!active) return;
@@ -28,7 +30,7 @@ const ReferralsPage = () => {
       })
       .catch((reason) => { if (active) setError(reason.message); });
     return () => { active = false; };
-  }, [params.toString(), token, reload]);
+  }, [query, token, reload]);
 
   const refresh = () => setReload((value) => value + 1);
   const saveOffer = async (event) => {
@@ -119,3 +121,4 @@ const ReferralsPage = () => {
 };
 
 export default ReferralsPage;
+

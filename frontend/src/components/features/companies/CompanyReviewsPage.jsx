@@ -24,7 +24,7 @@ const CompanyReviewsPage = () => {
     let active = true;
     setError("");
     setLoading(true);
-    apiConnector("GET", COMPANY_REVIEWS_ROUTER, null, null, Object.fromEntries(params.entries()))
+    apiConnector("GET", COMPANY_REVIEWS_ROUTER, null, null, Object.fromEntries(new URLSearchParams(query)))
       .then((response) => { if (active) setData(response.data.data); })
       .catch((reason) => { if (active) setError(reason.message); })
       .finally(() => { if (active) setLoading(false); });
@@ -108,3 +108,4 @@ const CompanyReviewsPage = () => {
 };
 
 export default CompanyReviewsPage;
+
