@@ -2,9 +2,11 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { configured, search } from "../services/search-index.service.js";
+import { mongoSearch } from "../services/mongo-search.service.js";
+import Post from "../schemas/post.schema.js";
+import Job from "../schemas/job.schema.js";
 
 const list = asyncHandler(async (req, res) => {
-  if (!configured()) throw new ApiError(503, "Search is not configured yet");
   const q = String(req.query.q || "").trim().slice(0, 120);
   const kind = String(req.query.kind || "");
   const tag = String(req.query.tag || "").trim().toLowerCase().slice(0, 60);
@@ -14,7 +16,8 @@ const list = asyncHandler(async (req, res) => {
   const page = Math.min(Math.max(Number.parseInt(req.query.page, 10) || 1, 1), 50);
   const autocomplete = req.query.autocomplete === "true";
   const size = autocomplete ? 8 : 20;
-  const result = await search({ q, kind, tag, company, from: autocomplete ? 0 : (page - 1) * size, size, autocomplete });
+  const options = { q, kind, tag, company, from: autocomplete ? 0 : (page - 1) * size, size, autocomplete };
+  const result = configured() ? await search(options) : await mongoSearch({ PostModel: Post, JobModel: Job }, options);
   return res.status(200).json(new ApiResponse(200, {
     items: (result.hits?.hits || []).map((hit) => ({ ...hit._source, score: hit._score })),
     total: result.hits?.total?.value || 0, page, hasMore: !autocomplete && page * size < (result.hits?.total?.value || 0),
