@@ -11,16 +11,17 @@ const SearchPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const page = Math.max(Number.parseInt(params.get("page"), 10) || 1, 1);
+  const queryString = params.toString();
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    apiConnector("GET", SEARCH_ROUTER, null, null, Object.fromEntries(params.entries()))
+    apiConnector("GET", SEARCH_ROUTER, null, null, Object.fromEntries(new URLSearchParams(queryString)))
       .then((response) => { if (active) { setData(response.data.data); setError(""); } })
       .catch((reason) => { if (active) setError(reason.message); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [params.toString()]);
+  }, [queryString]);
 
   useEffect(() => {
     if (form.q.trim().length < 2) { setSuggestions([]); return undefined; }
