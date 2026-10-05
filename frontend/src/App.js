@@ -20,6 +20,7 @@ import KnowledgeAssistantPage from "./components/features/search/KnowledgeAssist
 import PublicPostPage from "./components/features/search/PublicPostPage";
 import ConnectionsPage from "./components/features/community/ConnectionsPage";
 import JobBoard from "./components/features/jobs/JobBoard";
+import JobMatchesPage from "./components/features/jobs/JobMatchesPage";
 import { PrivateRoute, OpenRoute } from "./components/common";
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
@@ -53,6 +54,7 @@ function App() {
         <Route path="/connections" element={<PrivateRoute><ConnectionsPage /></PrivateRoute>} />
         <Route path="/jobs/share" element={<PrivateRoute><ShareJob /></PrivateRoute>} />
         <Route path="/jobs" element={<JobBoard />} />
+        <Route path="/jobs/matches" element={<PrivateRoute><JobMatchesPage /></PrivateRoute>} />
         <Route path="/jobs/:jobId" element={<JobBoard />} />
         <Route path="/pendings" element={<PrivateRoute><MyPending /></PrivateRoute>} />
         <Route path="/myposts" element={<PrivateRoute><MyPosts /></PrivateRoute>} />

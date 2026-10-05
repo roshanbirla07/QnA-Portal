@@ -71,7 +71,7 @@ const JobBoard = () => {
           <h1 className="text-3xl font-bold">{jobId ? "Job details" : "Community job board"}</h1>
           <p className="text-text-secondary mt-2">Jobs are shared by the community. Applications open on the original site.</p>
         </div>
-        <Link to="/jobs/share" className="btn-primary whitespace-nowrap">Share a job</Link>
+        <div className="flex flex-wrap gap-3"><Link to="/jobs/matches" className="btn-primary whitespace-nowrap">Matched jobs</Link><Link to="/jobs/share" className="btn-primary whitespace-nowrap">Share a job</Link></div>
       </header>
 
       {jobId ? (
