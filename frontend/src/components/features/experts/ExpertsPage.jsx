@@ -36,13 +36,13 @@ const ExpertsPage = () => {
         <>
           {data.topic && <p className="mb-5">Experts in <Link className="text-primary-blue underline" to={`/topics/${data.topic.slug}`}>#{data.topic.name}</Link></p>}
           {data.experts.length ? <div className="grid md:grid-cols-2 gap-4">
-            {data.experts.map((expert) => <article key={expert.userId} className="bg-bg-secondary border border-white/10 rounded-xl p-5">
-              <h2 className="text-xl font-semibold">{expert.displayName || expert.username || "Contributor"}</h2>
+            {data.experts.map((expert) => <article key={expert.userId} className="surface-card p-6">
+              <div className="flex items-center gap-3 mb-4">{expert.avatar ? <img src={expert.avatar} alt="" width="48" height="48" className="rounded-full object-cover" /> : <span aria-hidden="true" className="rounded-full bg-primary-blue/10 text-primary-blue w-12 h-12 grid place-items-center font-bold">{(expert.displayName || expert.username || "C")[0]}</span>}<h2 className="text-xl font-semibold">{expert.displayName || expert.username || "Contributor"}</h2></div>
               {expert.headline && <p className="text-text-secondary">{expert.headline}</p>}
-              <p className="text-sm text-text-muted mt-4">
+              <p className="text-sm text-text-secondary mt-4 border-t pt-4">
                 {expert.reputation} topic reputation · {expert.acceptedAnswers} accepted answers · {expert.contributions} posts
               </p>
-            </article>)}
+            <Link to="/connections" className="glass-button inline-block mt-4">Connect with purpose</Link></article>)}
           </div> : <p>No contributors found for this topic yet.</p>}
         </>}
     </main>
@@ -50,3 +50,4 @@ const ExpertsPage = () => {
 };
 
 export default ExpertsPage;
+
