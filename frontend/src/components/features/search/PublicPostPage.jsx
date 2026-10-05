@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { apiConnector } from "../../../services/apiConnector";
 import { POSTS_ROUTER } from "../../../services/apis";
 
+import QuestionDetail from "../questions/QuestionDetail";
+
 const PublicPostPage = () => {
   const { slug } = useParams();
   const [post, setPost] = useState(null);
@@ -14,6 +16,7 @@ const PublicPostPage = () => {
       .catch((reason) => { if (active) setError(reason.message); });
     return () => { active = false; };
   }, [slug]);
+  if (post?.type === "question") return <QuestionDetail post={post} />;
   return <main className="max-w-3xl mx-auto px-4 py-10 text-text-primary">
     <Link to="/search" className="text-primary-blue">← Search</Link>
     {error ? <p role="alert" className="mt-6 text-red-400">{error}</p> : !post ? <p className="mt-6">Loading post…</p> : <article className="mt-6">
@@ -27,3 +30,4 @@ const PublicPostPage = () => {
 };
 
 export default PublicPostPage;
+
