@@ -29,8 +29,8 @@ function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   return (
     <>
-      <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
-      <Navbar onMenuToggle={() => setMobileOpen((value) => !value)} />
+      <Toaster position="top-right" toastOptions={{ duration: 3500, style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--line)", borderRadius: "var(--radius-control)" } }} />
+      <Navbar mobileOpen={mobileOpen} onMenuToggle={() => setMobileOpen((value) => !value)} />
       <AppShell mobileOpen={mobileOpen} closeMobile={() => setMobileOpen(false)}>
       <Routes>
         <Route path="/" element={<Home />} />

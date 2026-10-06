@@ -1,0 +1,68 @@
+.rankings-page { max-width: 1060px; padding: 36px 0; margin: auto; }
+.rankings-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+.section-eyebrow { font-size: 11px; letter-spacing: .12em; color: rgb(var(--brand-rgb)); font-weight: 650; }
+.rankings-heading h1 { font-size: clamp(27px, 3vw, 36px); font-weight: 750; letter-spacing: -1px; line-height: 1.2; margin: 8px 0 12px; }
+.rankings-heading p:not(.section-eyebrow) { font-size: 14px; color: var(--text-secondary); line-height: 1.65; }
+.rankings-emblem { display: grid; place-items: center; width: 62px; height: 62px; border: 1px solid var(--line); border-radius: 16px; color: rgb(var(--brand-rgb)); background: var(--bg-card); font-size: 29px; flex-shrink: 0; }
+.rankings-controls { padding: 20px; margin-bottom: 28px; }
+.rankings-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+.rankings-tabs button { border-radius: var(--radius-control); min-height: 40px; padding: 9px 14px; font-size: 13px; font-weight: 550; color: var(--text-secondary); border: 1px solid transparent; transition: color var(--duration-feedback), background var(--duration-feedback); }
+.rankings-tabs button:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.rankings-tabs button[aria-pressed="true"] { color: rgb(var(--brand-rgb)); background: rgb(var(--brand-rgb) / .08); border-color: rgb(var(--brand-rgb) / .15); }
+.rankings-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; }
+.rankings-filters label { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 600; }
+.rankings-filters label span { font-weight: 400; color: var(--text-muted); }
+.rankings-filters .input-field { font-size: 14px; width: 100%; }
+.ranking-topic-field { position: relative; }
+.ranking-topic-field input { padding-right: 40px; }
+.ranking-topic-field button { position: absolute; right: 5px; top: 5px; width: 34px; height: 34px; border-radius: 5px; font-size: 22px; color: var(--text-muted); }
+.ranking-topic-field button:hover { background: var(--bg-secondary); }
+.ranking-filter-hint, .ranking-validation { margin-top: 14px; font-size: 12px; min-height: 20px; color: var(--text-muted); }
+.ranking-validation { color: var(--danger); }
+.ranking-results { min-height: 280px; }
+.ranking-board-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; }
+.ranking-board-heading h2 { font-size: 18px; font-weight: 650; letter-spacing: -.3px; }
+.ranking-board-heading p { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+.ranking-board-heading > span { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.ranking-personal { margin-bottom: 16px; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--line); color: var(--text-secondary); font-size: 13px; }
+.ranking-table-wrap { overflow-x: auto; }
+.ranking-table { width: 100%; text-align: left; border-collapse: collapse; }
+.ranking-table thead th { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); font-weight: 550; background: var(--bg-secondary); padding: 13px 20px; }
+.ranking-table tbody td, .ranking-table tbody th { padding: 20px; border-top: 1px solid var(--line); vertical-align: middle; font-weight: 400; }
+.ranking-table tr { transition: background var(--duration-feedback); }
+.ranking-table tbody tr:hover { background: var(--bg-secondary); }
+.ranking-table .is-you { background: rgb(var(--brand-rgb) / .04); }
+.ranking-position { font-size: 13px; font-weight: 550; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.ranking-position--leading { color: rgb(var(--brand-rgb)); }
+.ranking-person { display: flex; align-items: center; gap: 12px; min-width: 160px; }
+.ranking-person strong { font-size: 14px; font-weight: 600; }
+.ranking-person p { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.ranking-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+.ranking-badges span { font-size: 10px; font-weight: 500; padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; color: var(--text-secondary); }
+.ranking-badges .ranking-spotlight { display: inline-flex; align-items: center; gap: 4px; color: var(--success); border-color: transparent; background: var(--success-bg); }
+.ranking-you { margin-left: 8px; font-size: 10px; color: rgb(var(--brand-rgb)); font-weight: 500; }
+.ranking-detail { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+.ranking-detail > span { display: flex; gap: 5px; align-items: center; }
+.ranking-accepted { margin-top: 5px; color: var(--success); }
+.ranking-points { text-align: right; font-variant-numeric: tabular-nums; }
+.ranking-points strong { font-size: 18px; font-weight: 650; letter-spacing: -.4px; }
+.ranking-points > span { display: block; font-size: 10px; color: var(--text-muted); margin-top: 3px; white-space: nowrap; }
+.ranking-mobile-stats { display: none; }
+.rankings-footnote { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-top: 24px; }
+.rankings-footnote svg { margin-top: 2px; flex-shrink: 0; }
+@media (max-width: 767px) {
+  .rankings-page { padding: 24px 0; }
+  .rankings-emblem { display: none; }
+  .rankings-controls { padding: 16px; }
+  .rankings-filters > div { flex: 1 1 160px; }
+  .rankings-filters > button { width: 100%; }
+  .ranking-board-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .ranking-table .ranking-detail { display: none; }
+  .ranking-mobile-stats { display: block; }
+  .ranking-table thead th, .ranking-table tbody th, .ranking-table tbody td { padding: 14px 10px; }
+  .ranking-person { gap: 8px; min-width: 0; }
+  .ranking-person .member-avatar { width: 30px; height: 30px; font-size: 10px; }
+  .ranking-badges span:not(:first-child):not(.ranking-spotlight) { display: none; }
+  .ranking-points strong { font-size: 16px; }
+}
+

@@ -1,54 +1,47 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiMenu, FiSearch, FiPlus, FiSun, FiMoon, FiLogOut } from "react-icons/fi";
+import { FiMenu, FiArrowUpRight, FiSun, FiMoon, FiLogOut, FiMessageSquare } from "react-icons/fi";
 import { LOGOUT_USER } from "../../services/apis";
 import { useAuth } from "../../contexts/AuthContext";
 import { getAuthHeaders } from "../../utils/request";
-import QuestionForm from "../features/questions/QuestionForm";
+import SearchField from "../common/SearchField";
 
-const Navbar = ({ onMenuToggle }) => {
+const initialTheme = () => {
+  try { return localStorage.getItem("theme") === "dark" ? "dark" : "light"; } catch { return "light"; }
+};
+const Navbar = ({ onMenuToggle, mobileOpen }) => {
   const navigate = useNavigate();
   const { token, logoutUser: clearAuth } = useAuth();
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
-  const [newPostPopup, setNewPostPopup] = useState(false);
+  const [theme, setTheme] = useState(initialTheme);
   const [search, setSearch] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem("theme", theme);
+    try { localStorage.setItem("theme", theme); } catch { /* Theme still works when storage is unavailable. */ }
   }, [theme]);
   const logout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
     try { await fetch(LOGOUT_USER, { method: "POST", headers: getAuthHeaders(), credentials: "include" }); }
-    catch (error) { /* Local credentials must still be cleared if the server is unavailable. */ }
-    finally { clearAuth(); navigate("/login"); }
+    catch { /* Clear local credentials even when the server is unavailable. */ }
+    finally { clearAuth(); setLoggingOut(false); navigate("/login"); }
   };
-
-  return <>
-    <header className="sticky top-0 z-50 h-16 border-b bg-bg-card backdrop-blur-md" style={{ borderColor: "var(--line)" }}>
-      <div className="mx-auto flex h-full max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:px-8">
-        <button type="button" className="icon-button lg:hidden" aria-label="Open menu" onClick={onMenuToggle}><FiMenu /></button>
-        <Link to="/" className="shrink-0 text-xl font-bold tracking-tight text-text-primary">QnA<span className="text-primary-blue"> Portal</span></Link>
-        <form onSubmit={(event) => { event.preventDefault(); navigate(search.trim() ? `/search?q=${encodeURIComponent(search.trim())}` : "/search"); }}
-          className="relative ml-auto hidden w-full max-w-md md:block">
-          <FiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input type="search" aria-label="Search questions" placeholder="Search questions, topics and jobs" className="input-field w-full pl-10 py-2"
-            value={search} onChange={(event) => setSearch(event.target.value)} />
-        </form>
-        <div className="ml-auto flex items-center gap-2 md:ml-2">
-          <button type="button" className="icon-button" aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-            {theme === "light" ? <FiMoon /> : <FiSun />}
-          </button>
-          {token ? <>
-            <button type="button" className="btn-primary hidden items-center gap-2 sm:inline-flex" onClick={() => setNewPostPopup(true)}><FiPlus /> Ask</button>
-            <button type="button" className="icon-button" aria-label="Log out" onClick={logout}><FiLogOut /></button>
-          </> : <Link className="btn-primary" to="/login">Sign in</Link>}
-        </div>
+  return <header className="portal-header">
+    <a className="skip-link" href="#main-content">Skip to content</a>
+    <div className="portal-header-inner">
+      <button type="button" className="icon-button menu-toggle" aria-label="Open navigation" aria-expanded={mobileOpen} aria-controls={mobileOpen ? "mobile-navigation" : undefined} onClick={onMenuToggle}><FiMenu aria-hidden="true" /></button>
+      <Link to="/" className="portal-brand" aria-label="QnA Portal home"><span className="brand-symbol"><FiMessageSquare aria-hidden="true" /></span><span>QnA<span className="brand-muted"> Portal</span></span></Link>
+      <form noValidate role="search" className="header-search" onSubmit={(event) => { event.preventDefault(); navigate(search.trim() ? "/search?q=" + encodeURIComponent(search.trim()) : "/search"); }}>
+        <SearchField value={search} onChange={setSearch} label="Search questions, topics and jobs" placeholder="Search the community…" />
+      </form>
+      <div className="header-actions">
+        <button type="button" className="icon-button" title={theme === "light" ? "Dark mode" : "Light mode"} aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+          onClick={() => setTheme(theme === "light" ? "dark" : "light")}>{theme === "light" ? <FiMoon aria-hidden="true" /> : <FiSun aria-hidden="true" />}</button>
+        {token ? <><Link className="btn-primary header-ask" to="/submitquestion">Ask a question <FiArrowUpRight aria-hidden="true" /></Link>
+          <button type="button" className="icon-button" aria-label="Log out" aria-busy={loggingOut} disabled={loggingOut} onClick={logout}><FiLogOut aria-hidden="true" /></button></> :
+          <Link className="btn-primary" to="/login">Sign in <FiArrowUpRight aria-hidden="true" /></Link>}
       </div>
-    </header>
-    {token && <button type="button" aria-label="Ask a question" onClick={() => setNewPostPopup(true)}
-      className="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary-blue text-white shadow-lg sm:hidden"><FiPlus /></button>}
-    {token && newPostPopup && <QuestionForm setNewPostPopup={setNewPostPopup} newPostPopup={newPostPopup} />}
-  </>;
+    </div>
+  </header>;
 };
-
 export default Navbar;
