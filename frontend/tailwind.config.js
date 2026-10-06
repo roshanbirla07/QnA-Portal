@@ -4,12 +4,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: { purple: "#6655d5", blue: "#2463eb", DEFAULT: "#2463eb" },
+        primary: { purple: "#6655d5", blue: "rgb(var(--brand-rgb) / <alpha-value>)", DEFAULT: "rgb(var(--brand-rgb) / <alpha-value>)" },
         accent: { pink: "#d04d8b" },
         bg: { primary: "var(--bg-primary)", secondary: "var(--bg-secondary)", card: "var(--bg-card)" },
         text: { primary: "var(--text-primary)", secondary: "var(--text-secondary)", muted: "var(--text-muted)" },
       },
-      fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] },
+      fontFamily: { sans: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "system-ui", "sans-serif"] },
       boxShadow: { glow: "0 8px 24px rgba(36, 99, 235, 0.16)" },
       animation: { "fade-in": "fadeIn 0.35s ease-out", "slide-up": "slideUp 0.35s ease-out" },
       keyframes: {
