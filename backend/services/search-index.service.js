@@ -40,7 +40,8 @@ const indexPost = (post) => request("PUT", `${index}/_doc/post-${post._id}`, {
 });
 const indexJob = (job) => request("PUT", `${index}/_doc/job-${job._id}`, {
   kind: "job", id: String(job._id), title: job.title, description: job.description || "",
-  company: job.company, location: job.location || "", tags: [], createdAt: job.createdAt,
+  company: job.company, location: job.location || "", tags: job.topics || [],
+  createdAt: job.postedAt || job.createdAt,
 });
 const deleteDocument = (kind, id) => request("DELETE", `${index}/_doc/${kind}-${id}`);
 const syncPublicPost = async (post, oldKind = post.type) => {
