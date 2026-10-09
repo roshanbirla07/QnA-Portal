@@ -1,0 +1,11 @@
+[Unit]
+Description=Run QnA Portal AI job discovery every 4 hours
+
+[Timer]
+OnCalendar=*-*-* 00,04,08,12,16,20:15:00
+Persistent=true
+RandomizedDelaySec=300
+Unit=qna-job-agent.service
+
+[Install]
+WantedBy=timers.target
