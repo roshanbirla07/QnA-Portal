@@ -24,6 +24,8 @@ import vectorSearchRouter from "./routes/vector-search.routes.js";
 import knowledgeAssistantRouter from "./routes/knowledge-assistant.routes.js";
 import connectionRouter from "./routes/connection.routes.js";
 import jobRouter from "./routes/job.routes.js";
+import mcpAuthMiddleware from "./middlewares/mcp-auth.middleware.js";
+import { qnaMcpNodeHandler } from "./mcp/qna-mcp.server.js";
 import { RESPONSE_MESSAGES } from "./constants/responseMessages.js";
 import config from "./config/variables.js";
 
@@ -46,6 +48,10 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// MCP must receive the raw request stream, so mount it before JSON/urlencoded parsers.
+app.all("/mcp", mcpAuthMiddleware, qnaMcpNodeHandler);
+
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(cookieParser());
