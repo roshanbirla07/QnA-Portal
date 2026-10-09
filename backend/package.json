@@ -12,7 +12,8 @@
     "jobs:check-stale": "node scripts/check-stale-jobs.js",
     "lint": "eslint .",
     "search:reindex": "node scripts/reindex-search.js",
-    "vectors:reindex": "node scripts/reindex-vectors.js"
+    "vectors:reindex": "node scripts/reindex-vectors.js",
+    "jobs:discover-ai": "node scripts/discover-jobs-agent.js"
   },
   "dependencies": {
     "@modelcontextprotocol/node": "^2.1.1",
