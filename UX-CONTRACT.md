@@ -20,7 +20,7 @@ English developer community; en-IN display on migrated dates/numbers. Rankings m
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
 | Date | Rankings month input | Server YYYY-MM month contract | native, platform-owned | Browser keyboard/typed month |
-| Form | Home/Navbar search forms; Rankings filter validation | Owning route and API query contract | explicit submit | SearchField component tests; browser validation |
+| Form | Home/Navbar search forms; Rankings filters; QuestionForm | Owning route and API query contract | explicit submit | SearchField tests; question composer validation/browser checks |
 | Scrollbar | frontend/src/index.css | DESIGN.md runtime mapping | narrow nav/table geometry | Computed style and overflow checks |
 | Toast | App react-hot-toast Toaster | Existing notification provider | success / warning / info / error | Shared theme inspection |
 | Select/Listbox | Existing native select controls on untouched screens | Existing screen contract | native, platform-owned | Not modified by this migration |
@@ -43,7 +43,7 @@ SearchField owns recurring input clear/focus/IME behavior. PageState owns recurr
 | Ranking filters | Apply filters | Loading PageState | Same route with URL query | Inline invalid month/slug; retry API failure | First invalid field | backend/controllers/ranking.controllers.js |
 | Mobile navigation | Open navigation | Modal entry | Chosen route | Escape/close | Native containment; restore trigger on cancel | AppShell + Modal |
 | Theme | Theme icon | Immediate CSS variable change | Stay on route | Works even when storage is blocked | Stay on theme control | Navbar + index.css |
-| Ask a question | Navigation link | Protected route handles access | /submitquestion | Existing sign-in/create flow | Existing destination | PrivateRoute |
+| Ask a question | Navigation link | Inline duplicate check + disabled submit while posting | /submitquestion then existing postQuestion navigation | Inline validation keeps draft; toast on API failure | First invalid field / existing route focus | QuestionForm + PrivateRoute |
 
 ## Responsive navigation and feedback
 
@@ -57,7 +57,7 @@ New errors remain inline and actionable. Notifications use the existing shared p
 
 Ranks, rewards, point definitions, permissions, and lifecycle rules remain server-owned. Client month/topic validation mirrors accepted API formats, labels errors, and focuses the first invalid input. Forms use noValidate. Native month popup appearance is accepted as platform-owned.
 
-Migrate legacy forms and confirmations in focused reviewed changes; never disable their existing browser validation globally without replacement. Rollback is the PR revert; no backend schema or data migration is required.
+QuestionForm uses app-owned inline validation, preserves entered text after validation/API failure, normalizes up to 10 topic tags, and exposes duplicate suggestions without blocking submission. Other legacy forms and confirmations remain focused follow-up work; never disable their existing browser validation globally without replacement. Rollback is the PR revert; no backend schema or data migration is required.
 
 ## Verification
 
