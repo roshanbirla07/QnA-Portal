@@ -15,10 +15,10 @@ const getProfile = asyncHandler(async (req, res) => {
 });
 
 const updateMyProfile = asyncHandler(async (req, res) => {
-  const allowed = ["username", "displayName", "avatar", "bio", "headline", "location", "website", "github", "linkedin"];
+  const allowed = ["username", "displayName", "avatar", "bio", "headline", "location", "website", "github", "linkedin", "candidateProfileVisible", "openToOpportunities"];
   const updates = {};
   for (const key of allowed) {
-    if (req.body[key] !== undefined) updates[key] = typeof req.body[key] === "string" ? req.body[key].trim() : req.body[key];
+    if (req.body[key] !== undefined) updates[key] = typeof req.body[key] === "string" ? req.body[key].trim() : Boolean(req.body[key]);
   }
   if (updates.username) updates.username = updates.username.toLowerCase();
   const user = await User.findByIdAndUpdate(req.user.id, { $set: updates }, { new: true, runValidators: true }).select("-password");
