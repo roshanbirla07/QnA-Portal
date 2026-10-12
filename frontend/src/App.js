@@ -6,6 +6,7 @@ import { Navbar } from "./components/layout";
 import AppShell from "./components/layout/AppShell";
 import ShareJob from "./components/features/jobs/ShareJob";
 import ExpertsPage from "./components/features/experts/ExpertsPage";
+import DeveloperProfilesPage from "./components/features/experts/DeveloperProfilesPage";
 import InterviewsPage from "./components/features/companies/InterviewsPage";
 import CompanyReviewsPage from "./components/features/companies/CompanyReviewsPage";
 import SalaryInsightsPage from "./components/features/companies/SalaryInsightsPage";
@@ -36,6 +37,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/topics/:slug" element={<TopicPage />} />
         <Route path="/experts" element={<ExpertsPage />} />
+        <Route path="/developers" element={<DeveloperProfilesPage />} />
+        <Route path="/developers/:username" element={<DeveloperProfilesPage />} />
+        <Route path="/developer-profile" element={<PrivateRoute><DeveloperProfilesPage manage /></PrivateRoute>} />
         <Route path="/interviews" element={<InterviewsPage />} />
         <Route path="/reviews" element={<CompanyReviewsPage />} />
         <Route path="/salaries" element={<SalaryInsightsPage />} />
