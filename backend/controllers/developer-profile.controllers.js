@@ -92,7 +92,7 @@ const getPublicDeveloperProfile = asyncHandler(async (req, res) => {
   const user = await User.findOne({ username: String(req.params.username || "").toLowerCase() })
     .select(userFields)
     .lean();
-  if (!user) throw new ApiError(404, "Developer not found");
+  if (!user || !user.candidateProfileVisible) throw new ApiError(404, "Developer profile is not public");
 
   const [accounts, topicEvidence] = await Promise.all([
     ExternalProfile.find({ userId: user._id, visibility: "public" }).sort({ platform: 1 }).lean(),
