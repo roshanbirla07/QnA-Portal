@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { FiHome, FiSearch, FiUsers, FiBriefcase, FiGrid, FiDollarSign, FiMessageCircle, FiStar, FiGitBranch, FiAward, FiUserPlus, FiSend, FiCompass } from "react-icons/fi";
+import { FiHome, FiSearch, FiUsers, FiBriefcase, FiGrid, FiDollarSign, FiMessageCircle, FiStar, FiGitBranch, FiAward, FiUserPlus, FiSend, FiCompass, FiUser } from "react-icons/fi";
 import { apiConnector } from "../../services/apiConnector";
 import { TOPICS_ROUTER } from "../../services/apis";
 import Modal from "../common/Modal";
 
 const sections = [
-  { title: "Discover", links: [["Home", "/", FiHome], ["Search", "/search", FiSearch], ["Experts", "/experts", FiUsers]] },
+  { title: "Discover", links: [["Home", "/", FiHome], ["Search", "/search", FiSearch], ["Experts", "/experts", FiUsers], ["Developers", "/developers", FiUser]] },
   { title: "Career", links: [["Jobs", "/jobs", FiBriefcase], ["Companies", "/companies", FiGrid], ["Salaries", "/salaries", FiDollarSign], ["Interviews", "/interviews", FiMessageCircle], ["Reviews", "/reviews", FiStar]] },
-  { title: "Community", links: [["Communities", "/communities", FiCompass], ["Projects", "/projects", FiGitBranch], ["Rankings", "/rankings", FiAward], ["Connections", "/connections", FiUserPlus], ["Referrals", "/referrals", FiSend]] },
+  { title: "Community", links: [["Communities", "/communities", FiCompass], ["Projects", "/projects", FiGitBranch], ["Rankings", "/rankings", FiAward], ["Connections", "/connections", FiUserPlus], ["Developer profile", "/developer-profile", FiUser], ["Referrals", "/referrals", FiSend]] },
 ];
 const AppShell = ({ children, mobileOpen, closeMobile }) => {
   const [topics, setTopics] = useState([]);

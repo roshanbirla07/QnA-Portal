@@ -24,6 +24,7 @@ import vectorSearchRouter from "./routes/vector-search.routes.js";
 import knowledgeAssistantRouter from "./routes/knowledge-assistant.routes.js";
 import connectionRouter from "./routes/connection.routes.js";
 import jobRouter from "./routes/job.routes.js";
+import developerProfileRouter from "./routes/developer-profile.routes.js";
 import { RESPONSE_MESSAGES } from "./constants/responseMessages.js";
 import config from "./config/variables.js";
 
@@ -77,6 +78,7 @@ app.use("/api/v1/vector-search", vectorSearchRouter);
 app.use("/api/v1/knowledge-assistant", knowledgeAssistantRouter);
 app.use("/api/v1/connections", connectionRouter);
 app.use("/api/v1/jobs", jobRouter);
+app.use("/api/v1/developer-profiles", developerProfileRouter);
 
 app.get("/", (req, res) => res.status(200).json({ message: "service is running fine." }));
 app.use("*", (req, res) => res.status(404).json({ statusCode: 404, message: RESPONSE_MESSAGES.PAGE_NOT_FOUND }));
