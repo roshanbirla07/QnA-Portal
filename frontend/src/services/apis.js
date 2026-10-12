@@ -21,6 +21,8 @@ export const VECTOR_SEARCH_ROUTER = `${API_BASE_URL}/api/v1/vector-search`;
 export const KNOWLEDGE_ASSISTANT_ROUTER = `${API_BASE_URL}/api/v1/knowledge-assistant`;
 export const POSTS_ROUTER = `${API_BASE_URL}/api/v1/posts`;
 export const CONNECTIONS_ROUTER = `${API_BASE_URL}/api/v1/connections`;
+export const PROFILES_ROUTER = `${API_BASE_URL}/api/v1/profiles`;
+export const DEVELOPER_PROFILES_ROUTER = `${API_BASE_URL}/api/v1/developer-profiles`;
 
 export const SIGNUP_USER = USER_ROUTER + "/signup";
 export const LOGIN_USER = USER_ROUTER + "/login";
