@@ -69,7 +69,7 @@ Run frontend ESLint, production build, component tests, DESIGN.md lint, static c
 
 Developer profiles are opt-in for directory discovery. Connecting an external account does not automatically make a user discoverable; `candidateProfileVisible` must be enabled separately. Each connected account also has its own public/hidden visibility.
 
-GitHub and Codeforces are synchronized from their public APIs and may be labeled `verified` only after a successful API sync. LeetCode and Medium are stored as public profile links and remain `linked`; the UI must not present them as verified until a reliable verification mechanism is implemented.
+GitHub and Codeforces are synchronized from their public APIs and may be labeled `verified` only after a successful API sync. LeetCode imports selected public statistics through its unofficial GraphQL endpoint, and Medium imports recent article metadata from Medium's official RSS feed. Neither proves the QnA user's ownership of the external account. Treat successful sync as source-data confirmation only, not proof of identity. GraphQL may change without notice; RSS contains only recent accessible stories.
 
 The Developers directory supports factual filtering by name/location, skill evidence, and connected platform. It does not compute, display, or sort by a candidate suitability score. Evidence is shown as source-backed signals such as public repository languages/topics, Codeforces public metrics, and QnA topic reputation. Recruiters/users remain responsible for interpreting that evidence.
 
