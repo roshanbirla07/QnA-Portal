@@ -76,3 +76,7 @@ The Developers directory supports factual filtering by name/location, skill evid
 Profile sync failures preserve the connected link and surface a failed sync state so users can retry. Removing an account deletes its imported metrics and skill signals. External API timeouts/failures must not block the rest of the QnA profile.
 
 Public developer pages expose only user-approved public accounts and QnA-derived topic evidence. Email, authentication data, private profile information, and hidden external accounts are never included.
+
+### Developer profile UI behavior
+
+The developer directory commits filters into URL query parameters. Changing filters resets pagination to page 1; Next/Previous preserve filters. Loading uses the shared PageState; failures provide an explicit retry and empty results are distinguished from API errors. Account visibility defaults to hidden in the connection form and is saved through the existing account endpoint. Users must explicitly confirm deleting a connected account and its imported evidence. Profile publication and opportunity visibility changes have pending guards; background sync and deletion never imply ownership verification.
