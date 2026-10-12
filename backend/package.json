@@ -12,7 +12,8 @@
     "jobs:check-stale": "node scripts/check-stale-jobs.js",
     "lint": "eslint .",
     "search:reindex": "node scripts/reindex-search.js",
-    "vectors:reindex": "node scripts/reindex-vectors.js"
+    "vectors:reindex": "node scripts/reindex-vectors.js",
+    "profiles:sync": "node scripts/sync-developer-profiles.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
