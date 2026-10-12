@@ -4,7 +4,12 @@ import asyncHandler from "../utils/asyncHandler.js";
 import Job from "../schemas/job.schema.js";
 import mongoose from "mongoose";
 import { normalizeJobUrl, previewJob } from "../services/job-preview.service.js";
+import { ensureTopics, normalizeTopicSlug } from "../services/topic.service.js";
 import { syncPublicJob } from "../services/search-index.service.js";
+
+const normalizeTopics = (topics = []) => [...new Set(
+  (Array.isArray(topics) ? topics : []).map(normalizeTopicSlug).filter(Boolean)
+)].slice(0, 10);
 
 const preview = asyncHandler(async (req, res) => {
   const metadata = await previewJob(req.body?.url);
@@ -15,12 +20,24 @@ const publish = asyncHandler(async (req, res) => {
   const sourceUrl = normalizeJobUrl(req.body?.sourceUrl).toString();
   const fields = ["title", "company", "location", "description"];
   const values = Object.fromEntries(fields.map((field) => [field, String(req.body?.[field] || "").trim()]));
+  const topics = normalizeTopics(req.body?.topics);
+
   if (!values.title || !values.company || values.title.length > 220 || values.company.length > 160 ||
       values.location.length > 160 || values.description.length > 1000) {
     throw new ApiError(400, "A title and company are required; check field lengths");
   }
+
+  await ensureTopics(topics);
+
   try {
-    const job = await Job.create({ sourceUrl, ...values, submittedBy: req.user.id });
+    const job = await Job.create({
+      sourceUrl,
+      ...values,
+      topics,
+      submittedBy: req.user.id,
+      source: "community",
+      discoveredAt: new Date(),
+    });
     void syncPublicJob(job);
     return res.status(201).json(new ApiResponse(201, job, "Job link published"));
   } catch (error) {
@@ -34,16 +51,25 @@ const list = asyncHandler(async (req, res) => {
   const page = Math.min(Math.max(Number.parseInt(req.query.page, 10) || 1, 1), 50);
   const filter = { status: "published" };
   const q = String(req.query.q || "").trim().slice(0, 80);
+  const topic = normalizeTopicSlug(req.query.topic);
+
   if (q) filter.$text = { $search: q };
+  if (topic) filter.topics = topic;
+
   for (const field of ["company", "location"]) {
-    const value = String(req.query[field] || "").trim().slice(0, 80).replace(/[^a-z0-9 -]/gi, "");
+    const value = String(req.query[field] || "").trim().slice(0, 80).replace(/[^a-z0-9 .,&+-]/gi, "");
     if (value) filter[field] = { $regex: value, $options: "i" };
   }
+
   const [items, total] = await Promise.all([
-    Job.find(filter).sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit)
-      .select("title company location description sourceUrl submittedBy createdAt status"),
+    Job.find(filter)
+      .sort({ postedAt: -1, createdAt: -1, _id: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select("title company location description sourceUrl topics source postedAt submittedBy createdAt status verificationStatus"),
     Job.countDocuments(filter),
   ]);
+
   return res.status(200).json(new ApiResponse(200, {
     items, total, page, limit, hasMore: page < 50 && page * limit < total,
   }, "Jobs fetched successfully"));
