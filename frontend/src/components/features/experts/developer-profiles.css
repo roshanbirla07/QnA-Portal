@@ -53,3 +53,16 @@
   .developer-filter { grid-template-columns: 1fr; }
   .developer-profile-hero { align-items: flex-start; }
 }
+
+.developer-result-count { margin: 0 0 12px; color: var(--text-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.developer-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 22px; }
+.developer-pagination span { color: var(--text-secondary); font-size: 13px; font-variant-numeric: tabular-nums; }
+.developer-connect-card .developer-visibility-label { display: block; margin-top: 14px; color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+.developer-connect-card .developer-visibility { margin-top: 6px; }
+.developer-remove-confirm { margin-top: 14px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--bg-primary); }
+.developer-remove-confirm p { margin: 0 0 12px; font-size: 13px; color: var(--text-primary); }
+.developer-remove-confirm button { margin-right: 8px; margin-bottom: 4px; }
+.developer-danger { border-color: var(--danger); color: var(--danger); }
+.developer-article-list { margin: 14px 0; padding-left: 18px; font-size: 13px; line-height: 1.7; }
+.developer-article-list a { color: rgb(var(--brand-rgb)); text-decoration: underline; text-underline-offset: 3px; }
+.developer-card-head h2 a:hover, .developer-evidence-heading a:hover { color: rgb(var(--brand-rgb)); }
