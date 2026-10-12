@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { FiArrowUpRight, FiCheckCircle, FiRefreshCw, FiTrash2 } from "react-icons/fi";
+import { FiArrowUpRight, FiCheckCircle, FiRefreshCw, FiTrash2, FiEye, FiEyeOff } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { apiConnector } from "../../../services/apiConnector";
 import { DEVELOPER_PROFILES_ROUTER, PROFILES_ROUTER } from "../../../services/apis";
 import { useAuth } from "../../../contexts/AuthContext";
+import PageState from "../../common/PageState";
 import "./developer-profiles.css";
 
 const platforms = [
@@ -68,6 +69,11 @@ const DeveloperDirectory = () => {
   const [error, setError] = useState("");
 
   const queryKey = params.toString();
+  const page = Math.max(1, Number(params.get("page")) || 1);
+
+  useEffect(() => {
+    setDraft({ q: params.get("q") || "", skill: params.get("skill") || "", platform: params.get("platform") || "" });
+  }, [queryKey]);
 
   useEffect(() => {
     let active = true;
@@ -93,7 +99,7 @@ const DeveloperDirectory = () => {
   return (
     <main className="developer-page">
       <header className="developer-page-heading">
-        <p className="feed-eyebrow">VERIFIED DEVELOPER EVIDENCE</p>
+        <p className="feed-eyebrow">DEVELOPER EVIDENCE</p>
         <h1>Discover developers by demonstrated work</h1>
         <p>Explore public technical profiles and QnA topic reputation. Evidence is shown directly; QnA does not generate a hiring score.</p>
       </header>
@@ -111,8 +117,9 @@ const DeveloperDirectory = () => {
         <button className="btn-primary" type="submit">Filter developers</button>
       </form>
 
-      {loading ? <p role="status">Loading developer profiles…</p> :
-        error ? <p role="alert">{error}</p> :
+      {!loading && !error && <p className="developer-result-count" role="status">{data.total || 0} public developer profiles</p>}
+      {loading ? <PageState state="loading" title="Loading developer profiles…" /> :
+        error ? <PageState state="error" title="Could not load developers"><button type="button" className="glass-button" onClick={() => setParams((p) => new URLSearchParams(p))}>Try again</button></PageState> :
         data.items?.length ? (
           <section className="developer-directory" aria-label="Developer profiles">
             {data.items.map(({ user, accounts, topicEvidence }) => (
@@ -138,7 +145,12 @@ const DeveloperDirectory = () => {
               </article>
             ))}
           </section>
-        ) : <p>No public developer profiles match these filters.</p>}
+        ) : <PageState state="empty" title="No developers found">Try a different skill or clear your filters.</PageState>}
+      {!loading && !error && data.total > (data.limit || 20) && <nav className="developer-pagination" aria-label="Developer result pages">
+        <button className="glass-button" disabled={page <= 1} onClick={() => { const p = new URLSearchParams(queryKey); p.set("page", String(page - 1)); setParams(p); }}>Previous</button>
+        <span>Page {page} of {Math.ceil(data.total / (data.limit || 20))}</span>
+        <button className="glass-button" disabled={!data.hasMore} onClick={() => { const p = new URLSearchParams(queryKey); p.set("page", String(page + 1)); setParams(p); }}>Next</button>
+      </nav>}
     </main>
   );
 };
@@ -149,6 +161,7 @@ const PublicDeveloperProfile = ({ username }) => {
 
   useEffect(() => {
     let active = true;
+    setData(null);
     setError("");
     apiConnector("GET", `${DEVELOPER_PROFILES_ROUTER}/${encodeURIComponent(username)}`)
       .then((response) => { if (active) setData(response.data.data); })
@@ -156,8 +169,8 @@ const PublicDeveloperProfile = ({ username }) => {
     return () => { active = false; };
   }, [username]);
 
-  if (error) return <main className="developer-page"><p role="alert">{error}</p></main>;
-  if (!data) return <main className="developer-page"><p role="status">Loading developer evidence…</p></main>;
+  if (error) return <main className="developer-page"><PageState state="error" title="Developer profile unavailable">{error}</PageState></main>;
+  if (!data) return <main className="developer-page"><PageState state="loading" title="Loading developer evidence…" /></main>;
 
   const { user, accounts, topicEvidence } = data;
   return (
@@ -200,6 +213,9 @@ const ManageDeveloperProfile = () => {
   const [data, setData] = useState(null);
   const [handles, setHandles] = useState({});
   const [busy, setBusy] = useState("");
+  const [visibility, setVisibility] = useState({});
+  const [confirmRemove, setConfirmRemove] = useState("");
+  const [loadError, setLoadError] = useState("");
   const { token } = useAuth();
 
   const accountMap = useMemo(() => Object.fromEntries((data?.accounts || []).map((account) => [account.platform, account])), [data]);
@@ -209,19 +225,22 @@ const ManageDeveloperProfile = () => {
       const next = response.data.data;
       setData(next);
       setHandles(Object.fromEntries((next.accounts || []).map((account) => [account.platform, account.handle])));
+      setVisibility(Object.fromEntries((next.accounts || []).map((account) => [account.platform, account.visibility])));
+      setLoadError("");
     });
 
   useEffect(() => {
     if (!token) return undefined;
-    load().catch((error) => toast.error(error.message || "Unable to load developer profile"));
+    load().catch(() => setLoadError("Unable to load your developer profile. Check your connection and retry."));
   }, [token]);
 
   const saveAccount = async (platform) => {
     const handle = String(handles[platform] || "").trim();
     if (!handle) return;
+    if (busy) return;
     setBusy(platform);
     try {
-      await apiConnector("PUT", `${DEVELOPER_PROFILES_ROUTER}/me/accounts/${platform}`, { handle, visibility: "public" });
+      await apiConnector("PUT", `${DEVELOPER_PROFILES_ROUTER}/me/accounts/${platform}`, { handle, visibility: visibility[platform] || "hidden" });
       await load();
       toast.success(`${platforms.find((item) => item.id === platform)?.label} profile saved`);
     } catch (error) {
@@ -230,6 +249,7 @@ const ManageDeveloperProfile = () => {
   };
 
   const syncAccount = async (platform) => {
+    if (busy) return;
     setBusy(platform);
     try {
       await apiConnector("POST", `${DEVELOPER_PROFILES_ROUTER}/me/accounts/${platform}/sync`);
@@ -242,11 +262,13 @@ const ManageDeveloperProfile = () => {
   };
 
   const removeAccount = async (platform) => {
+    if (busy) return;
     setBusy(platform);
     try {
       await apiConnector("DELETE", `${DEVELOPER_PROFILES_ROUTER}/me/accounts/${platform}`);
       setHandles((value) => ({ ...value, [platform]: "" }));
       await load();
+      setConfirmRemove("");
       toast.success("Profile removed");
     } catch (error) {
       toast.error(error.message || "Unable to remove profile");
@@ -262,7 +284,8 @@ const ManageDeveloperProfile = () => {
     }
   };
 
-  if (!data) return <main className="developer-page"><p role="status">Loading profile settings…</p></main>;
+  if (loadError) return <main className="developer-page"><PageState state="error" title="Profile settings unavailable"><p>{loadError}</p><button className="glass-button" onClick={() => load().catch(() => {})}>Retry</button></PageState></main>;
+  if (!data) return <main className="developer-page"><PageState state="loading" title="Loading profile settings…" /></main>;
 
   return (
     <main className="developer-page">
@@ -296,15 +319,20 @@ const ManageDeveloperProfile = () => {
               </div>
               <input className="input-field" aria-label={`${platform.label} handle`} placeholder={platform.placeholder}
                 value={handles[platform.id] || ""} onChange={(event) => setHandles((value) => ({ ...value, [platform.id]: event.target.value }))} />
+              <label className="developer-visibility-label" htmlFor={`visibility-${platform.id}`}>Visibility</label>
+              <select className="input-field developer-visibility" id={`visibility-${platform.id}`} disabled={Boolean(busy)} value={visibility[platform.id] || "hidden"} onChange={(event) => setVisibility((value) => ({ ...value, [platform.id]: event.target.value }))}>
+                <option value="hidden">Private — only you</option><option value="public">Public on your profile</option>
+              </select>
               <div className="developer-connect-actions">
-                <button className="btn-primary" type="button" disabled={busy === platform.id || !String(handles[platform.id] || "").trim()}
+                <button className="btn-primary" type="button" disabled={Boolean(busy) || !String(handles[platform.id] || "").trim()}
                   onClick={() => saveAccount(platform.id)}>{busy === platform.id ? "Saving…" : account ? "Update" : "Connect"}</button>
-                {account && platform.autoSync && <button className="glass-button" type="button" disabled={busy === platform.id} onClick={() => syncAccount(platform.id)}>
+                {account && platform.autoSync && <button className="glass-button" type="button" disabled={Boolean(busy)} onClick={() => syncAccount(platform.id)}>
                   <FiRefreshCw aria-hidden="true" /> Refresh
                 </button>}
-                {account && <button className="icon-button" type="button" disabled={busy === platform.id} onClick={() => removeAccount(platform.id)}
+                {account && <button className="icon-button" type="button" disabled={Boolean(busy)} onClick={() => setConfirmRemove(platform.id)}
                   aria-label={`Remove ${platform.label}`}><FiTrash2 aria-hidden="true" /></button>}
               </div>
+              {confirmRemove === platform.id && <div className="developer-remove-confirm" role="group" aria-label={`Remove ${platform.label} confirmation`}><p>Remove this linked profile and its imported evidence?</p><button type="button" className="glass-button" onClick={() => setConfirmRemove("")}>Keep profile</button><button type="button" className="glass-button developer-danger" onClick={() => removeAccount(platform.id)}>Remove profile</button></div>}
               {account && <><p className="developer-metrics">{metricText(account)}</p><p className="developer-note">{account.verificationNote}</p></>}
               {!platform.autoSync && <p className="developer-note">This platform currently stores a public profile link only; QnA does not claim automated verification.</p>}
             </article>
