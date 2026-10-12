@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { FiArrowUpRight, FiCheckCircle, FiRefreshCw, FiTrash2, FiEye, FiEyeOff } from "react-icons/fi";
+import { FiArrowUpRight, FiCheckCircle, FiRefreshCw, FiTrash2 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { apiConnector } from "../../../services/apiConnector";
 import { DEVELOPER_PROFILES_ROUTER, PROFILES_ROUTER } from "../../../services/apis";
@@ -67,6 +67,7 @@ const DeveloperDirectory = () => {
   const [data, setData] = useState({ items: [], total: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   const queryKey = params.toString();
   const page = Math.max(1, Number(params.get("page")) || 1);
@@ -85,7 +86,7 @@ const DeveloperDirectory = () => {
       .catch((reason) => { if (active) setError(reason.message || "Unable to load developer profiles"); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [queryKey]);
+  }, [queryKey, retry]);
 
   const submit = (event) => {
     event.preventDefault();
@@ -119,7 +120,7 @@ const DeveloperDirectory = () => {
 
       {!loading && !error && <p className="developer-result-count" role="status">{data.total || 0} public developer profiles</p>}
       {loading ? <PageState state="loading" title="Loading developer profiles…" /> :
-        error ? <PageState state="error" title="Could not load developers"><button type="button" className="glass-button" onClick={() => setParams((p) => new URLSearchParams(p))}>Try again</button></PageState> :
+        error ? <PageState state="error" title="Could not load developers"><button type="button" className="glass-button" onClick={() => setRetry((value) => value + 1)}>Try again</button></PageState> :
         data.items?.length ? (
           <section className="developer-directory" aria-label="Developer profiles">
             {data.items.map(({ user, accounts, topicEvidence }) => (
@@ -216,6 +217,7 @@ const ManageDeveloperProfile = () => {
   const [visibility, setVisibility] = useState({});
   const [confirmRemove, setConfirmRemove] = useState("");
   const [loadError, setLoadError] = useState("");
+  const [preferencesBusy, setPreferencesBusy] = useState(false);
   const { token } = useAuth();
 
   const accountMap = useMemo(() => Object.fromEntries((data?.accounts || []).map((account) => [account.platform, account])), [data]);
@@ -276,12 +278,14 @@ const ManageDeveloperProfile = () => {
   };
 
   const updatePreference = async (key, checked) => {
+    if (preferencesBusy) return;
+    setPreferencesBusy(true);
     try {
       await apiConnector("PATCH", `${PROFILES_ROUTER}/me/profile`, { [key]: checked });
       setData((value) => ({ ...value, user: { ...value.user, [key]: checked } }));
     } catch (error) {
       toast.error(error.message || "Unable to update profile preference");
-    }
+    } finally { setPreferencesBusy(false); }
   };
 
   if (loadError) return <main className="developer-page"><PageState state="error" title="Profile settings unavailable"><p>{loadError}</p><button className="glass-button" onClick={() => load().catch(() => {})}>Retry</button></PageState></main>;
@@ -296,11 +300,11 @@ const ManageDeveloperProfile = () => {
       </header>
 
       <section className="surface-card developer-preferences">
-        <label><input type="checkbox" checked={Boolean(data.user.candidateProfileVisible)}
+        <label><input type="checkbox" disabled={preferencesBusy} checked={Boolean(data.user.candidateProfileVisible)}
           onChange={(event) => updatePreference("candidateProfileVisible", event.target.checked)} />
           <span><strong>Publish my developer profile</strong><small>Your public evidence can appear in the Developers directory and on your public developer URL.</small></span>
         </label>
-        <label><input type="checkbox" checked={Boolean(data.user.openToOpportunities)}
+        <label><input type="checkbox" disabled={preferencesBusy} checked={Boolean(data.user.openToOpportunities)}
           onChange={(event) => updatePreference("openToOpportunities", event.target.checked)} />
           <span><strong>Open to opportunities</strong><small>Display this signal on your public developer profile.</small></span>
         </label>
