@@ -9,9 +9,9 @@ import "./developer-profiles.css";
 
 const platforms = [
   { id: "github", label: "GitHub", placeholder: "github username", autoSync: true },
-  { id: "leetcode", label: "LeetCode", placeholder: "leetcode username", autoSync: false },
+  { id: "leetcode", label: "LeetCode", placeholder: "leetcode username", autoSync: true },
   { id: "codeforces", label: "Codeforces", placeholder: "codeforces handle", autoSync: true },
-  { id: "medium", label: "Medium", placeholder: "medium username", autoSync: false },
+  { id: "medium", label: "Medium", placeholder: "medium username", autoSync: true },
 ];
 
 const metricText = (account) => {
@@ -21,6 +21,12 @@ const metricText = (account) => {
   }
   if (account.platform === "codeforces") {
     return [metrics.rating != null && `rating ${metrics.rating}`, metrics.maxRating != null && `max ${metrics.maxRating}`, metrics.solvedInRecentSubmissions != null && `${metrics.solvedInRecentSubmissions} recent solved`].filter(Boolean).join(" · ");
+  }
+  if (account.platform === "leetcode") {
+    return [metrics.solvedTotal != null && `${metrics.solvedTotal} solved`, metrics.contestRating != null && `contest ${Math.round(metrics.contestRating)}`, metrics.profileRanking != null && `rank ${metrics.profileRanking}`].filter(Boolean).join(" · ") || "LeetCode profile";
+  }
+  if (account.platform === "medium") {
+    return metrics.recentArticlesCount != null ? `${metrics.recentArticlesCount} recent RSS articles` : "Medium profile";
   }
   return "Profile link";
 };
@@ -45,6 +51,7 @@ const EvidenceCard = ({ account }) => (
         {account.skills.slice(0, 8).map((skill) => <span className="topic-chip" key={skill}>#{skill}</span>)}
       </div>
     )}
+    {account.metrics?.recentArticles?.length > 0 && <ul className="developer-article-list">{account.metrics.recentArticles.slice(0, 5).map((article) => <li key={article.url}><a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a></li>)}</ul>}
     {account.verificationNote && <p className="developer-note">{account.verificationNote}</p>}
   </article>
 );
