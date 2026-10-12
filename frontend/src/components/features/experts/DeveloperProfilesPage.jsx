@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { apiConnector } from "../../../services/apiConnector";
 import { DEVELOPER_PROFILES_ROUTER, PROFILES_ROUTER } from "../../../services/apis";
 import { useAuth } from "../../../contexts/AuthContext";
+import "./developer-profiles.css";
 
 const platforms = [
   { id: "github", label: "GitHub", placeholder: "github username", autoSync: true },
@@ -65,12 +66,13 @@ const DeveloperDirectory = () => {
     let active = true;
     setLoading(true);
     setError("");
-    apiConnector("GET", DEVELOPER_PROFILES_ROUTER, null, null, Object.fromEntries(params.entries()))
+    const requestParams = Object.fromEntries(new URLSearchParams(queryKey).entries());
+    apiConnector("GET", DEVELOPER_PROFILES_ROUTER, null, null, requestParams)
       .then((response) => { if (active) setData(response.data.data); })
       .catch((reason) => { if (active) setError(reason.message || "Unable to load developer profiles"); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [queryKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [queryKey]);
 
   const submit = (event) => {
     event.preventDefault();
@@ -205,7 +207,7 @@ const ManageDeveloperProfile = () => {
   useEffect(() => {
     if (!token) return undefined;
     load().catch((error) => toast.error(error.message || "Unable to load developer profile"));
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const saveAccount = async (platform) => {
     const handle = String(handles[platform] || "").trim();
