@@ -268,7 +268,7 @@ const ManageDeveloperProfile = () => {
       <section className="surface-card developer-preferences">
         <label><input type="checkbox" checked={Boolean(data.user.candidateProfileVisible)}
           onChange={(event) => updatePreference("candidateProfileVisible", event.target.checked)} />
-          <span><strong>Show me in developer discovery</strong><small>Your public evidence can appear in the Developers directory.</small></span>
+          <span><strong>Publish my developer profile</strong><small>Your public evidence can appear in the Developers directory and on your public developer URL.</small></span>
         </label>
         <label><input type="checkbox" checked={Boolean(data.user.openToOpportunities)}
           onChange={(event) => updatePreference("openToOpportunities", event.target.checked)} />
