@@ -1,4 +1,6 @@
 import ApiError from "../utils/ApiError.js";
+import { syncLeetCode } from "./leetcode-profile.service.js";
+import { syncMedium } from "./medium-profile.service.js";
 
 const PLATFORM_CONFIG = {
   github: {
@@ -14,12 +16,12 @@ const PLATFORM_CONFIG = {
   leetcode: {
     profileUrl: (handle) => `https://leetcode.com/u/${handle}/`,
     handlePattern: /^[A-Za-z0-9_-]{2,40}$/,
-    sync: false,
+    sync: true,
   },
   medium: {
     profileUrl: (handle) => `https://medium.com/@${handle.replace(/^@/, "")}`,
     handlePattern: /^@?[A-Za-z0-9_.-]{2,80}$/,
-    sync: false,
+    sync: true,
   },
 };
 
@@ -163,6 +165,8 @@ const syncExternalProfile = async (profile) => {
     let synced;
     if (profile.platform === "github") synced = await syncGithub(profile.handle);
     else if (profile.platform === "codeforces") synced = await syncCodeforces(profile.handle);
+    else if (profile.platform === "leetcode") synced = await syncLeetCode(profile.handle);
+    else if (profile.platform === "medium") synced = await syncMedium(profile.handle);
     else {
       profile.verificationStatus = "linked";
       profile.verificationNote = "Profile link saved. Automatic verification is not available for this platform.";
