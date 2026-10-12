@@ -42,7 +42,7 @@ const EvidenceCard = ({ account }) => (
       </div>
       <span className={`developer-status developer-status--${account.verificationStatus}`}>
         {account.verificationStatus === "verified" && <FiCheckCircle aria-hidden="true" />}
-        {account.verificationStatus}
+        {account.verificationStatus === "verified" ? "Data synced" : account.verificationStatus}
       </span>
     </div>
     <p className="developer-metrics">{metricText(account)}</p>
@@ -292,7 +292,7 @@ const ManageDeveloperProfile = () => {
             <article className="surface-card developer-connect-card" key={platform.id}>
               <div className="developer-evidence-heading">
                 <div><p className="developer-platform">{platform.label}</p><h2>{account ? account.handle : "Not connected"}</h2></div>
-                {account && <span className={`developer-status developer-status--${account.verificationStatus}`}>{account.verificationStatus}</span>}
+                {account && <span className={`developer-status developer-status--${account.verificationStatus}`}>{account.verificationStatus === "verified" ? "Data synced" : account.verificationStatus}</span>}
               </div>
               <input className="input-field" aria-label={`${platform.label} handle`} placeholder={platform.placeholder}
                 value={handles[platform.id] || ""} onChange={(event) => setHandles((value) => ({ ...value, [platform.id]: event.target.value }))} />
