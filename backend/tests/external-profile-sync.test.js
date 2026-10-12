@@ -45,7 +45,7 @@ test("Medium sync extracts recent article metadata, not post content", async (t)
   });
   const result = await syncMedium("coder");
   assert.equal(result.metrics.recentArticlesCount, 1);
-  assert.equal(result.metrics.recentArticles[0].title, "Understanding Kafka &amp; Redis");
+  assert.equal(result.metrics.recentArticles[0].title, "Understanding Kafka & Redis");
   assert.equal(result.skills[0], "kafka");
   assert.ok(!JSON.stringify(result).includes("private-content"));
 });
