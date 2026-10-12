@@ -5,7 +5,7 @@ import { syncExternalProfile } from "../services/external-profile.service.js";
 await dbConnect();
 
 const accounts = await ExternalProfile.find({
-  platform: { $in: ["github", "codeforces"] },
+  platform: { $in: ["github", "codeforces", "leetcode", "medium"] },
   visibility: "public",
 }).sort({ lastSyncedAt: 1 }).limit(200);
 
