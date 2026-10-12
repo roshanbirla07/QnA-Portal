@@ -63,3 +63,16 @@ QuestionForm uses app-owned inline validation, preserves entered text after vali
 
 Run frontend ESLint, production build, component tests, DESIGN.md lint, static changed-surface audit, and browser checks. Browser fixtures verify UI states; they do not claim live MongoDB/production integration. Compare Home and Rankings in desktop/mobile and light/dark themes. Record remaining full-project static findings separately from changed-surface findings.
 
+
+
+## Developer evidence profiles
+
+Developer profiles are opt-in for directory discovery. Connecting an external account does not automatically make a user discoverable; `candidateProfileVisible` must be enabled separately. Each connected account also has its own public/hidden visibility.
+
+GitHub and Codeforces are synchronized from their public APIs and may be labeled `verified` only after a successful API sync. LeetCode and Medium are stored as public profile links and remain `linked`; the UI must not present them as verified until a reliable verification mechanism is implemented.
+
+The Developers directory supports factual filtering by name/location, skill evidence, and connected platform. It does not compute, display, or sort by a candidate suitability score. Evidence is shown as source-backed signals such as public repository languages/topics, Codeforces public metrics, and QnA topic reputation. Recruiters/users remain responsible for interpreting that evidence.
+
+Profile sync failures preserve the connected link and surface a failed sync state so users can retry. Removing an account deletes its imported metrics and skill signals. External API timeouts/failures must not block the rest of the QnA profile.
+
+Public developer pages expose only user-approved public accounts and QnA-derived topic evidence. Email, authentication data, private profile information, and hidden external accounts are never included.
