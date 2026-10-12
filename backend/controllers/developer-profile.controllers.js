@@ -149,7 +149,7 @@ const listCandidates = asyncHandler(async (req, res) => {
   const [users, total] = await Promise.all([
     User.find(userFilter)
       .select(userFields)
-      .sort({ reputation: -1, createdAt: -1 })
+      .sort({ displayName: 1, username: 1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .lean(),
