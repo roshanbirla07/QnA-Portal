@@ -18,4 +18,16 @@ router.post("/me/accounts/:platform/sync", authMiddleware(), syncMyAccount);
 router.delete("/me/accounts/:platform", authMiddleware(), deleteMyAccount);
 router.get("/:username", getPublicDeveloperProfile);
 
+// Return actionable validation errors as JSON instead of Express HTML stack pages.
+router.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+  const statusCode = Number.isInteger(error.statusCode) && error.statusCode >= 400 && error.statusCode < 600
+    ? error.statusCode : 500;
+  return res.status(statusCode).json({
+    statusCode,
+    success: false,
+    message: statusCode === 500 ? "Unable to process developer profile request" : error.message,
+  });
+});
+
 export default router;
