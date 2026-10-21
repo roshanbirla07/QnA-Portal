@@ -241,3 +241,11 @@ For interface changes, consult [DESIGN.md](DESIGN.md) and [UX-CONTRACT.md](UX-CO
 ## License
 
 The backend package metadata declares `ISC`, but the repository currently has no root license file. Confirm the intended project-wide license with the maintainer before redistributing the project.
+
+#### Developer profile setup and source limits
+
+Visit **Developer profile** to save your QnA username, display name, headline, and publication preferences. A username is required to publish; connecting a platform alone does not publish the QnA profile. Each connected account has a separately saved public/hidden setting.
+
+Work summaries show imported snapshots, last sync dates, and explicit unavailable/failed states. GitHub calendars come from the public, unauthenticated contribution page; the service token is never sent to that page. Publicly shared private contribution counts may appear without repository details. This HTML endpoint can change: if parsing fails, no graph is shown and repository statistics still sync. Repositories, language counts, and stars cover up to 100 recent public non-fork repos. Codeforces activity covers the most recent 200 submissions. LeetCode uses its unofficial GraphQL endpoint, and Medium shows recent RSS metadata only. Existing connected accounts need **Refresh** to import the expanded snapshot.
+
+Run backend tests with `npm test --workspace backend`; frontend component tests with `CI=true npm test --workspace frontend -- --watchAll=false --runInBand`.

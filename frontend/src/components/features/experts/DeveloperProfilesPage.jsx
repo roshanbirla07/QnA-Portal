@@ -1,73 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { FiArrowUpRight, FiCheckCircle, FiRefreshCw, FiTrash2, FiUsers, FiSearch } from "react-icons/fi";
-import { SiGithub, SiLeetcode, SiCodeforces, SiMedium } from "react-icons/si";
+import { FiArrowUpRight, FiUsers, FiSearch } from "react-icons/fi";
+import PlatformSummary, { platforms, PlatformIdentity } from "./PlatformSummary";
+import DeveloperProfileSettings from "./DeveloperProfileSettings";
 import PageState from "../../common/PageState";
 import SearchField from "../../common/SearchField";
-import toast from "react-hot-toast";
 import { apiConnector } from "../../../services/apiConnector";
-import { DEVELOPER_PROFILES_ROUTER, PROFILES_ROUTER } from "../../../services/apis";
-import { useAuth } from "../../../contexts/AuthContext";
+import { DEVELOPER_PROFILES_ROUTER } from "../../../services/apis";
 import "./developer-profiles.css";
-
-const platforms = [
-  { icon: SiGithub, description: "Code & open source", id: "github", label: "GitHub", placeholder: "github username", autoSync: true },
-  { icon: SiLeetcode, description: "Problems & contests", id: "leetcode", label: "LeetCode", placeholder: "leetcode username", autoSync: true },
-  { icon: SiCodeforces, description: "Competitive programming", id: "codeforces", label: "Codeforces", placeholder: "codeforces handle", autoSync: true },
-  { icon: SiMedium, description: "Articles & ideas", id: "medium", label: "Medium", placeholder: "medium username", autoSync: true },
-];
-
-const PlatformIdentity = ({ platform, detail = false }) => {
-  const item = platforms.find((entry) => entry.id === platform);
-  if (!item) return <span>{platform}</span>;
-  const Icon = item.icon;
-  return <span className="developer-platform-identity">
-    <span className="developer-platform-logo"><Icon aria-hidden="true" /></span>
-    <span><strong>{item.label}</strong>{detail && <small>{item.description}</small>}</span>
-  </span>;
-};
-
-const metricText = (account) => {
-  const metrics = account?.metrics || {};
-  if (account.platform === "github") {
-    return [metrics.publicRepos != null && `${metrics.publicRepos} repos`, metrics.totalStars != null && `${metrics.totalStars} stars`].filter(Boolean).join(" · ");
-  }
-  if (account.platform === "codeforces") {
-    return [metrics.rating != null && `rating ${metrics.rating}`, metrics.maxRating != null && `max ${metrics.maxRating}`, metrics.solvedInRecentSubmissions != null && `${metrics.solvedInRecentSubmissions} recent solved`].filter(Boolean).join(" · ");
-  }
-  if (account.platform === "leetcode") {
-    return [metrics.solvedTotal != null && `${metrics.solvedTotal} solved`, metrics.contestRating != null && `contest ${Math.round(metrics.contestRating)}`, metrics.profileRanking != null && `rank ${metrics.profileRanking}`].filter(Boolean).join(" · ") || "LeetCode profile";
-  }
-  if (account.platform === "medium") {
-    return metrics.recentArticlesCount != null ? `${metrics.recentArticlesCount} recent RSS articles` : "Medium profile";
-  }
-  return "Profile link";
-};
-
-const EvidenceCard = ({ account }) => (
-  <article className="developer-evidence-card">
-    <div className="developer-evidence-heading">
-      <div>
-        <PlatformIdentity platform={account.platform} />
-        <a href={account.profileUrl} target="_blank" rel="noopener noreferrer">
-          {account.handle} <FiArrowUpRight aria-hidden="true" />
-        </a>
-      </div>
-      <span className={`developer-status developer-status--${account.verificationStatus}`}>
-        {account.verificationStatus === "verified" && <FiCheckCircle aria-hidden="true" />}
-        {account.verificationStatus === "verified" ? "Data synced" : account.verificationStatus}
-      </span>
-    </div>
-    <p className="developer-metrics">{metricText(account)}</p>
-    {account.skills?.length > 0 && (
-      <div className="developer-skills">
-        {account.skills.slice(0, 8).map((skill) => <span className="topic-chip" key={skill}>#{skill}</span>)}
-      </div>
-    )}
-    {account.metrics?.recentArticles?.length > 0 && <ul className="developer-article-list">{account.metrics.recentArticles.slice(0, 5).map((article) => <li key={article.url}><a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a></li>)}</ul>}
-    {account.verificationNote && <p className="developer-note">{account.verificationNote}</p>}
-  </article>
-);
 
 const DeveloperDirectory = () => {
   const [params, setParams] = useSearchParams();
@@ -178,10 +118,14 @@ const DeveloperDirectory = () => {
                   {topicEvidence?.slice(0, 4).map((evidence) => (
                     <span className="topic-chip" key={evidence.topic}>#{evidence.topic} · {evidence.reputation}</span>
                   ))}
-                  {accounts?.flatMap((account) => account.skills || []).filter((skill, index, all) => all.indexOf(skill) === index)
+                  {accounts?.filter((account) => account.visibility !== "hidden").flatMap((account) => account.skills || []).filter((skill, index, all) => all.indexOf(skill) === index)
                     .slice(0, 5).map((skill) => <span className="topic-chip" key={skill}>#{skill}</span>)}
                 </div>
-                <div className="developer-platform-line">{accounts?.length ? accounts.map((account) => <PlatformIdentity key={account.platform} platform={account.platform} />) : "QnA contributions"}</div>
+                <section className="developer-card-work" aria-label="Work">
+                  <h3>Work</h3>
+                  <div className="developer-work-grid">{accounts?.filter((account) => account.visibility !== "hidden").map((account) => <PlatformSummary key={account.platform} account={account} />)}</div>
+                  {!accounts?.length && <p className="developer-note">No public connected platforms yet.</p>}
+                </section>
                 <Link className="glass-button" to={`/developers/${user.username}`}>View evidence</Link>
               </article>
             ))}
@@ -193,6 +137,11 @@ const DeveloperDirectory = () => {
             <Link className="btn-primary" to="/developer-profile">Connect your profiles <FiArrowUpRight aria-hidden="true" /></Link>}
         </PageState>}
       </div>
+      {!loading && !error && (data.page > 1 || data.hasMore) && <nav className="developer-pagination" aria-label="Developer pages">
+        <button className="glass-button" disabled={data.page <= 1} onClick={() => setParams((current) => { const next = new URLSearchParams(current); next.set("page", String(data.page - 1)); return next; })}>Previous</button>
+        <span>Page {data.page}</span>
+        <button className="glass-button" disabled={!data.hasMore} onClick={() => setParams((current) => { const next = new URLSearchParams(current); next.set("page", String(data.page + 1)); return next; })}>Next</button>
+      </nav>}
       <p className="developer-directory-note">Public profiles only. Synced data confirms the source, not account ownership. No hiring scores.</p>
     </main>
   );
@@ -201,20 +150,23 @@ const DeveloperDirectory = () => {
 const PublicDeveloperProfile = ({ username }) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     let active = true;
     setError("");
+    setData(null);
     apiConnector("GET", `${DEVELOPER_PROFILES_ROUTER}/${encodeURIComponent(username)}`)
       .then((response) => { if (active) setData(response.data.data); })
-      .catch((reason) => { if (active) setError(reason.message || "Unable to load developer profile"); });
+      .catch(() => { if (active) setError("This profile is unavailable or could not be loaded."); });
     return () => { active = false; };
-  }, [username]);
+  }, [username, retry]);
 
-  if (error) return <main className="developer-page"><p role="alert">{error}</p></main>;
-  if (!data) return <main className="developer-page"><p role="status">Loading developer evidence…</p></main>;
+  if (error) return <main className="developer-page"><PageState state="error" title="Profile unavailable"><p>{error}</p><button className="glass-button" onClick={() => setRetry((value) => value + 1)}>Try again</button></PageState></main>;
+  if (!data) return <main className="developer-page"><PageState state="loading" title="Loading developer work…" /></main>;
 
-  const { user, accounts, topicEvidence } = data;
+  const { user, topicEvidence } = data;
+  const accounts = data.accounts.filter((account) => account.visibility !== "hidden");
   return (
     <main className="developer-page">
       <header className="surface-card developer-profile-hero">
@@ -233,8 +185,8 @@ const PublicDeveloperProfile = ({ username }) => {
       {user.bio && <section className="surface-card developer-section"><h2>About</h2><p>{user.bio}</p></section>}
 
       <section className="developer-section">
-        <div className="developer-section-heading"><div><h2>External evidence</h2><p>Public profiles linked by this developer.</p></div></div>
-        {accounts.length ? <div className="developer-evidence-grid">{accounts.map((account) => <EvidenceCard key={account.platform} account={account} />)}</div> :
+        <div className="developer-section-heading"><div><h2>Work</h2><p>Public profiles linked by this developer.</p></div></div>
+        {accounts.length ? <div className="developer-evidence-grid">{accounts.filter((account) => account.visibility !== "hidden").map((account) => <PlatformSummary key={account.platform} account={account} />)}</div> :
           <p>No external profiles are public yet.</p>}
       </section>
 
@@ -251,128 +203,9 @@ const PublicDeveloperProfile = ({ username }) => {
   );
 };
 
-const ManageDeveloperProfile = () => {
-  const [data, setData] = useState(null);
-  const [handles, setHandles] = useState({});
-  const [busy, setBusy] = useState("");
-  const { token } = useAuth();
-
-  const accountMap = useMemo(() => Object.fromEntries((data?.accounts || []).map((account) => [account.platform, account])), [data]);
-
-  const load = () => apiConnector("GET", `${DEVELOPER_PROFILES_ROUTER}/me`)
-    .then((response) => {
-      const next = response.data.data;
-      setData(next);
-      setHandles(Object.fromEntries((next.accounts || []).map((account) => [account.platform, account.handle])));
-    });
-
-  useEffect(() => {
-    if (!token) return undefined;
-    load().catch((error) => toast.error(error.message || "Unable to load developer profile"));
-  }, [token]);
-
-  const saveAccount = async (platform) => {
-    const handle = String(handles[platform] || "").trim();
-    if (!handle) return;
-    setBusy(platform);
-    try {
-      await apiConnector("PUT", `${DEVELOPER_PROFILES_ROUTER}/me/accounts/${platform}`, { handle, visibility: "public" });
-      await load();
-      toast.success(`${platforms.find((item) => item.id === platform)?.label} profile saved`);
-    } catch (error) {
-      toast.error(error.message || "Unable to save profile");
-    } finally { setBusy(""); }
-  };
-
-  const syncAccount = async (platform) => {
-    setBusy(platform);
-    try {
-      await apiConnector("POST", `${DEVELOPER_PROFILES_ROUTER}/me/accounts/${platform}/sync`);
-      await load();
-      toast.success("Profile evidence refreshed");
-    } catch (error) {
-      await load().catch(() => {});
-      toast.error(error.message || "Unable to sync profile");
-    } finally { setBusy(""); }
-  };
-
-  const removeAccount = async (platform) => {
-    setBusy(platform);
-    try {
-      await apiConnector("DELETE", `${DEVELOPER_PROFILES_ROUTER}/me/accounts/${platform}`);
-      setHandles((value) => ({ ...value, [platform]: "" }));
-      await load();
-      toast.success("Profile removed");
-    } catch (error) {
-      toast.error(error.message || "Unable to remove profile");
-    } finally { setBusy(""); }
-  };
-
-  const updatePreference = async (key, checked) => {
-    try {
-      await apiConnector("PATCH", `${PROFILES_ROUTER}/me/profile`, { [key]: checked });
-      setData((value) => ({ ...value, user: { ...value.user, [key]: checked } }));
-    } catch (error) {
-      toast.error(error.message || "Unable to update profile preference");
-    }
-  };
-
-  if (!data) return <main className="developer-page"><p role="status">Loading profile settings…</p></main>;
-
-  return (
-    <main className="developer-page">
-      <header className="developer-page-heading">
-        <p className="feed-eyebrow">DEVELOPER IDENTITY</p>
-        <h1>Connect your technical profiles</h1>
-        <p>Build an evidence-backed profile from your public engineering work. You choose whether your profile appears in developer discovery.</p>
-      </header>
-
-      <section className="surface-card developer-preferences">
-        <label><input type="checkbox" checked={Boolean(data.user.candidateProfileVisible)}
-          onChange={(event) => updatePreference("candidateProfileVisible", event.target.checked)} />
-          <span><strong>Publish my developer profile</strong><small>Your public evidence can appear in the Developers directory and on your public developer URL.</small></span>
-        </label>
-        <label><input type="checkbox" checked={Boolean(data.user.openToOpportunities)}
-          onChange={(event) => updatePreference("openToOpportunities", event.target.checked)} />
-          <span><strong>Open to opportunities</strong><small>Display this signal on your public developer profile.</small></span>
-        </label>
-        {data.user.username && <Link className="glass-button" to={`/developers/${data.user.username}`}>View public profile</Link>}
-        {!data.user.username && <p className="developer-note">Set a username in your profile before sharing a public developer URL.</p>}
-      </section>
-
-      <section className="developer-connect-grid">
-        {platforms.map((platform) => {
-          const account = accountMap[platform.id];
-          return (
-            <article className="surface-card developer-connect-card" key={platform.id}>
-              <div className="developer-evidence-heading">
-                <div><PlatformIdentity platform={platform.id} detail /><h2>{account ? account.handle : "Not connected"}</h2></div>
-                {account && <span className={`developer-status developer-status--${account.verificationStatus}`}>{account.verificationStatus === "verified" ? "Data synced" : account.verificationStatus}</span>}
-              </div>
-              <input className="input-field" aria-label={`${platform.label} handle`} placeholder={platform.placeholder}
-                value={handles[platform.id] || ""} onChange={(event) => setHandles((value) => ({ ...value, [platform.id]: event.target.value }))} />
-              <div className="developer-connect-actions">
-                <button className="btn-primary" type="button" disabled={busy === platform.id || !String(handles[platform.id] || "").trim()}
-                  onClick={() => saveAccount(platform.id)}>{busy === platform.id ? "Saving…" : account ? "Update" : "Connect"}</button>
-                {account && platform.autoSync && <button className="glass-button" type="button" disabled={busy === platform.id} onClick={() => syncAccount(platform.id)}>
-                  <FiRefreshCw aria-hidden="true" /> Refresh
-                </button>}
-                {account && <button className="icon-button" type="button" disabled={busy === platform.id} onClick={() => removeAccount(platform.id)}
-                  aria-label={`Remove ${platform.label}`}><FiTrash2 aria-hidden="true" /></button>}
-              </div>
-              {account && <><p className="developer-metrics">{metricText(account)}</p><p className="developer-note">{account.verificationNote}</p></>}
-              {!platform.autoSync && <p className="developer-note">This platform currently stores a public profile link only; QnA does not claim automated verification.</p>}
-            </article>
-          );
-        })}
-      </section>
-    </main>
-  );
-};
-
 const DeveloperProfilesPage = ({ manage = false }) => {
   const { username } = useParams();
-  if (manage) return <ManageDeveloperProfile />;
+  if (manage) return <DeveloperProfileSettings />;
   if (username) return <PublicDeveloperProfile username={username} />;
   return <DeveloperDirectory />;
 };

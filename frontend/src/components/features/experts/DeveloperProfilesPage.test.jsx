@@ -53,3 +53,21 @@ test("failed directory requests offer a working retry without exposing server me
   await screen.findByText("No developers found");
   expect(apiConnector).toHaveBeenCalledTimes(2);
 });
+
+test("directory Work sections show public summaries and never show hidden account metrics or skills", async () => {
+  apiConnector.mockResolvedValue({ data: { data: {
+    total: 1, items: [{
+      user: { _id: "u", username: "coder", displayName: "Coder" }, topicEvidence: [],
+      accounts: [
+        { platform: "leetcode", handle: "public", visibility: "public", metrics: { contestRating: 1880, solvedTotal: 123 } },
+        { platform: "medium", handle: "hidden", visibility: "hidden", skills: ["private-topic"], metrics: { recentArticles: [{ title: "Private article", url: "https://medium.com/private" }] } },
+      ],
+    }],
+  } } });
+  setup();
+  await screen.findByText("Coder");
+  expect(screen.getByRole("heading", { name: "Work" })).toBeInTheDocument();
+  expect(screen.getByRole("region", { name: "LeetCode work summary" })).toHaveTextContent("1,880");
+  expect(screen.queryByText("Private article")).not.toBeInTheDocument();
+  expect(screen.queryByText("#private-topic")).not.toBeInTheDocument();
+});

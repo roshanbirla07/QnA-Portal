@@ -131,3 +131,7 @@ Plain labels name actions. Loading, empty, and errors explain the next step. Rep
 ### Developer platform identity
 
 The developer directory uses visible logo buttons for its four supported platforms (GitHub, LeetCode, Codeforces, Medium). Brand glyphs come from the existing react-icons Simple Icons package, rendered in the current text color for reliable contrast in both themes. The shared PlatformIdentity recipe in DeveloperProfilesPage is reused across directory filters, profile evidence, and connection settings. No new palette or font is introduced. Directory search uses SearchField; loading, error, and empty feedback uses PageState.
+
+### Developer Work summaries and profile setup
+
+DeveloperProfileSettings owns identity editing, publication preferences, and per-account visibility. PlatformSummary owns the reusable Work section on directory cards, public profiles, and owner settings. Keep the established system sans, blue action, neutral surfaces, and platform glyphs. Directory cards now occupy one column; Work panels use two columns when space permits, with GitHub's calendar spanning the width. Mobile panels stack; stats remain readable in two columns. Green calendar intensity uses the existing success token, and absent calendar data has explanatory text rather than placeholder activity. PageState owns load/error feedback; Modal owns account-removal confirmation.
