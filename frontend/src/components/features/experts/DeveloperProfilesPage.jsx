@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { FiArrowUpRight, FiCheckCircle, FiRefreshCw, FiTrash2 } from "react-icons/fi";
+import { FiArrowUpRight, FiCheckCircle, FiRefreshCw, FiTrash2, FiUsers, FiSearch } from "react-icons/fi";
+import { SiGithub, SiLeetcode, SiCodeforces, SiMedium } from "react-icons/si";
+import PageState from "../../common/PageState";
+import SearchField from "../../common/SearchField";
 import toast from "react-hot-toast";
 import { apiConnector } from "../../../services/apiConnector";
 import { DEVELOPER_PROFILES_ROUTER, PROFILES_ROUTER } from "../../../services/apis";
@@ -8,11 +11,21 @@ import { useAuth } from "../../../contexts/AuthContext";
 import "./developer-profiles.css";
 
 const platforms = [
-  { id: "github", label: "GitHub", placeholder: "github username", autoSync: true },
-  { id: "leetcode", label: "LeetCode", placeholder: "leetcode username", autoSync: true },
-  { id: "codeforces", label: "Codeforces", placeholder: "codeforces handle", autoSync: true },
-  { id: "medium", label: "Medium", placeholder: "medium username", autoSync: true },
+  { icon: SiGithub, description: "Code & open source", id: "github", label: "GitHub", placeholder: "github username", autoSync: true },
+  { icon: SiLeetcode, description: "Problems & contests", id: "leetcode", label: "LeetCode", placeholder: "leetcode username", autoSync: true },
+  { icon: SiCodeforces, description: "Competitive programming", id: "codeforces", label: "Codeforces", placeholder: "codeforces handle", autoSync: true },
+  { icon: SiMedium, description: "Articles & ideas", id: "medium", label: "Medium", placeholder: "medium username", autoSync: true },
 ];
+
+const PlatformIdentity = ({ platform, detail = false }) => {
+  const item = platforms.find((entry) => entry.id === platform);
+  if (!item) return <span>{platform}</span>;
+  const Icon = item.icon;
+  return <span className="developer-platform-identity">
+    <span className="developer-platform-logo"><Icon aria-hidden="true" /></span>
+    <span><strong>{item.label}</strong>{detail && <small>{item.description}</small>}</span>
+  </span>;
+};
 
 const metricText = (account) => {
   const metrics = account?.metrics || {};
@@ -35,7 +48,7 @@ const EvidenceCard = ({ account }) => (
   <article className="developer-evidence-card">
     <div className="developer-evidence-heading">
       <div>
-        <p className="developer-platform">{account.platform}</p>
+        <PlatformIdentity platform={account.platform} />
         <a href={account.profileUrl} target="_blank" rel="noopener noreferrer">
           {account.handle} <FiArrowUpRight aria-hidden="true" />
         </a>
@@ -66,8 +79,14 @@ const DeveloperDirectory = () => {
   const [data, setData] = useState({ items: [], total: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   const queryKey = params.toString();
+
+  useEffect(() => {
+    const current = new URLSearchParams(queryKey);
+    setDraft({ q: current.get("q") || "", skill: current.get("skill") || "", platform: current.get("platform") || "" });
+  }, [queryKey]);
 
   useEffect(() => {
     let active = true;
@@ -76,10 +95,16 @@ const DeveloperDirectory = () => {
     const requestParams = Object.fromEntries(new URLSearchParams(queryKey).entries());
     apiConnector("GET", DEVELOPER_PROFILES_ROUTER, null, null, requestParams)
       .then((response) => { if (active) setData(response.data.data); })
-      .catch((reason) => { if (active) setError(reason.message || "Unable to load developer profiles"); })
+      .catch(() => { if (active) setError("Developer profiles could not be loaded. Please try again."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [queryKey]);
+  }, [queryKey, retry]);
+
+  const reset = () => {
+    setDraft({ q: "", skill: "", platform: "" });
+    setParams({});
+  };
+  const hasFilters = Boolean(params.get("q") || params.get("skill") || params.get("platform"));
 
   const submit = (event) => {
     event.preventDefault();
@@ -92,27 +117,50 @@ const DeveloperDirectory = () => {
 
   return (
     <main className="developer-page">
-      <header className="developer-page-heading">
-        <p className="feed-eyebrow">VERIFIED DEVELOPER EVIDENCE</p>
-        <h1>Discover developers by demonstrated work</h1>
-        <p>Explore public technical profiles and QnA topic reputation. Evidence is shown directly; QnA does not generate a hiring score.</p>
+      <header className="developer-directory-heading">
+        <div className="developer-page-heading">
+          <p className="feed-eyebrow">DEVELOPER DIRECTORY</p>
+          <h1>Find the people behind the work</h1>
+          <p>Explore code, contest activity, writing, and community contributions. Get to know developers through what they share.</p>
+        </div>
+        <Link className="glass-button" to="/developer-profile">Connect your profiles <FiArrowUpRight aria-hidden="true" /></Link>
       </header>
 
       <form className="developer-filter surface-card" noValidate onSubmit={submit}>
-        <input className="input-field" aria-label="Search developers" placeholder="Name, headline, location" value={draft.q}
-          onChange={(event) => setDraft((value) => ({ ...value, q: event.target.value }))} />
-        <input className="input-field" aria-label="Skill" placeholder="Skill, e.g. kafka" value={draft.skill}
-          onChange={(event) => setDraft((value) => ({ ...value, skill: event.target.value }))} />
-        <select className="input-field" aria-label="Platform" value={draft.platform}
-          onChange={(event) => setDraft((value) => ({ ...value, platform: event.target.value }))}>
-          <option value="">Any platform</option>
-          {platforms.map((platform) => <option value={platform.id} key={platform.id}>{platform.label}</option>)}
-        </select>
-        <button className="btn-primary" type="submit">Filter developers</button>
+        <div className="developer-search-row">
+          <div className="developer-search-control">
+            <label htmlFor="developer-search">Name or location</label>
+            <SearchField id="developer-search" label="Search developers" placeholder="Search name, headline, location"
+              value={draft.q} onChange={(q) => setDraft((value) => ({ ...value, q }))} />
+          </div>
+          <div className="developer-search-control">
+            <label htmlFor="developer-skill">Skill or topic</label>
+            <SearchField id="developer-skill" label="Skill" placeholder="e.g. Kafka, React, Python"
+              value={draft.skill} onChange={(skill) => setDraft((value) => ({ ...value, skill }))} />
+          </div>
+          <button className="btn-primary" type="submit"><FiSearch aria-hidden="true" /> Find developers</button>
+        </div>
+        <fieldset className="developer-platform-filters">
+          <legend>Connected platform</legend>
+          <div className="developer-platform-options">
+            <button className="glass-button" type="button" aria-pressed={!draft.platform}
+              onClick={() => setDraft((value) => ({ ...value, platform: "" }))}>All platforms</button>
+            {platforms.map((platform) => <button className="glass-button" type="button" key={platform.id}
+              aria-pressed={draft.platform === platform.id}
+              onClick={() => setDraft((value) => ({ ...value, platform: platform.id }))}>
+              <PlatformIdentity platform={platform.id} />
+            </button>)}
+          </div>
+        </fieldset>
       </form>
 
-      {loading ? <p role="status">Loading developer profiles…</p> :
-        error ? <p role="alert">{error}</p> :
+      <div className="developer-results-heading">
+        <h2>Developers{!loading && !error && <span>{data.total.toLocaleString("en-IN")}</span>}</h2>
+        {hasFilters && <button type="button" className="glass-button" onClick={reset}>Clear filters</button>}
+      </div>
+      <div className="developer-results" aria-busy={loading}>
+      {loading ? <PageState state="loading" title="Loading developers…" /> :
+        error ? <PageState state="error" title="Unable to load developers"><p>{error}</p><button type="button" className="glass-button" onClick={() => setRetry((value) => value + 1)}>Try again</button></PageState> :
         data.items?.length ? (
           <section className="developer-directory" aria-label="Developer profiles">
             {data.items.map(({ user, accounts, topicEvidence }) => (
@@ -133,12 +181,19 @@ const DeveloperDirectory = () => {
                   {accounts?.flatMap((account) => account.skills || []).filter((skill, index, all) => all.indexOf(skill) === index)
                     .slice(0, 5).map((skill) => <span className="topic-chip" key={skill}>#{skill}</span>)}
                 </div>
-                <p className="developer-platform-line">{accounts?.map((account) => account.platform).join(" · ") || "QnA evidence only"}</p>
+                <div className="developer-platform-line">{accounts?.length ? accounts.map((account) => <PlatformIdentity key={account.platform} platform={account.platform} />) : "QnA contributions"}</div>
                 <Link className="glass-button" to={`/developers/${user.username}`}>View evidence</Link>
               </article>
             ))}
           </section>
-        ) : <p>No public developer profiles match these filters.</p>}
+         ) : <PageState state="empty" title={hasFilters ? "No developers found" : "Make your work discoverable"}>
+          <span className="developer-empty-icon"><FiUsers aria-hidden="true" /></span>
+          <p>{hasFilters ? "Try another skill, name, or platform to broaden your search." : "Connect your technical profiles and publish your developer profile to appear here."}</p>
+          {hasFilters ? <button type="button" className="glass-button" onClick={reset}>Clear filters</button> :
+            <Link className="btn-primary" to="/developer-profile">Connect your profiles <FiArrowUpRight aria-hidden="true" /></Link>}
+        </PageState>}
+      </div>
+      <p className="developer-directory-note">Public profiles only. Synced data confirms the source, not account ownership. No hiring scores.</p>
     </main>
   );
 };
@@ -291,7 +346,7 @@ const ManageDeveloperProfile = () => {
           return (
             <article className="surface-card developer-connect-card" key={platform.id}>
               <div className="developer-evidence-heading">
-                <div><p className="developer-platform">{platform.label}</p><h2>{account ? account.handle : "Not connected"}</h2></div>
+                <div><PlatformIdentity platform={platform.id} detail /><h2>{account ? account.handle : "Not connected"}</h2></div>
                 {account && <span className={`developer-status developer-status--${account.verificationStatus}`}>{account.verificationStatus === "verified" ? "Data synced" : account.verificationStatus}</span>}
               </div>
               <input className="input-field" aria-label={`${platform.label} handle`} placeholder={platform.placeholder}

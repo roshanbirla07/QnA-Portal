@@ -127,3 +127,7 @@ Plain labels name actions. Loading, empty, and errors explain the next step. Rep
 | Rankings used dense text boards and white borders in light mode | Semantic table, visible metrics, real server-backed views |
 | Older feature forms/dialogs have separate behavior | Preserve their contracts and migrate in focused follow-up tasks; shared visuals apply now |
 
+
+### Developer platform identity
+
+The developer directory uses visible logo buttons for its four supported platforms (GitHub, LeetCode, Codeforces, Medium). Brand glyphs come from the existing react-icons Simple Icons package, rendered in the current text color for reliable contrast in both themes. The shared PlatformIdentity recipe in DeveloperProfilesPage is reused across directory filters, profile evidence, and connection settings. No new palette or font is introduced. Directory search uses SearchField; loading, error, and empty feedback uses PageState.
