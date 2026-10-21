@@ -43,7 +43,8 @@ const getMyDeveloperProfile = asyncHandler(async (req, res) => {
 const upsertMyAccount = asyncHandler(async (req, res) => {
   const { platform } = req.params;
   const normalized = normalizeExternalAccount(platform, req.body?.handle);
-  const visibility = req.body?.visibility === "hidden" ? "hidden" : "public";
+  const visibility = req.body?.visibility;
+  if (visibility !== undefined && !["public", "hidden"].includes(visibility)) throw new ApiError(400, "Invalid account visibility");
 
   const account = await ExternalProfile.findOneAndUpdate(
     { userId: req.user.id, platform },
@@ -51,7 +52,7 @@ const upsertMyAccount = asyncHandler(async (req, res) => {
       $set: {
         handle: normalized.handle,
         profileUrl: normalized.profileUrl,
-        visibility,
+        ...(visibility !== undefined ? { visibility } : {}),
         verificationStatus: "linked",
         verificationNote: normalized.supportsSync
           ? "Profile saved. Sync to verify public metrics."
@@ -61,6 +62,7 @@ const upsertMyAccount = asyncHandler(async (req, res) => {
         skillSignals: [],
         lastSyncedAt: null,
       },
+      ...(visibility === undefined ? { $setOnInsert: { visibility: "public" } } : {}),
     },
     { upsert: true, new: true, runValidators: true }
   );
@@ -74,6 +76,17 @@ const upsertMyAccount = asyncHandler(async (req, res) => {
   }
 
   return res.status(200).json(new ApiResponse(200, account, "Developer account saved"));
+});
+
+const updateMyAccountVisibility = asyncHandler(async (req, res) => {
+  const visibility = req.body?.visibility;
+  if (!["public", "hidden"].includes(visibility)) throw new ApiError(400, "Invalid account visibility");
+  const account = await ExternalProfile.findOneAndUpdate(
+    { userId: req.user.id, platform: req.params.platform },
+    { $set: { visibility } }, { new: true, runValidators: true }
+  );
+  if (!account) throw new ApiError(404, "Developer account not linked");
+  return res.status(200).json(new ApiResponse(200, account, "Account visibility updated"));
 });
 
 const syncMyAccount = asyncHandler(async (req, res) => {
@@ -188,6 +201,7 @@ export {
   getMyDeveloperProfile,
   upsertMyAccount,
   syncMyAccount,
+  updateMyAccountVisibility,
   deleteMyAccount,
   getPublicDeveloperProfile,
   listCandidates,

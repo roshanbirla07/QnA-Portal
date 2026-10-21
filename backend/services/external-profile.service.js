@@ -1,3 +1,4 @@
+import { parseGithubCalendar } from "./github-calendar.service.js";
 import ApiError from "../utils/ApiError.js";
 import { syncLeetCode } from "./leetcode-profile.service.js";
 import { syncMedium } from "./medium-profile.service.js";
@@ -32,14 +33,14 @@ const normalizeSkill = (value) => String(value || "")
   .replace(/[^a-z0-9+#.-]/g, "")
   .slice(0, 80);
 
-const fetchJson = async (url, headers = {}) => {
+const fetchJson = async (url, headers = {}, format = "json") => {
   const response = await fetch(url, {
     headers: { accept: "application/json", "user-agent": "qna-portal/1.0", ...headers },
     signal: AbortSignal.timeout(8000),
   });
   if (response.status === 404) throw new ApiError(404, "External profile not found");
   if (!response.ok) throw new ApiError(502, `External platform returned ${response.status}`);
-  return response.json();
+  return format === "text" ? (await response.text()).slice(0, 1_000_000) : response.json();
 };
 
 const normalizeExternalAccount = (platform, rawHandle) => {
@@ -64,15 +65,26 @@ const syncGithub = async (handle) => {
     fetchJson(`https://api.github.com/users/${encodeURIComponent(handle)}/repos?per_page=100&sort=updated&type=owner`, headers),
   ]);
 
-  const owned = Array.isArray(repos) ? repos.filter((repo) => !repo.fork) : [];
+  const owned = Array.isArray(repos) ? repos.filter((repo) => !repo.fork && !repo.private) : [];
+  const calendarUrl = `https://github.com/users/${encodeURIComponent(handle)}/contributions`;
+  let contributionCalendar = null;
+  let calendarStatus = "unavailable";
+  try {
+    // Never forward GITHUB_TOKEN: only activity visible on the public profile is imported.
+    const html = await fetchJson(calendarUrl, { accept: "text/html", "accept-language": "en-US" }, "text");
+    contributionCalendar = parseGithubCalendar(html, calendarUrl);
+    calendarStatus = "synced";
+  } catch {
+    // A calendar failure must not discard a valid repository/profile snapshot.
+  }
   const languageCounts = new Map();
   const topicCounts = new Map();
-  let totalStars = 0;
+  let totalStars = owned.every((repo) => Number.isFinite(repo.stargazers_count)) ? 0 : null;
 
   for (const repo of owned) {
     if (repo.language) languageCounts.set(repo.language, (languageCounts.get(repo.language) || 0) + 1);
     for (const topic of repo.topics || []) topicCounts.set(topic, (topicCounts.get(topic) || 0) + 1);
-    totalStars += Number(repo.stargazers_count || 0);
+    if (totalStars !== null) totalStars += repo.stargazers_count;
   }
 
   const signals = [
@@ -94,15 +106,18 @@ const syncGithub = async (handle) => {
     verificationStatus: "verified",
     verificationNote: "Synced from the public GitHub API.",
     metrics: {
-      followers: Number(user.followers || 0),
-      following: Number(user.following || 0),
-      publicRepos: Number(user.public_repos || 0),
+      contributionCalendar,
+      calendarStatus,
+      repositoryScope: "Up to 100 recently updated public, non-fork repositories",
+      followers: user.followers ?? null,
+      following: user.following ?? null,
+      publicRepos: user.public_repos ?? null,
       totalStars,
       recentRepositories: owned.slice(0, 6).map((repo) => ({
         name: repo.name,
         url: repo.html_url,
         language: repo.language || "",
-        stars: Number(repo.stargazers_count || 0),
+        stars: repo.stargazers_count ?? null,
       })),
       topLanguages: [...languageCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
         .map(([name, count]) => ({ name, count })),
@@ -120,7 +135,8 @@ const syncCodeforces = async (handle) => {
 
   if (infoResult.status !== "OK" || !infoResult.result?.[0]) throw new ApiError(502, "Codeforces profile sync failed");
   const user = infoResult.result[0];
-  const submissions = statusResult.status === "OK" && Array.isArray(statusResult.result) ? statusResult.result : [];
+  if (statusResult.status !== "OK" || !Array.isArray(statusResult.result)) throw new ApiError(502, "Codeforces activity sync failed");
+  const submissions = statusResult.result;
   const solved = new Set();
   const tags = new Map();
 
@@ -151,9 +167,18 @@ const syncCodeforces = async (handle) => {
       maxRating: user.maxRating ?? null,
       rank: user.rank || "",
       maxRank: user.maxRank || "",
-      contribution: Number(user.contribution || 0),
-      friendOfCount: Number(user.friendOfCount || 0),
+      contribution: user.contribution ?? null,
+      friendOfCount: user.friendOfCount ?? null,
       solvedInRecentSubmissions: solved.size,
+      recentSubmissionCount: submissions.length,
+      lastSubmissionAt: submissions[0]?.creationTimeSeconds ? new Date(submissions[0].creationTimeSeconds * 1000).toISOString() : null,
+      recentActivity: submissions.slice(0, 5).map((item) => ({
+        problem: item.problem?.name || "",
+        verdict: item.verdict || "TESTING",
+        language: item.programmingLanguage || "",
+        submittedAt: item.creationTimeSeconds ? new Date(item.creationTimeSeconds * 1000).toISOString() : null,
+        url: item.contestId && item.id ? `https://codeforces.com/contest/${item.contestId}/submission/${item.id}` : `https://codeforces.com/submissions/${encodeURIComponent(handle)}`,
+      })),
     },
     skills: [...new Set(signals.map((item) => item.skill))],
     skillSignals: signals,
@@ -186,4 +211,4 @@ const syncExternalProfile = async (profile) => {
   }
 };
 
-export { PLATFORM_CONFIG, normalizeExternalAccount, normalizeSkill, syncExternalProfile };
+export { syncGithub, syncCodeforces, PLATFORM_CONFIG, normalizeExternalAccount, normalizeSkill, syncExternalProfile };
