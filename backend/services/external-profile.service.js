@@ -42,11 +42,51 @@ const fetchJson = async (url, headers = {}) => {
   return response.json();
 };
 
+const extractProfileHandle = (platform, input) => {
+  const value = String(input || "").trim();
+  if (!/^https?:\/\//i.test(value) && !/^(www\.)?(github\.com|leetcode\.com|codeforces\.com|medium\.com)\//i.test(value)) {
+    return value;
+  }
+
+  let url;
+  try {
+    url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+  } catch {
+    throw new ApiError(400, "Invalid profile URL");
+  }
+
+  if (url.protocol !== "https:" && url.protocol !== "http:") {
+    throw new ApiError(400, "Invalid profile URL");
+  }
+
+  const domain = url.hostname.toLowerCase().replace(/^www\./, "");
+  const segments = url.pathname.split("/").filter(Boolean);
+  const allowed = {
+    github: domain === "github.com" && segments.length === 1,
+    leetcode: domain === "leetcode.com" && (
+      (segments.length === 2 && segments[0] === "u") || segments.length === 1
+    ),
+    codeforces: domain === "codeforces.com" && segments.length === 2 && segments[0] === "profile",
+    medium: domain === "medium.com" && segments.length === 1 && segments[0].startsWith("@"),
+  };
+  if (!allowed[platform] || url.username || url.password || url.port) {
+    throw new ApiError(400, "Enter a profile URL from the selected platform");
+  }
+
+  try {
+    return decodeURIComponent(segments[segments.length - 1]);
+  } catch {
+    throw new ApiError(400, "Invalid profile URL");
+  }
+};
+
 const normalizeExternalAccount = (platform, rawHandle) => {
   const config = PLATFORM_CONFIG[platform];
   if (!config) throw new ApiError(400, "Unsupported developer platform");
-  const handle = String(rawHandle || "").trim();
-  if (!config.handlePattern.test(handle)) throw new ApiError(400, "Invalid profile handle");
+  const handle = extractProfileHandle(platform, rawHandle);
+  if (!config.handlePattern.test(handle)) {
+    throw new ApiError(400, "Enter a valid username or public profile URL");
+  }
   const normalizedHandle = platform === "medium" ? handle.replace(/^@/, "") : handle;
   return {
     platform,
@@ -186,4 +226,4 @@ const syncExternalProfile = async (profile) => {
   }
 };
 
-export { PLATFORM_CONFIG, normalizeExternalAccount, normalizeSkill, syncExternalProfile };
+export { PLATFORM_CONFIG, extractProfileHandle, normalizeExternalAccount, normalizeSkill, syncExternalProfile };
