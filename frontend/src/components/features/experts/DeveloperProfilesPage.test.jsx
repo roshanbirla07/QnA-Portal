@@ -65,9 +65,46 @@ test("directory Work sections show public summaries and never show hidden accoun
     }],
   } } });
   setup();
-  await screen.findByText("Coder");
+  await screen.findByRole("heading", { name: "Coder" });
   expect(screen.getByRole("heading", { name: "Work" })).toBeInTheDocument();
   expect(screen.getByRole("region", { name: "LeetCode work summary" })).toHaveTextContent("1,880");
   expect(screen.queryByText("Private article")).not.toBeInTheDocument();
   expect(screen.queryByText("#private-topic")).not.toBeInTheDocument();
+});
+
+const person = (username, accounts = []) => ({ user: { _id: username, username, displayName: username }, accounts, topicEvidence: [] });
+test("explorer switches public work and developers without refetching, and Back restores selection", async () => {
+  apiConnector.mockResolvedValue({ data: { data: { total: 2, items: [
+    person("Ada", [
+      { platform: "leetcode", handle: "ada", metrics: { contestRating: 1880 } },
+      { platform: "codeforces", handle: "ada", metrics: { rating: 2042 } },
+    ]), person("Grace"),
+  ] } } });
+  setup();
+  await screen.findByRole("heading", { name: "Ada" });
+  fireEvent.click(screen.getAllByRole("button", { name: "Codeforces" })[1]);
+  expect(screen.getByRole("region", { name: "Codeforces work summary" })).toHaveTextContent("2,042");
+  expect(screen.queryByRole("region", { name: "LeetCode work summary" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Explore Grace" }));
+  expect(screen.getByRole("heading", { name: "Grace" })).toBeInTheDocument();
+  expect(screen.getByText(/No public connected platforms yet/)).toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "Codeforces work summary" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Back" }));
+  await screen.findByRole("heading", { name: "Ada" });
+  expect(screen.getByRole("region", { name: "Codeforces work summary" })).toBeInTheDocument();
+  expect(apiConnector).toHaveBeenCalledTimes(1);
+});
+
+test("shared explorer links select available public work and do not send UI state to the API", async () => {
+  apiConnector.mockResolvedValue({ data: { data: { total: 2, items: [person("Ada"), person("Grace", [
+    { platform: "leetcode", handle: "grace", metrics: { solvedTotal: 123 } },
+    { platform: "medium", visibility: "hidden", metrics: { recentArticles: [{ title: "Private" }] } },
+  ])] } } });
+  setup("/developers?developer=Grace&work=medium");
+  await screen.findByRole("heading", { name: "Grace" });
+  expect(screen.getByRole("region", { name: "LeetCode work summary" })).toHaveTextContent("123");
+  expect(screen.queryByText("Private")).not.toBeInTheDocument();
+  expect(apiConnector).toHaveBeenLastCalledWith("GET", expect.any(String), null, null, {});
+  fireEvent.change(screen.getByRole("combobox", { name: "Developer" }), { target: { value: "Ada" } });
+  expect(screen.getByRole("heading", { name: "Ada" })).toBeInTheDocument();
 });

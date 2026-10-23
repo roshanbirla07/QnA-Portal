@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { FiArrowUpRight, FiUsers, FiSearch } from "react-icons/fi";
 import PlatformSummary, { platforms, PlatformIdentity } from "./PlatformSummary";
 import DeveloperProfileSettings from "./DeveloperProfileSettings";
+import Avatar from "../../common/Avatar";
 import PageState from "../../common/PageState";
 import SearchField from "../../common/SearchField";
 import { apiConnector } from "../../../services/apiConnector";
@@ -21,7 +22,26 @@ const DeveloperDirectory = () => {
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
 
-  const queryKey = params.toString();
+  const requestParams = new URLSearchParams(params);
+  requestParams.delete("developer");
+  requestParams.delete("work");
+  const queryKey = requestParams.toString();
+  const selected = data.items?.find(({ user }) => user.username === params.get("developer")) || data.items?.[0];
+  const publicAccounts = selected?.accounts?.filter((account) => account.visibility !== "hidden") || [];
+  const activeAccount = publicAccounts.find((account) => account.platform === params.get("work"))
+    || publicAccounts.find((account) => account.platform === params.get("platform")) || publicAccounts[0];
+  const selectDeveloper = (username) => setParams((current) => {
+    const next = new URLSearchParams(current);
+    next.set("developer", username);
+    next.delete("work");
+    return next;
+  });
+  const selectPlatform = (platform) => setParams((current) => {
+    const next = new URLSearchParams(current);
+    next.set("developer", selected.user.username);
+    next.set("work", platform);
+    return next;
+  });
 
   useEffect(() => {
     const current = new URLSearchParams(queryKey);
@@ -60,8 +80,8 @@ const DeveloperDirectory = () => {
       <header className="developer-directory-heading">
         <div className="developer-page-heading">
           <p className="feed-eyebrow">DEVELOPER DIRECTORY</p>
-          <h1>Find the people behind the work</h1>
-          <p>Explore code, contest activity, writing, and community contributions. Get to know developers through what they share.</p>
+          <h1>Developer explorer</h1>
+          <p>Find a developer. Explore their code, contest activity, and writing in one place.</p>
         </div>
         <Link className="glass-button" to="/developer-profile">Connect your profiles <FiArrowUpRight aria-hidden="true" /></Link>
       </header>
@@ -102,34 +122,64 @@ const DeveloperDirectory = () => {
       {loading ? <PageState state="loading" title="Loading developers…" /> :
         error ? <PageState state="error" title="Unable to load developers"><p>{error}</p><button type="button" className="glass-button" onClick={() => setRetry((value) => value + 1)}>Try again</button></PageState> :
         data.items?.length ? (
-          <section className="developer-directory" aria-label="Developer profiles">
-            {data.items.map(({ user, accounts, topicEvidence }) => (
-              <article className="surface-card developer-card" key={user._id}>
-                <div className="developer-card-head">
-                  <div className="member-avatar">{(user.displayName || user.username || "D")[0]}</div>
-                  <div>
-                    <h2><Link to={`/developers/${user.username}`}>{user.displayName || user.username}</Link></h2>
-                    {user.headline && <p>{user.headline}</p>}
-                    {user.location && <span>{user.location}</span>}
+          <div className="developer-explorer">
+            <aside className="surface-card developer-explorer-list" aria-label="Developer profiles">
+              <p className="developer-explorer-label">Select a developer</p>
+              <label className="developer-mobile-picker">Developer
+                <select className="input-field" value={selected.user.username} onChange={(event) => selectDeveloper(event.target.value)}>
+                  {data.items.map(({ user }) => <option key={user._id} value={user.username}>{user.displayName || user.username}</option>)}
+                </select>
+              </label>
+              <ul className="developer-explorer-people">
+                {data.items.map(({ user, accounts }) => (
+                  <li key={user._id}>
+                    <button type="button" className="developer-person" aria-label={`Explore ${user.displayName || user.username}`}
+                      aria-pressed={selected.user.username === user.username} onClick={() => selectDeveloper(user.username)}>
+                      <Avatar name={user.displayName || user.username} src={user.avatar} />
+                      <span className="developer-person-copy">
+                        <strong>{user.displayName || user.username}</strong>
+                        <span>{user.headline || `@${user.username}`}</span>
+                        <span className="developer-person-platforms">{accounts?.filter((account) => account.visibility !== "hidden").map((account) => {
+                          const platform = platforms.find((item) => item.id === account.platform);
+                          return platform ? <span key={platform.id} title={platform.label}><platform.icon aria-label={platform.label} /></span> : null;
+                        })}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <p className="developer-note developer-explorer-list-note">Public work, connected by the developer.</p>
+            </aside>
+            <section className="surface-card developer-explorer-detail" aria-label="Selected developer">
+              <header className="developer-explorer-profile">
+                <Avatar name={selected.user.displayName || selected.user.username} src={selected.user.avatar} />
+                <div>
+                  <p className="feed-eyebrow">@{selected.user.username}</p>
+                  <h2>{selected.user.displayName || selected.user.username}</h2>
+                  {selected.user.headline && <p>{selected.user.headline}</p>}
+                  {selected.user.location && <span className="developer-note">{selected.user.location}</span>}
+                </div>
+                <Link className="glass-button" to={`/developers/${selected.user.username}`}>Full profile <FiArrowUpRight aria-hidden="true" /></Link>
+              </header>
+              {selected.user.openToOpportunities && <p className="developer-open">Open to opportunities</p>}
+              <div className="developer-skills">
+                {selected.topicEvidence?.slice(0, 4).map((item) => <span className="topic-chip" key={item.topic}>#{item.topic} · {item.reputation}</span>)}
+                {[...new Set(publicAccounts.flatMap((account) => account.skills || []))].slice(0, 5).map((skill) => <span className="topic-chip" key={skill}>#{skill}</span>)}
+              </div>
+              <section className="developer-explorer-work" aria-label="Work">
+                <div className="developer-section-heading"><div><h3>Work</h3><p>Explore their public platform activity.</p></div></div>
+                {publicAccounts.length ? <>
+                  <div className="developer-platform-options developer-work-options" role="group" aria-label="View platform work">
+                    {publicAccounts.map((account) => <button key={account.platform} type="button" className="glass-button"
+                      aria-pressed={activeAccount.platform === account.platform} onClick={() => selectPlatform(account.platform)}>
+                      <PlatformIdentity platform={account.platform} />
+                    </button>)}
                   </div>
-                </div>
-                {user.openToOpportunities && <p className="developer-open">Open to opportunities</p>}
-                <div className="developer-skills">
-                  {topicEvidence?.slice(0, 4).map((evidence) => (
-                    <span className="topic-chip" key={evidence.topic}>#{evidence.topic} · {evidence.reputation}</span>
-                  ))}
-                  {accounts?.filter((account) => account.visibility !== "hidden").flatMap((account) => account.skills || []).filter((skill, index, all) => all.indexOf(skill) === index)
-                    .slice(0, 5).map((skill) => <span className="topic-chip" key={skill}>#{skill}</span>)}
-                </div>
-                <section className="developer-card-work" aria-label="Work">
-                  <h3>Work</h3>
-                  <div className="developer-work-grid">{accounts?.filter((account) => account.visibility !== "hidden").map((account) => <PlatformSummary key={account.platform} account={account} />)}</div>
-                  {!accounts?.length && <p className="developer-note">No public connected platforms yet.</p>}
-                </section>
-                <Link className="glass-button" to={`/developers/${user.username}`}>View evidence</Link>
-              </article>
-            ))}
-          </section>
+                  <PlatformSummary key={`${selected.user.username}-${activeAccount.platform}`} account={activeAccount} />
+                </> : <p className="developer-note">No public connected platforms yet. View the full profile for QnA contributions.</p>}
+              </section>
+            </section>
+          </div>
          ) : <PageState state="empty" title={hasFilters ? "No developers found" : "Make your work discoverable"}>
           <span className="developer-empty-icon"><FiUsers aria-hidden="true" /></span>
           <p>{hasFilters ? "Try another skill, name, or platform to broaden your search." : "Connect your technical profiles and publish your developer profile to appear here."}</p>
@@ -138,9 +188,9 @@ const DeveloperDirectory = () => {
         </PageState>}
       </div>
       {!loading && !error && (data.page > 1 || data.hasMore) && <nav className="developer-pagination" aria-label="Developer pages">
-        <button className="glass-button" disabled={data.page <= 1} onClick={() => setParams((current) => { const next = new URLSearchParams(current); next.set("page", String(data.page - 1)); return next; })}>Previous</button>
+        <button className="glass-button" disabled={data.page <= 1} onClick={() => setParams((current) => { const next = new URLSearchParams(current); next.delete("developer"); next.delete("work"); next.set("page", String(data.page - 1)); return next; })}>Previous</button>
         <span>Page {data.page}</span>
-        <button className="glass-button" disabled={!data.hasMore} onClick={() => setParams((current) => { const next = new URLSearchParams(current); next.set("page", String(data.page + 1)); return next; })}>Next</button>
+        <button className="glass-button" disabled={!data.hasMore} onClick={() => setParams((current) => { const next = new URLSearchParams(current); next.delete("developer"); next.delete("work"); next.set("page", String(data.page + 1)); return next; })}>Next</button>
       </nav>}
       <p className="developer-directory-note">Public profiles only. Synced data confirms the source, not account ownership. No hiring scores.</p>
     </main>
