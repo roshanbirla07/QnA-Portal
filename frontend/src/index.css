@@ -2,21 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Open Hub: dark by default; the explicit light preference remains supported. */
 :root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-primary: #101216;
+  --bg-secondary: #22262e;
+  --bg-card: #191c22;
+  --text-primary: #eff1f5;
+  --text-secondary: #c0c6d0;
+  --text-muted: #a6adba;
+  --line: #30353f;
+  --brand-rgb: 244 201 93;
+  --action: #f4c95d;
+  --action-hover: #ffda7d;
+  --on-action: #211b0d;
+  --focus: #f4c95d;
+  --success: #8cd5ad;
+  --success-bg: #1b3429;
+  --danger: #ffb4ab;
+  --scroll-thumb: #59616e;
+  --scroll-hover: #808997;
+  --scroll-active: #a6adba;
+  --shadow-raised: none;
+  --overlay: rgb(0 0 0 / 65%);
+  --radius-control: 8px;
+  --radius-panel: 10px;
+  --duration-feedback: 160ms;
+  --duration-content: 220ms;
+  --ease-out: cubic-bezier(.2,.7,.2,1);
+}
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg-primary: #f6f7f9;
-  --bg-secondary: #edf0f5;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
   --bg-card: #ffffff;
-  --text-primary: #1d2533;
+  --text-primary: #1f2937;
   --text-secondary: #536074;
   --text-muted: #667085;
   --line: #e0e4eb;
-  --brand-rgb: 36 99 235;
-  --action: #245bd8;
-  --action-hover: #1d4bb6;
-  --on-action: #ffffff;
-  --focus: #2463eb;
+  --brand-rgb: 128 83 11;
+  --action: #f4c95d;
+  --action-hover: #ebbc45;
+  --on-action: #211b0d;
+  --focus: #80530b;
   --success: #13734a;
   --success-bg: #e7f5ed;
   --danger: #b42318;
@@ -25,31 +54,6 @@
   --scroll-active: #667085;
   --shadow-raised: 0 4px 18px rgb(29 37 51 / 5%);
   --overlay: rgb(16 24 40 / 45%);
-  --radius-control: 8px;
-  --radius-panel: 12px;
-  --duration-feedback: 160ms;
-  --duration-content: 220ms;
-  --ease-out: cubic-bezier(.2,.7,.2,1);
-}
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg-primary: #12151b;
-  --bg-secondary: #242a35;
-  --bg-card: #1b2029;
-  --text-primary: #f1f3f8;
-  --text-secondary: #bdc5d2;
-  --text-muted: #9ca8ba;
-  --line: #343c49;
-  --brand-rgb: 142 171 255;
-  --focus: #8eabff;
-  --success: #83dbac;
-  --success-bg: #173b2c;
-  --danger: #fda29b;
-  --scroll-thumb: #566174;
-  --scroll-hover: #79869b;
-  --scroll-active: #9ca8ba;
-  --shadow-raised: none;
-  --overlay: rgb(0 0 0 / 65%);
 }
 @layer base {
   html { scrollbar-gutter: stable; scroll-padding-top: 88px; }
@@ -82,7 +86,7 @@
   .icon-button:hover { background: var(--bg-secondary); color: var(--text-primary); }
   .icon-button:active { background: rgb(var(--brand-rgb) / .12); }
   .icon-button:disabled { opacity: .5; }
-  .topic-chip { display: inline-flex; align-items: center; min-height: 30px; border-radius: 6px; padding: 4px 9px; font-size: 12px; font-weight: 500; background: rgb(var(--brand-rgb) / .08); color: rgb(var(--brand-rgb)); transition: background var(--duration-feedback); }
+  .topic-chip { display: inline-flex; align-items: center; min-height: 30px; border-radius: 6px; padding: 4px 9px; font-size: 12px; font-weight: 500; background: var(--bg-secondary); color: var(--text-secondary); transition: background var(--duration-feedback); }
   .topic-chip:hover { background: rgb(var(--brand-rgb) / .16); }
 }
 .search-field { position: relative; display: flex; align-items: center; min-width: 0; width: 100%; min-height: 44px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--bg-card); color: var(--text-muted); transition: border-color var(--duration-feedback), box-shadow var(--duration-feedback); }
@@ -325,3 +329,9 @@
   .question-similar { border: 1px solid CanvasText; }
   .question-form-error { border-left-color: Mark; }
 }
+
+/* Authentication uses the same controls and surfaces as the community. */
+.auth-page { display: grid; place-items: start center; padding: 48px 16px; }
+.auth-card { width: min(100%, 440px); padding: 30px; }
+.auth-card .input-field { width: 100%; }
+@media (max-width: 560px) { .auth-page { padding: 28px 0; } .auth-card { padding: 24px 18px; } }

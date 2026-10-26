@@ -3,21 +3,21 @@ version: alpha
 name: QnA Portal
 description: A focused workspace for developer knowledge, conversations, and career discovery.
 colors:
-  primary: "#2463eb"
-  action: "#245bd8"
-  on-action: "#ffffff"
-  canvas: "#f6f7f9"
-  surface: "#ffffff"
-  ink: "#1d2533"
-  secondary: "#536074"
-  muted: "#667085"
-  border: "#e0e4eb"
-  success: "#13734a"
-  danger: "#b42318"
-  dark-canvas: "#12151b"
-  dark-surface: "#1b2029"
-  dark-ink: "#f1f3f8"
-  dark-primary: "#8eabff"
+  primary: "#f4c95d"
+  action: "#f4c95d"
+  on-action: "#211b0d"
+  canvas: "#101216"
+  surface: "#191c22"
+  ink: "#eff1f5"
+  secondary: "#c0c6d0"
+  muted: "#a6adba"
+  border: "#30353f"
+  success: "#8cd5ad"
+  danger: "#ffb4ab"
+  light-canvas: "#ffffff"
+  light-surface: "#ffffff"
+  light-ink: "#1f2937"
+  light-primary: "#80530b"
 typography:
   sans:
     fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, system-ui, sans-serif"
@@ -33,7 +33,7 @@ typography:
     fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace"
 rounded:
   control: "8px"
-  panel: "12px"
+  panel: "10px"
   chip: "6px"
 spacing:
   page-max: "1440px"
@@ -57,15 +57,15 @@ components:
 
 A developer's shared workspace: useful conversations lead, navigation stays quiet, and career discovery remains close at hand. Product register, English interface, developer audience. Dates and numbers on the migrated feed and rankings use en-IN; there is no Japan-market requirement.
 
-The bundled awesome-design-md Linear study informs surface layering, fine borders, restrained emphasis, and compact navigation. It is a static reference, not a claim about Linear's current website. Preserve QnA Portal's blue identity and light default, with a charcoal dark theme. The signature is a quiet navigation rail beside readable discussion cards with author identity and an explicit question/article/job label.
+The approved Open Hub concept draws on Hugging Face's community taxonomy, compact navigation, and public work discovery. The user selected its charcoal dark theme with warm yellow accents. This is an independent QnA identity: keep the existing platform logos and real product content; do not import the HTML review's fictional posts, people, or metrics.
 
-Runtime CSS is canonical (Model B). This file documents the accepted system; it does not generate CSS. Avoid ornamental gradients, floating-card animations, fabricated statistics, or large marketing heroes in working screens.
+Runtime CSS is canonical (Model B). This file documents the accepted system; it does not generate CSS. Dark is the first-visit default. An explicitly stored light preference remains supported; blocked storage also defaults to dark. The document boot script and Navbar resolve that preference identically to avoid a light first paint.
 
 ## Colors
 
-Light surfaces separate white content from a cool neutral canvas. Dark surfaces use charcoal rather than saturated navy. Blue means navigation, focus, selection, or the primary action; green means accepted/helpful outcomes, and red means an error or destructive consequence.
+Charcoal canvas (#101216), raised neutral surfaces (#191c22), cool gray secondary surfaces (#22262e), and fine borders carry hierarchy. Warm yellow means primary actions, links, focus, and selected controls. Green remains success; red remains error/destructive feedback. Do not apply yellow to every topic or decorative surface. Primary buttons pair yellow fill with dark ink, including in light mode.
 
-Mapping: colors.canvas → --bg-primary; colors.surface → --bg-card; colors.ink → --text-primary; colors.secondary → --text-secondary; colors.muted → --text-muted; colors.border → --line. colors.primary → --brand-rgb (36 99 235), colors.dark-primary → the dark override (142 171 255). Tailwind primary.blue consumes rgb(var(--brand-rgb) / alpha); feature CSS consumes the same role. Solid buttons use --action/--on-action, not the link token, so white text stays legible in both themes. Focus uses --focus. Success and danger use --success/--danger. Change CSS and this document together.
+Mapping: colors.canvas → --bg-primary; colors.surface → --bg-card; colors.ink → --text-primary; colors.secondary → --text-secondary; colors.muted → --text-muted; colors.border → --line. colors.primary → --brand-rgb (244 201 93), with dark amber (128 83 11) for legible light-mode links. Tailwind primary.blue and its legacy purple/pink aliases consume the same runtime brand token; their historical names do not prescribe separate palettes. Solid controls use --action/--on-action, hover uses --action-hover, focus uses --focus, and success/danger use their existing semantic tokens. Change CSS and this document together.
 
 ## Typography
 
@@ -73,9 +73,9 @@ Use the installed system sans stack for headings and body; no external font requ
 
 ## Layout
 
-A 1440px shell has a 208px navigation rail and a flexible content column, with a 36px gap and 32px gutters. At 1200px, use a 190px rail and 24px gap/gutters. Below 1024px, navigation becomes a modal drawer. At 768px, use 16px page gutters and a 64px header.
+A 1440px shell has compact horizontal discovery navigation and a flexible content region with 32px desktop gutters (24px below 1200px). Home, Developers, Projects, Jobs, Companies, Communities, and Rankings are primary destinations. More holds the remaining existing destinations and topic links; it closes on route changes, outside interaction, or Escape. Below 1024px the existing native modal drawer owns navigation; below 768px gutters are 16px and the header is 64px.
 
-The feed owns its optional 264px highlights rail; the shell does not add another rail. Below 1200px the feed highlights move below content. Feed cards have 22px padding, reduced to 18px on mobile. Keep the document as the page scroll owner; only the navigation drawer/rail and overflow tables scroll internally. No fixed page height.
+Home opens with a centered community introduction, a real topic row, and three compact discovery columns for conversations, contributing developers, and opportunities, all sourced from existing APIs. The personalized feed follows with its existing URL filters, cursor loading, and two-column cards when space permits. Discovery and feed cards stack on phones. Keep the document as the page scroll owner; only the drawer, More dropdown, and overflow tables scroll internally. No fixed page height.
 
 ## Elevation & Depth
 
@@ -83,7 +83,7 @@ Static cards use tonal separation and 1px borders. A small hover shadow belongs 
 
 ## Shapes
 
-Controls are 8px, panels 12px, and chips 6px. Member avatars use 10px corners, or 8px for compact previews. Keep semantic chips visually quieter than actions. Borders encode boundaries rather than decoration.
+Controls are 8px, panels 10px, and chips 6px. Member avatars use 10px corners, or 8px for compact previews. Keep semantic chips visually quieter than actions. Borders encode boundaries rather than decoration.
 
 ## Components
 
@@ -121,7 +121,7 @@ Plain labels name actions. Loading, empty, and errors explain the next step. Rep
 
 | Previous drift | Resolution |
 |---|---|
-| Two competing right rails squeezed the home feed | Shell now owns navigation only; Home owns highlights |
+| Two competing right rails squeezed the home feed | Shell owns top navigation; Home owns its discovery columns and feed |
 | External font loading and isolated blue literals | System typography and theme-aware semantic tokens |
 | Offscreen mobile links could receive focus | Closed drawer is unmounted; native modal contains focus when open |
 | Rankings used dense text boards and white borders in light mode | Semantic table, visible metrics, real server-backed views |
@@ -130,10 +130,14 @@ Plain labels name actions. Loading, empty, and errors explain the next step. Rep
 
 ### Developer platform identity
 
-The developer directory uses visible logo buttons for its four supported platforms (GitHub, LeetCode, Codeforces, Medium). Brand glyphs come from the existing react-icons Simple Icons package, rendered in the current text color for reliable contrast in both themes. The shared PlatformIdentity recipe in PlatformSummary is reused across directory filters, profile evidence, and connection settings. No new palette or font is introduced. Directory search uses SearchField; loading, error, and empty feedback uses PageState.
+The developer directory uses visible logo buttons for its four supported platforms (GitHub, LeetCode, Codeforces, Medium). Brand glyphs come from the existing react-icons Simple Icons package, rendered in the current text color for reliable contrast in both themes. The shared PlatformIdentity recipe in PlatformSummary is reused across directory filters, profile evidence, and connection settings. Platform identity consumes the canonical palette and typography. Directory search uses SearchField; loading, error, and empty feedback uses PageState.
 
 ### Developer Work summaries and profile setup
 
-DeveloperProfileSettings owns identity editing, publication preferences, and per-account visibility. PlatformSummary owns the reusable Work section in the directory explorer, public profiles, and owner settings. Keep the established system sans, blue action, neutral surfaces, and platform glyphs. The directory uses a 270px developer list beside a flexible detail panel. Selected people use a subtle blue surface and border; platform buttons show one public summary at a time. On smaller screens a labeled native developer selector stacks above the detail panel, avoiding a long list before the work. Public-profile Work panels use two columns when space permits, with GitHub's calendar spanning the width. Mobile panels stack; stats remain readable in two columns. Green calendar intensity uses the existing success token, and absent calendar data has explanatory text rather than placeholder activity. PageState owns load/error feedback; Modal owns account-removal confirmation.
+DeveloperProfileSettings owns identity editing, publication preferences, and per-account visibility. PlatformSummary owns the reusable Work section in the directory explorer, public profiles, and owner settings. Keep the established system sans, yellow action, neutral surfaces, and platform glyphs. The directory uses a 270px developer list beside a flexible detail panel. Selected people use a subtle yellow surface and border; platform buttons show one public summary at a time. On smaller screens a labeled native developer selector stacks above the detail panel, avoiding a long list before the work. Public-profile Work panels use two columns when space permits, with GitHub's calendar spanning the width. Mobile panels stack; stats remain readable in two columns. Green calendar intensity uses the existing success token, and absent calendar data has explanatory text rather than placeholder activity. PageState owns load/error feedback; Modal owns account-removal confirmation.
 
 The explorer mobile Select/Listbox is native: the browser owns option navigation, touch presentation, focus, and keyboard interaction. Its label and current value remain visible; no authored listbox or combobox keyboard model is introduced.
+
+### Approved Open Hub rollout
+
+The charcoal/yellow palette replaces the former light/blue default. Shared control tokens, compact top navigation, homepage hierarchy, authentication surfaces, and the legacy question-card avatar/chips move together. SearchField, PageState, Avatar, Modal, data access, profile publication, and account visibility retain their existing owners. The static review remains a design reference; none of its sample data ships.

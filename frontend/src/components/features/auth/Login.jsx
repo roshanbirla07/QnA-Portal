@@ -23,14 +23,9 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-bg-primary relative overflow-hidden px-4">
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-primary-purple/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-primary-blue/20 rounded-full blur-3xl" />
-      </div>
-
-      <div className="glass-card w-full max-w-md p-8 relative z-10 border border-white/10">
-        <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-primary-purple to-primary-blue bg-clip-text text-transparent">
+    <div className="auth-page">
+      <div className="surface-card auth-card">
+        <h1 className="text-3xl font-bold text-center mb-8">
           Login
         </h1>
 
@@ -67,14 +62,14 @@ const LoginPage = () => {
             />
           </div>
 
-          <button type="submit" className="w-full py-3 px-4 bg-gradient-to-r from-primary-purple to-primary-blue text-white font-bold rounded-xl shadow-lg hover:opacity-90 transition-opacity">
+          <button type="submit" className="btn-primary w-full">
             LOGIN
           </button>
         </form>
 
         <div className="mt-6 text-center text-text-secondary">
           Don&apos;t have an account?{" "}
-          <Link to="/signup" className="text-primary-blue hover:text-accent-pink transition-colors">
+          <Link to="/signup" className="text-primary-blue hover:underline">
             Signup
           </Link>
         </div>

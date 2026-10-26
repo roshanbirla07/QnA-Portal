@@ -21,6 +21,9 @@ const Home = () => {
   const tab = tabs.includes(params.get("tab")) ? params.get("tab") : "For You";
   const [data, setData] = useState({ items: [], nextCursor: null });
   const [side, setSide] = useState({ topics: [], people: [], jobs: [], discussions: [] });
+  const [highlightsLoading, setHighlightsLoading] = useState(true);
+  const [highlightsError, setHighlightsError] = useState(false);
+  const [highlightsRetry, setHighlightsRetry] = useState(0);
   const [loading, setLoading] = useState(true), [error, setError] = useState(""), [cursor, setCursor] = useState("");
   useEffect(() => { feedSource.current = "auto"; }, [token]);
   useEffect(() => {
@@ -46,13 +49,47 @@ const Home = () => {
   }, [tab, token, cursor, reload]);
   useEffect(() => {
     let active = true;
+    setHighlightsLoading(true);
+    setHighlightsError(false);
     Promise.allSettled([apiConnector("GET", TOPICS_ROUTER, null, null, { limit: 6 }), apiConnector("GET", RANKINGS_ROUTER), apiConnector("GET", JOBS_ROUTER, null, null, { limit: 3 }), apiConnector("GET", feedUrl, null, null, { sort: "trending", type: "question", limit: 3 })]).then(([topics, people, jobs, discussions]) => {
-      if (active) setSide({ topics: topics.status === "fulfilled" ? topics.value.data.data : [], people: people.status === "fulfilled" ? people.value.data.data.allTime.slice(0, 3) : [], jobs: jobs.status === "fulfilled" ? jobs.value.data.data.items : [], discussions: discussions.status === "fulfilled" ? discussions.value.data.data.items : [] });
+      if (active) {
+        setHighlightsLoading(false);
+        setHighlightsError([topics, people, jobs, discussions].some((result) => result.status === "rejected"));
+        setSide({ topics: topics.status === "fulfilled" ? topics.value.data.data : [], people: people.status === "fulfilled" ? people.value.data.data.allTime.slice(0, 3) : [], jobs: jobs.status === "fulfilled" ? jobs.value.data.data.items : [], discussions: discussions.status === "fulfilled" ? discussions.value.data.data.items : [] }); }
     });
     return () => { active = false; };
-  }, []);
+  }, [highlightsRetry]);
   return <main className="feed-page">
-    <header className="feed-heading"><div><p className="feed-eyebrow">KNOWLEDGE + CAREER</p><h1>Good questions. Better together.</h1><p>A place for developers to exchange ideas, solve problems, and discover their next opportunity.</p></div><Link to="/submitquestion" className="btn-primary">Ask a question <FiArrowUpRight aria-hidden="true" /></Link></header>
+    <header className="feed-heading">
+      <span className="feed-hub-symbol" aria-hidden="true">q.</span>
+      <p className="feed-eyebrow">CODE · CONTEXT · COMMUNITY</p>
+      <h1>The developer community<br /><span>building in public.</span></h1>
+      <p>Discover useful answers, explore what people build, and share the thinking behind your work.</p>
+      <div className="feed-heading-actions"><Link to="/developers" className="btn-primary">Explore developers <FiArrowUpRight aria-hidden="true" /></Link><Link to="/submitquestion" className="glass-button">Ask a question</Link></div>
+    </header>
+    {side.topics.length > 0 && <nav className="feed-topic-navigation" aria-label="Explore topics"><span>Explore topics</span>{side.topics.map((topic) => <Link className="topic-chip" key={topic.slug} to={"/topics/" + topic.slug}># {topic.name}</Link>)}</nav>}
+    <section className="hub-discovery" aria-label="Community discoveries" aria-busy={highlightsLoading}>
+      {highlightsLoading && <PageState state="loading" title="Loading community discoveries" />}
+      {highlightsError && <PageState state="error" title="Some community discoveries couldn't load"><p>Available discoveries are still shown below.</p><button className="glass-button mt-4" type="button" onClick={() => setHighlightsRetry((value) => value + 1)}>Retry discoveries</button></PageState>}
+      {!highlightsLoading && <>
+      <section><h2>Conversations</h2><p className="hub-column-description">Questions worth thinking about</p>
+        {side.discussions.map((post) => <article className="hub-discovery-card" key={post._id}><h3><Link to={"/posts/" + post.slug}>{post.title}</Link></h3><p>{post.answerCount || 0} answers</p><div className="feed-tags">{post.tags?.slice(0, 2).map((tag) => <Link key={tag} className="topic-chip" to={"/topics/" + tag}>{tag}</Link>)}</div></article>)}
+        {!side.discussions.length && <p className="hub-empty">{highlightsLoading ? "Loading conversations…" : "No public conversations to show yet."}</p>}
+        <Link className="rail-link" to="/?tab=Questions">Browse questions <FiArrowUpRight aria-hidden="true" /></Link>
+      </section>
+      <section><h2>Developers</h2><p className="hub-column-description">People sharing their knowledge</p>
+        {side.people.map((person) => <article className="hub-discovery-card" key={person.userId}><div className="contributor-preview"><Avatar name={person.displayName || person.username || "Member"} src={person.avatar} size="small" /><h3><Link to={"/developers?q=" + encodeURIComponent(person.displayName || person.username || "")}>{person.displayName || person.username || "Member"}</Link></h3></div><p>{Number(person.points).toLocaleString("en-IN")} QnA reputation</p></article>)}
+        {!side.people.length && <p className="hub-empty">{highlightsLoading ? "Loading developers…" : "No public developers available."}</p>}
+        <Link className="rail-link" to="/developers">Explore developers <FiArrowUpRight aria-hidden="true" /></Link>
+      </section>
+      <section><h2>Opportunities</h2><p className="hub-column-description">Explore your next chapter</p>
+        {side.jobs.map((job) => <article className="hub-discovery-card" key={job._id}><p>{job.company}</p><h3><Link to={"/jobs/" + job._id}>{job.title}</Link></h3>{job.location && <p>{job.location}</p>}</article>)}
+        {!side.jobs.length && <p className="hub-empty">{highlightsLoading ? "Loading opportunities…" : "No public roles to show yet."}</p>}
+        <Link className="rail-link" to="/jobs">Browse jobs <FiArrowUpRight aria-hidden="true" /></Link>
+      </section>
+      </>}
+    </section>
+    <div className="feed-section-heading"><div><h2>From the community</h2><p>Follow the conversations and ideas that matter to you.</p></div></div>
     <form noValidate role="search" className="feed-search" onSubmit={(event) => { event.preventDefault(); navigate(search.trim() ? "/search?q=" + encodeURIComponent(search.trim()) : "/search"); }}>
       <SearchField id="feed-search" value={search} onChange={setSearch} label="Search the community" placeholder="What are you working on?" /><button type="submit" className="glass-button">Search</button>
     </form>
@@ -73,12 +110,7 @@ const Home = () => {
         </article>;
       })}</div>}
       {data.nextCursor && <button type="button" className="glass-button feed-load-more" aria-busy={loading} disabled={loading} onClick={() => setCursor(data.nextCursor)}>{loading ? "Loading…" : "Load more"}</button>}
-    </section><aside className="feed-sidebar" aria-label="Community highlights">
-      <section className="surface-card"><h2>Explore topics</h2><div className="feed-tags">{side.topics.map((topic) => <Link className="topic-chip" key={topic.slug} to={"/topics/" + topic.slug}>{topic.name}</Link>)}</div>{!side.topics.length && <p>Topics will appear as the community grows.</p>}</section>
-      <section className="surface-card"><h2>People making a difference</h2>{side.people.map((person) => <div className="contributor-preview" key={person.userId}><Avatar name={person.displayName || person.username || "Member"} src={person.avatar} size="small" /><div><strong>{person.displayName || person.username || "Member"}</strong><span>{Number(person.points).toLocaleString("en-IN")} reputation</span></div></div>)}{!side.people.length && <p>Contributors will appear here as they share.</p>}<Link className="rail-link" to="/rankings">View rankings <FiArrowUpRight aria-hidden="true" /></Link></section>
-      <section className="surface-card"><h2>Your next opportunity</h2>{side.jobs.map((job) => <p key={job._id}><Link to={"/jobs/" + job._id}>{job.title}</Link><br /><span>{job.company}</span></p>)}{!side.jobs.length && <p>No new roles to show yet.</p>}<Link className="rail-link" to="/jobs">Explore jobs <FiArrowUpRight aria-hidden="true" /></Link></section>
-      <section className="surface-card"><h2>Conversations worth joining</h2>{side.discussions.map((post) => <p key={post._id}><Link to={"/posts/" + post.slug}>{post.title}</Link><br /><span>{post.answerCount || 0} answers</span></p>)}{!side.discussions.length && <p>Ask a question to get the conversation started.</p>}</section>
-    </aside></div>
+    </section></div>
   </main>;
 };
 export default Home;

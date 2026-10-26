@@ -47,7 +47,7 @@ SearchField owns recurring input clear/focus/IME behavior. PageState owns recurr
 
 ## Responsive navigation and feedback
 
-Desktop rail is sticky and independently scrollable; mobile drawer uses native dialog.showModal. Background is inert, body scrolling is locked, Escape closes, and the original trigger receives focus when still connected. Navigation links close the drawer; resize to desktop closes it. A skip link targets the content region.
+Desktop discovery navigation is horizontal. Its native More disclosure contains secondary destinations and topic links, closes on route changes/outside pointer interaction, and restores summary focus on Escape. The mobile drawer uses native dialog.showModal. Background is inert, body scrolling is locked, Escape closes, and the original trigger receives focus when still connected. Navigation links close the drawer; resize to desktop closes it. A skip link targets the content region.
 
 Feed/ranking filter navigation uses ordinary buttons with aria-pressed and browser-native Tab/Enter/Space. No arrow-key tab-list behavior is implied. Rankings table shows contribution metrics under member identity on narrow screens. High-contrast and reduced-motion paths remain operable.
 
@@ -61,7 +61,7 @@ QuestionForm uses app-owned inline validation, preserves entered text after vali
 
 ## Verification
 
-Run frontend ESLint, production build, component tests, DESIGN.md lint, static changed-surface audit, and browser checks. Browser fixtures verify UI states; they do not claim live MongoDB/production integration. Compare Home and Rankings in desktop/mobile and light/dark themes. Record remaining full-project static findings separately from changed-surface findings.
+Run frontend ESLint, production build, component tests, DESIGN.md lint, static changed-surface audit, and browser checks. Browser fixtures verify UI states; they do not claim live MongoDB/production integration. Compare Home, Developers, Rankings, and authentication in desktop/mobile and light/dark themes. Record remaining full-project static findings separately from changed-surface findings.
 
 
 
@@ -92,3 +92,9 @@ The developer directory commits name, skill, and platform filters on explicit Fi
 
 - Developer and Work selections are committed to URL parameters `developer` and `work`. Back/Forward and shared links restore available selections without another directory request. These UI parameters are excluded from API requests. Search submission and pagination reset the selection; missing selections fall back to the first returned developer and an available public platform.
 - Desktop uses semantic developer selection buttons with aria-pressed and one selected platform summary. Mobile uses a labeled native selector above the work panel. Platform controls are toggle buttons, not ARIA tabs. Hidden accounts contribute neither controls, skills, logos, nor summaries. A developer with no public accounts retains a full-profile link and an explicit empty explanation.
+
+### Open Hub theme and discovery
+
+- Dark is the default for missing/invalid theme preferences and blocked storage. An explicitly stored light preference is honored. Before-paint boot and Navbar apply the same rule. The theme button preserves route and form state.
+- Home's discovery columns reuse existing topics, rankings, jobs, and public discussion requests. They show real returned content, explicit loading/empty text, and ordinary links to existing routes; no mock profiles, contribution cells, or metrics ship from the HTML review.
+- Header search, feed filters, cursor paging, account publication, and platform privacy behavior are unchanged. Secondary routes remain reachable in More on desktop and in the drawer on mobile.

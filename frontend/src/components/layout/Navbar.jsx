@@ -7,7 +7,7 @@ import { getAuthHeaders } from "../../utils/request";
 import SearchField from "../common/SearchField";
 
 const initialTheme = () => {
-  try { return localStorage.getItem("theme") === "dark" ? "dark" : "light"; } catch { return "light"; }
+  try { return localStorage.getItem("theme") === "light" ? "light" : "dark"; } catch { return "dark"; }
 };
 const Navbar = ({ onMenuToggle, mobileOpen }) => {
   const navigate = useNavigate();

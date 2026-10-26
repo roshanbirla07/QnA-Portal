@@ -1,4 +1,5 @@
 import React from "react";
+import Avatar from "./Avatar";
 import { FiEye, FiMessageSquare, FiCheck, FiX, FiTrash2, FiEdit2 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -9,10 +10,10 @@ const QuestionCard = ({ question, isAdmin, isAuthor, onDelete, onEdit, onApprove
   const authorName = author?.email?.split('@')[0] || author?.displayName || author?.username || "Unknown User";
 
   return (
-    <div className="glass-card p-6 hovered-card transition-all duration-300 hover:-translate-y-1 hover:shadow-glow flex flex-col h-full group">
+    <div className="glass-card p-6 hovered-card transition-all duration-300 flex flex-col h-full group">
       <div className="flex justify-between items-start mb-4">
         <Link to={`/question/${_id}`} state={{ question }} className="flex-1">
-          <h3 className="text-xl font-semibold text-text-primary group-hover:text-primary-purple transition-colors line-clamp-2">
+          <h3 className="text-xl font-semibold text-text-primary group-hover:text-primary-blue transition-colors line-clamp-2">
             {questionTitle}
           </h3>
         </Link>
@@ -31,19 +32,17 @@ const QuestionCard = ({ question, isAdmin, isAuthor, onDelete, onEdit, onApprove
           <Link
             key={tag}
             to={`/topics/${encodeURIComponent(tag)}`}
-            className="px-3 py-1 text-xs font-medium rounded-full bg-bg-secondary text-primary-blue border border-primary-blue/20 hover:border-primary-blue/60 hover:text-white transition-colors"
+            className="topic-chip"
           >
             {tag}
           </Link>
         ))}
       </div>
 
-      <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between text-text-muted text-sm">
+      <div className="mt-auto pt-4 border-t border-[color:var(--line)] flex items-center justify-between text-text-muted text-sm">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary-purple to-accent-pink flex items-center justify-center text-xs text-white uppercase font-bold">
-              {authorName[0]}
-            </div>
+            <Avatar name={authorName} size="small" />
             <span>{authorName}</span>
           </div>
           <div className="flex items-center gap-4">
