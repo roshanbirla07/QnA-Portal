@@ -13,19 +13,33 @@ const generateToken = (userId, roleType) => {
   });
 };
 
-const authCookieOptions = {
+const authCookieOptions = () => ({
   httpOnly: true,
   secure: config.cookieSecure,
   sameSite: config.cookieSameSite,
   maxAge: 7 * 24 * 60 * 60 * 1000
+});
+
+export const respondWithSession = async (user, res, status = 200) => {
+  const token = generateToken(user._id, user.roleType);
+  const respUser = await User.findById(user._id).select("-password -googleSubject");
+  res.cookie("authToken", token, authCookieOptions());
+  return res.status(status).json(new ApiResponse(status, { respUser, token }, status === 201 ? RESPONSE_MESSAGES.SIGNUP_SUCCESS : RESPONSE_MESSAGES.LOGIN_SUCCESS));
+};
+
+const checkCredentialRequest = (req) => {
+  if (!req.is("application/json") || (req.get("origin") && !config.corsOrigins?.includes(req.get("origin")))) {
+    throw new ApiError(403, "This sign-in request is not allowed.");
+  }
 };
 
 const signupUser = asyncHandler(async (req, res) => {
   try {
-    const { email, password } = req.body;
+    checkCredentialRequest(req);
+    const { email, password } = req.body || {};
     const roleType = "user";
 
-    if (!email || !password) {
+    if (typeof email !== "string" || !email.trim() || typeof password !== "string" || !password) {
       throw new ApiError(400, RESPONSE_MESSAGES.ALL_FIELDS_REQUIRED);
     }
 
@@ -43,56 +57,35 @@ const signupUser = asyncHandler(async (req, res) => {
       roleType,
     });
 
-    const respUser = await User.findById(user._id).select("-password");
-
-    const token = generateToken(user._id, roleType);
-    res.cookie("authToken", token, authCookieOptions);
-
-    return res
-      .status(201)
-      .json(new ApiResponse(201, { respUser, token }, RESPONSE_MESSAGES.SIGNUP_SUCCESS));
+    return await respondWithSession(user, res, 201);
   } catch (error) {
-    logger.error("Signup error", { error: error.message });
+    logger.warn("Signup failed", { statusCode: error.statusCode || 500 });
     const statusCode = error instanceof ApiError ? error.statusCode : 500;
     return res
       .status(statusCode)
-      .json(new ApiResponse(statusCode, {}, error.message || RESPONSE_MESSAGES.SIGNUP_FAILED));
+      .json(new ApiResponse(statusCode, {}, error instanceof ApiError ? error.message : RESPONSE_MESSAGES.SIGNUP_FAILED));
   }
 });
 
 const loginUser = asyncHandler(async (req, res) => {
   try {
-    const { email, password } = req.body;
+    checkCredentialRequest(req);
+    const { email, password } = req.body || {};
 
-    if (!email || !password) {
+    if (typeof email !== "string" || !email.trim() || typeof password !== "string" || !password) {
       throw new ApiError(400, RESPONSE_MESSAGES.ALL_FIELDS_REQUIRED);
     }
     const existingUser = await User.findOne({ email: email.trim().toLowerCase() });
-    if (!existingUser) {
-      return res
-        .status(401)
-        .json(new ApiResponse(401, {}, RESPONSE_MESSAGES.USER_NOT_FOUND));
+    if (!existingUser || !await existingUser.isPasswordCorrect(password)) {
+      throw new ApiError(401, "Email or password is incorrect.");
     }
-
-    const isPasswordValid = await existingUser.isPasswordCorrect(password);
-    if (!isPasswordValid) {
-      throw new ApiError(403, RESPONSE_MESSAGES.INVALID_PASSWORD);
-    }
-
-    const token = generateToken(existingUser._id, existingUser.roleType);
-    const respUser = await User.findById(existingUser._id).select("-password");
-
-    res.cookie("authToken", token, authCookieOptions);
-
-    return res
-      .status(200)
-      .json(new ApiResponse(200, { respUser, token }, RESPONSE_MESSAGES.LOGIN_SUCCESS));
+    return await respondWithSession(existingUser, res);
   } catch (error) {
-    logger.error("Login error", { error: error.message });
+    logger.warn("Login failed", { statusCode: error.statusCode || 500 });
     const statusCode = error instanceof ApiError ? error.statusCode : 500;
     return res
       .status(statusCode)
-      .json(new ApiResponse(statusCode, {}, error.message || RESPONSE_MESSAGES.LOGIN_FAILED));
+      .json(new ApiResponse(statusCode, {}, error instanceof ApiError ? error.message : RESPONSE_MESSAGES.LOGIN_FAILED));
   }
 });
 

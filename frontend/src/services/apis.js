@@ -26,6 +26,9 @@ export const DEVELOPER_PROFILES_ROUTER = `${API_BASE_URL}/api/v1/developer-profi
 
 export const SIGNUP_USER = USER_ROUTER + "/signup";
 export const LOGIN_USER = USER_ROUTER + "/login";
+export const AUTH_CONFIG = USER_ROUTER + "/auth-config";
+export const GOOGLE_CHALLENGE = USER_ROUTER + "/google/challenge";
+export const GOOGLE_LOGIN = USER_ROUTER + "/google";
 export const LOGOUT_USER = USER_ROUTER + "/logout";
 
 export const FETCH_QUESTIONS = QNA_ROUTER + "/fetchQuestions";

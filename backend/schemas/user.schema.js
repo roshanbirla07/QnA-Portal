@@ -3,7 +3,8 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  password: { type: String, required: true },
+  password: { type: String, required() { return this.isNew && !this.googleSubject; } },
+  googleSubject: { type: String, unique: true, sparse: true, select: false },
   roleType: { type: String, default: "user", enum: ["user", "admin"] },
   username: { type: String, unique: true, sparse: true, lowercase: true, trim: true, maxlength: 40 },
   displayName: { type: String, trim: true, maxlength: 80 },
@@ -22,12 +23,13 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  if (!this.password || !this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
 userSchema.methods.isPasswordCorrect = async function (password) {
+  if (!this.password || typeof password !== "string") return false;
   return bcrypt.compare(password, this.password);
 };
 
