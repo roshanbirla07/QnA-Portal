@@ -26,15 +26,19 @@ const date = (value) => value && Number.isFinite(Date.parse(value))
 const safeUrl = (value) => /^https:\/\//i.test(value || "") ? value : undefined;
 const Stat = ({ label, value, text = false }) => <div><dt>{label}</dt><dd>{text ? value || "Not available" : number(value)}</dd></div>;
 
+const calendarLayout = (days) => {
+  const start = Date.parse(days[0].date + "T00:00:00Z");
+  const offset = new Date(start).getUTCDay();
+  // Missing dates stay blank rather than being presented as zero activity.
+  const cells = days.map((day) => ({ ...day, index: offset + Math.round((Date.parse(day.date + "T00:00:00Z") - start) / 86400000) }));
+  return { cells, columns: Math.floor(cells[cells.length - 1].index / 7) + 1 };
+};
+
 export const ContributionCalendar = ({ calendar }) => {
   const [expanded, setExpanded] = useState(false);
   const days = calendar?.days;
   if (!days?.length) return <p className="developer-note">Contribution calendar unavailable. Refresh the account to try again.</p>;
-  const offset = new Date(days[0].date + "T00:00:00Z").getUTCDay();
-  // Position by actual UTC date; missing days stay blank, never filled as zero activity.
-  const start = Date.parse(days[0].date + "T00:00:00Z");
-  const cells = days.map((day) => ({ ...day, index: offset + Math.round((Date.parse(day.date + "T00:00:00Z") - start) / 86400000) }));
-  const columns = Math.floor(cells[cells.length - 1].index / 7) + 1;
+  const { cells, columns } = calendarLayout(days);
   return <figure className="developer-calendar">
     <figcaption><strong>{number(calendar.total)} contributions</strong><span>{date(calendar.from)} – {date(calendar.to)}</span></figcaption>
     <svg viewBox={`0 0 ${columns * 12} 84`} role="img" aria-label={`GitHub contribution calendar: ${number(calendar.total)} contributions from ${calendar.from} to ${calendar.to}`}>
@@ -50,6 +54,33 @@ export const ContributionCalendar = ({ calendar }) => {
         <tbody>{days.map((day) => <tr key={day.date}><th scope="row">{day.date}</th><td>{number(day.count)}</td></tr>)}</tbody></table></div>}
     </details>
   </figure>;
+};
+
+// Directory cards show only the imported public snapshot; full evidence stays in Work.
+export const PlatformPreview = ({ account }) => {
+  const metrics = account.metrics || {};
+  const calendar = metrics.contributionCalendar;
+  const days = calendar?.days;
+  const layout = days?.length ? calendarLayout(days) : null;
+  const summary = account.platform === "github"
+    ? calendar?.total != null ? `${number(calendar.total)} contributions` : `${number(metrics.publicRepos)} public repos`
+    : account.platform === "leetcode" ? `${number(metrics.solvedTotal)} problems solved`
+    : account.platform === "codeforces" ? `${number(metrics.rating)} rating`
+    : metrics.recentArticlesCount == null ? "Articles not synced" : `${number(metrics.recentArticlesCount)} recent articles`;
+  return <div className="developer-platform-preview">
+    <PlatformIdentity platform={account.platform} />
+    <strong>{summary}</strong>
+    {account.platform === "github" && days?.length > 0 && <svg className="developer-mini-calendar"
+      viewBox={`0 0 ${layout.columns * 8} 56`}
+      role="img" aria-label={`GitHub: ${number(calendar.total)} contributions from ${calendar.from} to ${calendar.to}`}>
+      {layout.cells.map((day) => <rect key={day.date} x={Math.floor(day.index / 7) * 8} y={(day.index % 7) * 8} width="6" height="6" rx="1"
+        className={`contribution-level-${day.level}`}><title>{day.date}: {day.count} contributions</title></rect>)}
+    </svg>}
+    {account.platform === "leetcode" && <span>Contest rating: {number(metrics.contestRating)}</span>}
+    {account.platform === "codeforces" && metrics.rank && <span>{metrics.rank}</span>}
+    {account.platform === "medium" && metrics.recentArticles?.[0]?.title && <span>{metrics.recentArticles[0].title}</span>}
+    {account.verificationStatus === "failed" && <span className="developer-sync-warning">Refresh failed · {account.lastSyncedAt ? "saved snapshot" : "not synced"}</span>}
+  </div>;
 };
 
 const PlatformSummary = ({ account }) => {

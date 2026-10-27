@@ -88,7 +88,11 @@ The developer directory commits name, skill, and platform filters on explicit Fi
 - Repository/language/star summaries cover at most 100 recently updated public non-fork repositories. Codeforces solved/activity summaries cover at most 200 latest submissions, not lifetime totals. LeetCode contest nulls remain unavailable. Medium includes only recent RSS articles with dates/topics, not full article HTML or all-time totals.
 - Calendar SVGs have accessible totals/ranges and a keyboard-accessible expandable daily table. Directory paging uses the existing server page/hasMore contract. Real-browser verification uses explicit API fixtures, with separate live GitHub calendar parsing; it does not certify production MongoDB connectivity.
 
-### Developer split explorer
+### Developer card directory and Work explorer
 
 - Developer and Work selections are committed to URL parameters `developer` and `work`. Back/Forward and shared links restore available selections without another directory request. These UI parameters are excluded from API requests. Search submission and pagination reset the selection; missing selections fall back to the first returned developer and an available public platform.
-- Desktop uses semantic developer selection buttons with aria-pressed and one selected platform summary. Mobile uses a labeled native selector above the work panel. Platform controls are toggle buttons, not ARIA tabs. Hidden accounts contribute neither controls, skills, logos, nor summaries. A developer with no public accounts retains a full-profile link and an explicit empty explanation.
+- Desktop uses a two-column card grid with semantic developer selection buttons (aria-pressed) and direct public-profile links. Below the grid, the selected Work detail retains one selected platform summary. Mobile stacks the cards and keeps a labeled native selector. Platform controls are toggle buttons, not ARIA tabs. Hidden accounts contribute neither controls, skills, logos, nor summaries. A developer with no public accounts retains a full-profile link and an explicit empty explanation.
+
+### Linear visual direction
+
+First visits use dark mode before first paint; explicit stored light mode remains supported. Theme controls continue to work with blocked theme storage. Directory cards show only public account snapshots and do not introduce Follow mutations, hiring scores, invented badges, or new API requests. Failed sync states remain labeled in previews and full evidence. Full profiles reuse Avatar fallback, PlatformSummary, contribution daily tables, and topic links. Theme and layout changes do not alter publication, account visibility, or authentication policy.

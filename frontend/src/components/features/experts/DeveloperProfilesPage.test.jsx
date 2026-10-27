@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
 import DeveloperProfilesPage from "./DeveloperProfilesPage";
 import { apiConnector } from "../../../services/apiConnector";
@@ -65,7 +65,8 @@ test("directory Work sections show public summaries and never show hidden accoun
     }],
   } } });
   setup();
-  await screen.findByRole("heading", { name: "Coder" });
+  await screen.findByRole("region", { name: "Selected developer" });
+  expect(within(screen.getByRole("region", { name: "Selected developer" })).getByRole("heading", { name: "Coder" })).toBeInTheDocument();
   expect(screen.getByRole("heading", { name: "Work" })).toBeInTheDocument();
   expect(screen.getByRole("region", { name: "LeetCode work summary" })).toHaveTextContent("1,880");
   expect(screen.queryByText("Private article")).not.toBeInTheDocument();
@@ -81,16 +82,18 @@ test("explorer switches public work and developers without refetching, and Back 
     ]), person("Grace"),
   ] } } });
   setup();
-  await screen.findByRole("heading", { name: "Ada" });
+  await screen.findByRole("region", { name: "Selected developer" });
+  expect(within(screen.getByRole("region", { name: "Selected developer" })).getByRole("heading", { name: "Ada" })).toBeInTheDocument();
   fireEvent.click(screen.getAllByRole("button", { name: "Codeforces" })[1]);
   expect(screen.getByRole("region", { name: "Codeforces work summary" })).toHaveTextContent("2,042");
   expect(screen.queryByRole("region", { name: "LeetCode work summary" })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Explore Grace" }));
-  expect(screen.getByRole("heading", { name: "Grace" })).toBeInTheDocument();
-  expect(screen.getByText(/No public connected platforms yet/)).toBeInTheDocument();
+  expect(within(screen.getByRole("region", { name: "Selected developer" })).getByRole("heading", { name: "Grace" })).toBeInTheDocument();
+  expect(within(screen.getByRole("region", { name: "Selected developer" })).getByText(/No public connected platforms yet/)).toBeInTheDocument();
   expect(screen.queryByRole("region", { name: "Codeforces work summary" })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Back" }));
-  await screen.findByRole("heading", { name: "Ada" });
+  await screen.findByRole("region", { name: "Selected developer" });
+  expect(within(screen.getByRole("region", { name: "Selected developer" })).getByRole("heading", { name: "Ada" })).toBeInTheDocument();
   expect(screen.getByRole("region", { name: "Codeforces work summary" })).toBeInTheDocument();
   expect(apiConnector).toHaveBeenCalledTimes(1);
 });
@@ -101,10 +104,11 @@ test("shared explorer links select available public work and do not send UI stat
     { platform: "medium", visibility: "hidden", metrics: { recentArticles: [{ title: "Private" }] } },
   ])] } } });
   setup("/developers?developer=Grace&work=medium");
-  await screen.findByRole("heading", { name: "Grace" });
+  await screen.findByRole("region", { name: "Selected developer" });
+  expect(within(screen.getByRole("region", { name: "Selected developer" })).getByRole("heading", { name: "Grace" })).toBeInTheDocument();
   expect(screen.getByRole("region", { name: "LeetCode work summary" })).toHaveTextContent("123");
   expect(screen.queryByText("Private")).not.toBeInTheDocument();
   expect(apiConnector).toHaveBeenLastCalledWith("GET", expect.any(String), null, null, {});
   fireEvent.change(screen.getByRole("combobox", { name: "Developer" }), { target: { value: "Ada" } });
-  expect(screen.getByRole("heading", { name: "Ada" })).toBeInTheDocument();
+  expect(within(screen.getByRole("region", { name: "Selected developer" })).getByRole("heading", { name: "Ada" })).toBeInTheDocument();
 });

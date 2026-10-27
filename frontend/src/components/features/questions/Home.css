@@ -1,27 +1,32 @@
 .feed-page { max-width: 1160px; margin: auto; padding: 36px 0; }
 .feed-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 26px; }
-.feed-heading h1 { font-size: clamp(27px, 3vw, 36px); line-height: 1.2; font-weight: 750; letter-spacing: -1px; margin: 8px 0 12px; }
+.feed-heading h1 { font-size: clamp(27px, 3vw, 36px); line-height: 1.2; font-weight: 600; letter-spacing: -1px; margin: 5px 0 8px; }
 .feed-heading p { font-size: 14px; color: var(--text-secondary); line-height: 1.65; max-width: 510px; }
 .feed-heading .feed-eyebrow { font-size: 11px; letter-spacing: .12em; font-weight: 650; color: rgb(var(--brand-rgb)); }
 .feed-heading .btn-primary { flex-shrink: 0; }
 .feed-search { display: flex; gap: 10px; max-width: 650px; margin-bottom: 30px; }
 .feed-columns { display: grid; grid-template-columns: minmax(0, 1fr) 264px; gap: 26px; }
 .feed-main { min-width: 0; }
-.feed-tabs { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-secondary); overflow-x: auto; margin-bottom: 16px; }
-.feed-tabs button { flex: 1; white-space: nowrap; min-height: 40px; padding: 8px 10px; border: 1px solid transparent; border-radius: 7px; font-size: 13px; color: var(--text-secondary); transition: background var(--duration-feedback), color var(--duration-feedback); }
-.feed-tabs button:hover { color: var(--text-primary); background: var(--bg-card); }
-.feed-tabs button[aria-pressed="true"] { color: var(--text-primary); background: var(--bg-card); border-color: var(--line); box-shadow: 0 1px 3px rgb(0 0 0 / 4%); font-weight: 650; }
+/* Underlined filters mirror topic navigation; the URL still owns selection. */
+.feed-topic-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.feed-topic-strip:empty { display: none; }
+.feed-topic-strip .topic-chip { color: var(--text-secondary); background: var(--bg-card); border: 1px solid var(--line); }
+.feed-topic-strip .topic-chip:hover { color: rgb(var(--brand-rgb)); border-color: rgb(var(--brand-rgb)); }
+.feed-tabs { display: flex; gap: 18px; border-bottom: 1px solid var(--line); overflow-x: auto; margin-bottom: 16px; }
+.feed-tabs button { white-space: nowrap; min-height: 44px; padding: 8px 2px; border-bottom: 2px solid transparent; font-size: 13px; color: var(--text-secondary); transition: color var(--duration-feedback), border-color var(--duration-feedback); }
+.feed-tabs button:hover { color: var(--text-primary); }
+.feed-tabs button[aria-pressed="true"] { color: rgb(var(--brand-rgb)); border-bottom-color: rgb(var(--brand-rgb)); font-weight: 600; }
 .feed-note { font-size: 12px; color: var(--text-muted); margin: 0 4px 18px; line-height: 1.6; }
 .feed-list { display: grid; gap: 14px; }
-.feed-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--radius-panel); padding: 22px; transition: border-color var(--duration-feedback), box-shadow var(--duration-feedback); animation: feed-enter var(--duration-content) var(--ease-out); }
+.feed-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--radius-panel); padding: 18px; transition: border-color var(--duration-feedback), box-shadow var(--duration-feedback); animation: feed-enter var(--duration-content) var(--ease-out); }
 .feed-card:hover { border-color: var(--text-muted); box-shadow: var(--shadow-raised); }
 .feed-card-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-muted); }
 .feed-card-meta strong { display: block; font-weight: 550; color: var(--text-primary); }
 .feed-card-meta time { display: block; font-size: 11px; margin-top: 2px; }
 .post-kind { margin-left: auto; border: 1px solid var(--line); padding: 3px 7px; border-radius: 5px; font-size: 10px; font-weight: 550; text-transform: capitalize; }
-.feed-card h2 { font-size: 19px; font-weight: 650; letter-spacing: -.35px; line-height: 1.4; margin: 16px 0 9px; }
+.feed-card h2 { font-size: 17px; font-weight: 600; letter-spacing: -.35px; line-height: 1.4; margin: 12px 0 8px; }
 .feed-card h2 a:hover { color: rgb(var(--brand-rgb)); }
-.feed-card p { color: var(--text-secondary); font-size: 14px; line-height: 1.7; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.feed-card p { color: var(--text-secondary); font-size: 14px; line-height: 1.7; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .feed-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
 .feed-card footer { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 20px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--text-muted); }
 .feed-stats { display: flex; flex-wrap: wrap; gap: 12px; }

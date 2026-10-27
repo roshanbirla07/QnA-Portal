@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { FiArrowUpRight, FiUsers, FiSearch } from "react-icons/fi";
-import PlatformSummary, { platforms, PlatformIdentity } from "./PlatformSummary";
+import PlatformSummary, { platforms, PlatformIdentity, PlatformPreview } from "./PlatformSummary";
 import DeveloperProfileSettings from "./DeveloperProfileSettings";
 import Avatar from "../../common/Avatar";
 import PageState from "../../common/PageState";
@@ -80,8 +80,8 @@ const DeveloperDirectory = () => {
       <header className="developer-directory-heading">
         <div className="developer-page-heading">
           <p className="feed-eyebrow">DEVELOPER DIRECTORY</p>
-          <h1>Developer explorer</h1>
-          <p>Find a developer. Explore their code, contest activity, and writing in one place.</p>
+          <h1>Find your people</h1>
+          <p>Discover developers through their code, contest activity, and writing.</p>
         </div>
         <Link className="glass-button" to="/developer-profile">Connect your profiles <FiArrowUpRight aria-hidden="true" /></Link>
       </header>
@@ -123,33 +123,38 @@ const DeveloperDirectory = () => {
         error ? <PageState state="error" title="Unable to load developers"><p>{error}</p><button type="button" className="glass-button" onClick={() => setRetry((value) => value + 1)}>Try again</button></PageState> :
         data.items?.length ? (
           <div className="developer-explorer">
-            <aside className="surface-card developer-explorer-list" aria-label="Developer profiles">
-              <p className="developer-explorer-label">Select a developer</p>
+            <section className="developer-card-directory" aria-label="Developer profiles">
               <label className="developer-mobile-picker">Developer
                 <select className="input-field" value={selected.user.username} onChange={(event) => selectDeveloper(event.target.value)}>
                   {data.items.map(({ user }) => <option key={user._id} value={user.username}>{user.displayName || user.username}</option>)}
                 </select>
               </label>
-              <ul className="developer-explorer-people">
-                {data.items.map(({ user, accounts }) => (
-                  <li key={user._id}>
-                    <button type="button" className="developer-person" aria-label={`Explore ${user.displayName || user.username}`}
-                      aria-pressed={selected.user.username === user.username} onClick={() => selectDeveloper(user.username)}>
+              <ul className="developer-card-grid">
+                {data.items.map(({ user, accounts, topicEvidence }) => {
+                  const publicWork = accounts?.filter((account) => account.visibility !== "hidden") || [];
+                  const skills = [...new Set(publicWork.flatMap((account) => account.skills || []))].slice(0, 4);
+                  return <li key={user._id} className="surface-card developer-directory-card">
+                    <div className="developer-card-heading">
                       <Avatar name={user.displayName || user.username} src={user.avatar} />
-                      <span className="developer-person-copy">
-                        <strong>{user.displayName || user.username}</strong>
-                        <span>{user.headline || `@${user.username}`}</span>
-                        <span className="developer-person-platforms">{accounts?.filter((account) => account.visibility !== "hidden").map((account) => {
-                          const platform = platforms.find((item) => item.id === account.platform);
-                          return platform ? <span key={platform.id} title={platform.label}><platform.icon aria-label={platform.label} /></span> : null;
-                        })}</span>
-                      </span>
-                    </button>
-                  </li>
-                ))}
+                      <div><h3><Link to={`/developers/${user.username}`}>{user.displayName || user.username}</Link></h3>
+                        <p>{user.headline || `@${user.username}`}</p>
+                        {user.location && <p className="developer-note">{user.location}</p>}
+                      </div>
+                    </div>
+                    {user.openToOpportunities && <span className="developer-open">Open to opportunities</span>}
+                    <div className="developer-skills">{skills.map((skill) => <span className="topic-chip" key={skill}>{skill}</span>)}
+                      {topicEvidence?.slice(0, 2).map((item) => <Link className="topic-chip" key={item.topic} to={`/topics/${item.topic}`}>#{item.topic}</Link>)}
+                    </div>
+                    {publicWork.length ? <div className="developer-card-platforms">{publicWork.map((account) => <PlatformPreview key={account.platform} account={account} />)}</div>
+                      : <p className="developer-note">No public connected platforms yet.</p>}
+                    <footer><button type="button" className="glass-button" aria-label={`Explore ${user.displayName || user.username}`}
+                      aria-pressed={selected.user.username === user.username} onClick={() => selectDeveloper(user.username)}>
+                      {selected.user.username === user.username ? "Work selected" : "Explore work"}
+                    </button><Link to={`/developers/${user.username}`}>Full profile <FiArrowUpRight aria-hidden="true" /></Link></footer>
+                  </li>;
+                })}
               </ul>
-              <p className="developer-note developer-explorer-list-note">Public work, connected by the developer.</p>
-            </aside>
+            </section>
             <section className="surface-card developer-explorer-detail" aria-label="Selected developer">
               <header className="developer-explorer-profile">
                 <Avatar name={selected.user.displayName || selected.user.username} src={selected.user.avatar} />
@@ -220,9 +225,9 @@ const PublicDeveloperProfile = ({ username }) => {
   return (
     <main className="developer-page">
       <header className="surface-card developer-profile-hero">
-        <div className="member-avatar">{(user.displayName || user.username || "D")[0]}</div>
+        <Avatar name={user.displayName || user.username} src={user.avatar} />
         <div>
-          <p className="feed-eyebrow">DEVELOPER PROFILE</p>
+          <p className="feed-eyebrow">@{user.username}</p>
           <h1>{user.displayName || user.username}</h1>
           {user.headline && <p>{user.headline}</p>}
           <div className="developer-profile-meta">
@@ -230,6 +235,7 @@ const PublicDeveloperProfile = ({ username }) => {
             {user.openToOpportunities && <span className="developer-open">Open to opportunities</span>}
           </div>
         </div>
+        <Link className="glass-button developer-profile-back" to="/developers">Browse developers <FiArrowUpRight aria-hidden="true" /></Link>
       </header>
 
       {user.bio && <section className="surface-card developer-section"><h2>About</h2><p>{user.bio}</p></section>}

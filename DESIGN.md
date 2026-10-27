@@ -3,9 +3,9 @@ version: alpha
 name: QnA Portal
 description: A focused workspace for developer knowledge, conversations, and career discovery.
 colors:
-  primary: "#2463eb"
-  action: "#245bd8"
-  on-action: "#ffffff"
+  primary: "#825b00"
+  action: "#f5c542"
+  on-action: "#181510"
   canvas: "#f6f7f9"
   surface: "#ffffff"
   ink: "#1d2533"
@@ -14,10 +14,10 @@ colors:
   border: "#e0e4eb"
   success: "#13734a"
   danger: "#b42318"
-  dark-canvas: "#12151b"
-  dark-surface: "#1b2029"
-  dark-ink: "#f1f3f8"
-  dark-primary: "#8eabff"
+  dark-canvas: "#08090a"
+  dark-surface: "#0f1011"
+  dark-ink: "#f7f8f8"
+  dark-primary: "#f5c542"
 typography:
   sans:
     fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, system-ui, sans-serif"
@@ -57,25 +57,25 @@ components:
 
 A developer's shared workspace: useful conversations lead, navigation stays quiet, and career discovery remains close at hand. Product register, English interface, developer audience. Dates and numbers on the migrated feed and rankings use en-IN; there is no Japan-market requirement.
 
-The bundled awesome-design-md Linear study informs surface layering, fine borders, restrained emphasis, and compact navigation. It is a static reference, not a claim about Linear's current website. Preserve QnA Portal's blue identity and light default, with a charcoal dark theme. The signature is a quiet navigation rail beside readable discussion cards with author identity and an explicit question/article/job label.
+The bundled awesome-design-md Linear study informs surface layering, fine borders, restrained emphasis, and compact navigation. It is a static reference, not a claim about Linear's current website. The approved Linear concept replaces the blue identity with warm yellow actions and selection on a near-black default theme. Explicit light preferences remain supported. The signature is a quiet navigation rail beside readable discussion cards with author identity and an explicit question/article/job label.
 
 Runtime CSS is canonical (Model B). This file documents the accepted system; it does not generate CSS. Avoid ornamental gradients, floating-card animations, fabricated statistics, or large marketing heroes in working screens.
 
 ## Colors
 
-Light surfaces separate white content from a cool neutral canvas. Dark surfaces use charcoal rather than saturated navy. Blue means navigation, focus, selection, or the primary action; green means accepted/helpful outcomes, and red means an error or destructive consequence.
+Light surfaces separate white content from a cool neutral canvas. Dark surfaces use charcoal rather than saturated navy. Yellow means navigation, focus, selection, or the primary action; green means accepted/helpful outcomes, and red means an error or destructive consequence.
 
-Mapping: colors.canvas → --bg-primary; colors.surface → --bg-card; colors.ink → --text-primary; colors.secondary → --text-secondary; colors.muted → --text-muted; colors.border → --line. colors.primary → --brand-rgb (36 99 235), colors.dark-primary → the dark override (142 171 255). Tailwind primary.blue consumes rgb(var(--brand-rgb) / alpha); feature CSS consumes the same role. Solid buttons use --action/--on-action, not the link token, so white text stays legible in both themes. Focus uses --focus. Success and danger use --success/--danger. Change CSS and this document together.
+Mapping: colors.canvas → --bg-primary; colors.surface → --bg-card; colors.ink → --text-primary; colors.secondary → --text-secondary; colors.muted → --text-muted; colors.border → --line. colors.primary → --brand-rgb (130 91 0) in light mode, colors.dark-primary → the dark override (245 197 66). Tailwind primary.blue consumes rgb(var(--brand-rgb) / alpha); feature CSS consumes the same role. Solid buttons use --action (#f5c542), --action-hover (#ffda70), and --on-action (#181510); dark text stays legible on yellow in both themes. Light-mode links use the darker amber #825b00 for contrast. Dark canvas/card/secondary surfaces are #08090a / #0f1011 / #191a1b; primary/secondary/muted text is #f7f8f8 / #d0d6e0 / #969ba4 and borders are #23252a. Focus uses --focus. Success and danger use --success/--danger. Change CSS and this document together.
 
 ## Typography
 
-Use the installed system sans stack for headings and body; no external font request or late font swap. Headings are compact with modest negative tracking. Discussion titles use 19px/650, body 14px/1.7, navigation 13px, and utility text 11–12px. Monospace is reserved for code. Tabular numerals distinguish rankings and point counts. Keep original member content and names; do not impose truncation on ranking identities.
+Use the installed system sans stack for headings and body; no external font request or late font swap. Headings are compact with modest negative tracking. Discussion titles use 17px/600, body 14px/1.7, navigation 13px, and utility text 11–12px. Monospace is reserved for code. Tabular numerals distinguish rankings and point counts. Keep original member content and names; do not impose truncation on ranking identities.
 
 ## Layout
 
-A 1440px shell has a 208px navigation rail and a flexible content column, with a 36px gap and 32px gutters. At 1200px, use a 190px rail and 24px gap/gutters. Below 1024px, navigation becomes a modal drawer. At 768px, use 16px page gutters and a 64px header.
+A 1440px shell has a 208px navigation rail and a flexible content column, with a 28px gap and 32px gutters. At 1200px, use a 190px rail and 24px gap/gutters. Below 1024px, navigation becomes a modal drawer. At 768px, use 16px page gutters and a 64px header. The desktop header is also 64px.
 
-The feed owns its optional 264px highlights rail; the shell does not add another rail. Below 1200px the feed highlights move below content. Feed cards have 22px padding, reduced to 18px on mobile. Keep the document as the page scroll owner; only the navigation drawer/rail and overflow tables scroll internally. No fixed page height.
+The feed owns its optional 264px highlights rail; the shell does not add another rail. Below 1200px the feed highlights move below content. Feed cards have 18px padding and a two-line excerpt. Feed filters use underlined selection, with server-backed topic links above the feed search. Keep the document as the page scroll owner; only the navigation drawer/rail and overflow tables scroll internally. No fixed page height.
 
 ## Elevation & Depth
 
@@ -134,6 +134,12 @@ The developer directory uses visible logo buttons for its four supported platfor
 
 ### Developer Work summaries and profile setup
 
-DeveloperProfileSettings owns identity editing, publication preferences, and per-account visibility. PlatformSummary owns the reusable Work section in the directory explorer, public profiles, and owner settings. Keep the established system sans, blue action, neutral surfaces, and platform glyphs. The directory uses a 270px developer list beside a flexible detail panel. Selected people use a subtle blue surface and border; platform buttons show one public summary at a time. On smaller screens a labeled native developer selector stacks above the detail panel, avoiding a long list before the work. Public-profile Work panels use two columns when space permits, with GitHub's calendar spanning the width. Mobile panels stack; stats remain readable in two columns. Green calendar intensity uses the existing success token, and absent calendar data has explanatory text rather than placeholder activity. PageState owns load/error feedback; Modal owns account-removal confirmation.
+DeveloperProfileSettings owns identity editing, publication preferences, and per-account visibility. PlatformSummary owns the reusable Work section in the directory explorer, public profiles, and owner settings. Keep the established system sans, yellow action, neutral surfaces, and platform glyphs. The directory uses a two-column developer card grid above the selected Work detail panel. Cards show public GitHub calendars or repository counts, LeetCode solved counts and contest ratings, Codeforces ratings/ranks, and Medium recent article metadata. A yellow outlined Explore work control identifies the selected person; platform buttons show one public full summary at a time. Below 820px cards stack and a labeled native developer selector remains available. Full profile links lead directly to individual Work pages. Public-profile Work panels use two columns when space permits, with GitHub's calendar spanning the width. Mobile panels stack; stats remain readable in two columns. Green calendar intensity uses the existing success token, and absent calendar data has explanatory text rather than placeholder activity. PageState owns load/error feedback; Modal owns account-removal confirmation.
 
 The explorer mobile Select/Listbox is native: the browser owns option navigation, touch presentation, focus, and keyboard interaction. Its label and current value remain visible; no authored listbox or combobox keyboard model is introduced.
+
+### Linear migration — 27 October 2026
+
+The selected Linear concept is the visual target for the shared shell, feed, developer directory, and public profile. Runtime CSS remains canonical. The existing system font stack avoids external font loading; compact headings, underlined feed filters, neutral topic chips, and layered charcoal surfaces provide the Linear direction. No synthetic member data, contribution cells, contest badges, follower counts, or unsupported Follow actions from the generated concept images are shipped. Existing public-data contracts govern every displayed metric. Preview and full calendars share the date-positioning helper so missing dates remain blank. The directory retains URL-owned developer/work selection, filters, and server pagination. This is an alternative to unmerged Open Hub PR #48, not a dependency on that branch.
+
+Intentional drift resolution: blue/light-default → yellow/dark-default; split navigation list → comparable developer cards with existing Work detail retained. Rollback is a PR revert. No data migration.

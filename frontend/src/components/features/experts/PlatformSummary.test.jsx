@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import PlatformSummary, { ContributionCalendar } from "./PlatformSummary";
+import PlatformSummary, { ContributionCalendar, PlatformPreview } from "./PlatformSummary";
 
 test("missing GitHub data never renders a simulated heatmap or invented counts", () => {
   render(<PlatformSummary account={{ platform: "github", handle: "coder", metrics: {}, profileUrl: "https://github.com/coder" }} />);
@@ -31,4 +31,19 @@ test("platform statistics label sample scope, include difficulty counts, and sho
   expect(screen.getByRole("link", { name: /Kafka article/ })).toHaveAttribute("href", "https://medium.com/@coder/a");
   expect(screen.getByText("Kafka")).toBeInTheDocument();
   expect(screen.getByText("12 Oct 2026")).toBeInTheDocument();
+});
+
+
+test("card calendar preserves missing dates and failed-sync disclosure without inventing metrics", () => {
+  const { container, rerender } = render(<PlatformPreview account={{ platform: "github", verificationStatus: "failed", lastSyncedAt: "2026-10-26",
+    metrics: { contributionCalendar: { total: 7, from: "2026-10-01", to: "2026-10-03", days: [
+      { date: "2026-10-01", count: 3, level: 2 }, { date: "2026-10-03", count: 4, level: 3 },
+    ] } } }} />);
+  expect(container.querySelectorAll("rect")).toHaveLength(2);
+  expect(container.querySelectorAll("rect")[1]).toHaveAttribute("y", "48");
+  expect(screen.getByRole("img")).toHaveAccessibleName(/7 contributions from 2026-10-01 to 2026-10-03/);
+  expect(screen.getByText(/Refresh failed · saved snapshot/)).toBeInTheDocument();
+  rerender(<PlatformPreview account={{ platform: "github", metrics: {} }} />);
+  expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  expect(screen.getByText("Not available public repos")).toBeInTheDocument();
 });
