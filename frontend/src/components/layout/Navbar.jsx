@@ -7,7 +7,7 @@ import { getAuthHeaders } from "../../utils/request";
 import SearchField from "../common/SearchField";
 
 const initialTheme = () => {
-  try { return localStorage.getItem("theme") === "dark" ? "dark" : "light"; } catch { return "light"; }
+  try { return localStorage.getItem("theme") === "light" ? "light" : "dark"; } catch { return "dark"; }
 };
 const Navbar = ({ onMenuToggle, mobileOpen }) => {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ const Navbar = ({ onMenuToggle, mobileOpen }) => {
       <button type="button" className="icon-button menu-toggle" aria-label="Open navigation" aria-expanded={mobileOpen} aria-controls={mobileOpen ? "mobile-navigation" : undefined} onClick={onMenuToggle}><FiMenu aria-hidden="true" /></button>
       <Link to="/" className="portal-brand" aria-label="QnA Portal home"><span className="brand-symbol"><FiMessageSquare aria-hidden="true" /></span><span>QnA<span className="brand-muted"> Portal</span></span></Link>
       <form noValidate role="search" className="header-search" onSubmit={(event) => { event.preventDefault(); navigate(search.trim() ? "/search?q=" + encodeURIComponent(search.trim()) : "/search"); }}>
-        <SearchField value={search} onChange={setSearch} label="Search questions, topics and jobs" placeholder="Search the community…" />
+        <SearchField value={search} onChange={setSearch} label="Search questions, topics and jobs" placeholder="Search topics, developers, questions…" />
       </form>
       <div className="header-actions">
         <button type="button" className="icon-button" title={theme === "light" ? "Dark mode" : "Light mode"} aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
