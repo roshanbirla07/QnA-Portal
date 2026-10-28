@@ -146,4 +146,4 @@ Intentional drift resolution: blue/light-default → yellow/dark-default; split 
 
 ### Authentication surfaces
 
-AuthPage owns the login/signup form, local validation, password reveal, pending/errors, and protected-destination restoration. GoogleSignIn owns loading the maintained GIS SDK, the official provider-rendered button, availability, and retry. Provider branding remains Google-owned; form surfaces and password actions use the current QnA tokens in both themes. Existing accounts confirm their QnA password before linking Google; no silent account merge or forced provider redirect is introduced.
+AuthPage owns the login/signup form, local validation, password reveal, pending/errors, and protected-destination restoration. GitHubSignIn owns provider availability and an explicit full-page sign-in action, reusing the existing SiGithub platform logo. GitHubCallback owns the temporary callback exchange and URL cleanup. All surfaces and actions use the current QnA tokens in both themes. Existing accounts confirm their QnA password before linking GitHub; no silent account merge or automatic provider redirect is introduced.

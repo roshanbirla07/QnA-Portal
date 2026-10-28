@@ -20,11 +20,11 @@ const authCookieOptions = () => ({
   maxAge: 7 * 24 * 60 * 60 * 1000
 });
 
-export const respondWithSession = async (user, res, status = 200) => {
+export const respondWithSession = async (user, res, status = 200, returnTo) => {
   const token = generateToken(user._id, user.roleType);
-  const respUser = await User.findById(user._id).select("-password -googleSubject");
+  const respUser = await User.findById(user._id).select("-password -githubSubject");
   res.cookie("authToken", token, authCookieOptions());
-  return res.status(status).json(new ApiResponse(status, { respUser, token }, status === 201 ? RESPONSE_MESSAGES.SIGNUP_SUCCESS : RESPONSE_MESSAGES.LOGIN_SUCCESS));
+  return res.status(status).json(new ApiResponse(status, { respUser, token, ...(returnTo ? { returnTo } : {}) }, status === 201 ? RESPONSE_MESSAGES.SIGNUP_SUCCESS : RESPONSE_MESSAGES.LOGIN_SUCCESS));
 };
 
 const checkCredentialRequest = (req) => {

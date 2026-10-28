@@ -250,6 +250,6 @@ Work summaries show imported snapshots, last sync dates, and explicit unavailabl
 
 Run backend tests with `npm test --workspace backend`; frontend component tests with `CI=true npm test --workspace frontend -- --watchAll=false --runInBand`.
 
-## Google sign-in
+## GitHub sign-in
 
-The login and signup screens support email/password and Google Identity Services. Set the public `googleClientId` in the selected backend environment config and configure the frontend origin in Google Cloud Console and backend `corsOrigins`. See [Google sign-in setup](docs/google-sign-in.md) for activation, cookies, account linking, and index requirements. No client secret or frontend configuration key is needed.
+Login and signup support email/password and GitHub OAuth. Configure `githubClientId`, `githubClientSecret`, `githubRedirectUri`, and `githubRequestTimeoutMs` in the selected backend environment config. The frontend discovers availability from the backend; credentials never enter frontend configuration. See [GitHub sign-in setup](docs/github-sign-in.md) for the IP-based development callback, cookies, password-confirmed linking and database index requirements.

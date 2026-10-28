@@ -3,8 +3,8 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  password: { type: String, required() { return this.isNew && !this.googleSubject; } },
-  googleSubject: { type: String, unique: true, sparse: true, select: false },
+  password: { type: String, required() { return this.isNew && !this.githubSubject; } },
+  githubSubject: { type: String, unique: true, sparse: true, select: false },
   roleType: { type: String, default: "user", enum: ["user", "admin"] },
   username: { type: String, unique: true, sparse: true, lowercase: true, trim: true, maxlength: 40 },
   displayName: { type: String, trim: true, maxlength: 80 },

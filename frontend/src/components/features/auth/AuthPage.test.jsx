@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import AuthPage from "./AuthPage";
 import { apiConnector } from "../../../services/apiConnector";
@@ -6,9 +6,9 @@ import { apiConnector } from "../../../services/apiConnector";
 const mockSetToken = jest.fn();
 jest.mock("../../../contexts/AuthContext", () => ({ useAuth: () => ({ setToken: mockSetToken }) }));
 jest.mock("../../../services/apiConnector", () => ({ apiConnector: jest.fn() }));
-jest.mock("../../../services/apis", () => ({ LOGIN_USER: "/login-api", SIGNUP_USER: "/signup-api", GOOGLE_LOGIN: "/google-api" }));
-jest.mock("./GoogleSignIn", () => ({ __esModule: true, default: ({ onCredential, disabled }) => <button disabled={disabled} onClick={() => onCredential("credential").catch(() => {})}>Continue with Google</button> }));
-const setup = (signup = false) => render(<MemoryRouter initialEntries={[{ pathname: "/auth", state: { from: { pathname: "/projects", search: "?tag=nodejs" } } }]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><Routes><Route path="/auth" element={<AuthPage signup={signup} />} /><Route path="/projects" element={<h1>Protected projects</h1>} /></Routes></MemoryRouter>);
+jest.mock("../../../services/apis", () => ({ LOGIN_USER: "/login-api", SIGNUP_USER: "/signup-api", GITHUB_START: "/github-start", GITHUB_COMPLETE: "/github-complete", GITHUB_LINK: "/github-link", GITHUB_CANCEL: "/github-cancel" }));
+jest.mock("./GitHubSignIn", () => ({ __esModule: true, default: ({ onStart, disabled }) => <button disabled={disabled} onClick={onStart}>Continue with GitHub</button> }));
+const setup = (signup = false, githubCallback = false) => render(<MemoryRouter initialEntries={[{ pathname: "/auth", state: { from: { pathname: "/projects", search: "?tag=nodejs" } } }]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><Routes><Route path="/auth" element={<AuthPage signup={signup} githubCallback={githubCallback} />} /><Route path="/projects" element={<h1>Protected projects</h1>} /></Routes></MemoryRouter>);
 beforeEach(() => { apiConnector.mockReset(); mockSetToken.mockReset(); });
 
 test("email login validates inline, masks/reveals passwords, and restores the intended route", async () => {
@@ -52,22 +52,49 @@ test("signup blocks duplicate submissions while the request is pending", async (
   await screen.findByRole("heading", { name: "Protected projects" });
 });
 
-test("Google email collisions require explicit password confirmation before signing in", async () => {
-  apiConnector.mockRejectedValueOnce(Object.assign(new Error("link"), { statusCode: 409, response: { data: { code: "GOOGLE_LINK_REQUIRED" } } }))
-    .mockResolvedValueOnce({ data: { success: true, data: { token: "session" } } });
-  setup(); fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
-  await screen.findByRole("heading", { name: "Link your Google account" });
+test("GitHub email collisions require password proof without exposing the identity to the browser", async () => {
+  window.history.replaceState({}, "", "/auth/github/callback?code=temporary-code&state=random-state");
+  apiConnector.mockRejectedValueOnce(Object.assign(new Error("link"), { statusCode: 409, response: { data: { code: "GITHUB_LINK_REQUIRED" } } }))
+    .mockRejectedValueOnce(Object.assign(new Error("wrong"), { statusCode: 401, response: { data: { code: "GITHUB_PASSWORD_INVALID" } } }))
+    .mockResolvedValueOnce({ data: { success: true, data: { token: "session", returnTo: "/projects?tag=nodejs" } } });
+  setup(false, true);
+  await screen.findByRole("heading", { name: "Link your GitHub account" });
   expect(mockSetToken).not.toHaveBeenCalled();
+  expect(window.location.search).toBe("");
+  expect(apiConnector).toHaveBeenCalledWith("POST", "/github-complete", { code: "temporary-code", state: "random-state", error: null });
   expect(screen.getByLabelText("Existing QnA password")).toHaveFocus();
+  fireEvent.change(screen.getByLabelText("Existing QnA password"), { target: { value: "wrong" } });
+  fireEvent.click(screen.getByRole("button", { name: "Confirm and link GitHub" }));
+  await screen.findByText("The password could not be verified. Try again.");
+  expect(screen.getByLabelText("Existing QnA password")).toHaveValue("");
   fireEvent.change(screen.getByLabelText("Existing QnA password"), { target: { value: "existing-password" } });
-  fireEvent.click(screen.getByRole("button", { name: "Confirm and link Google" }));
+  fireEvent.click(screen.getByRole("button", { name: "Confirm and link GitHub" }));
   await screen.findByRole("heading", { name: "Protected projects" });
-  expect(apiConnector).toHaveBeenLastCalledWith("POST", "/google-api", { credential: "credential", password: "existing-password" });
+  expect(apiConnector).toHaveBeenLastCalledWith("POST", "/github-link", { password: "existing-password" });
 });
 
-test("Google sign-in sends the provider credential without trusting browser identity fields", async () => {
-  apiConnector.mockResolvedValue({ data: { success: true, data: { token: "google-session" } } });
-  setup(); fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
-  await waitFor(() => expect(mockSetToken).toHaveBeenCalledWith("google-session"));
-  expect(apiConnector).toHaveBeenCalledWith("POST", "/google-api", { credential: "credential" });
+test("GitHub callback errors leave local login usable and hide raw provider errors", async () => {
+  window.history.replaceState({}, "", "/auth/github/callback?error=access_denied&state=random-state");
+  apiConnector.mockRejectedValueOnce(new Error("raw provider detail"));
+  setup(false, true);
+  await screen.findByText("GitHub sign-in ended or could not be verified. Try again or use email and password.");
+  expect(screen.getByRole("button", { name: "Sign in", exact: true })).toBeEnabled();
+  expect(window.location.search).toBe("");
+  expect(screen.queryByText("raw provider detail")).not.toBeInTheDocument();
+});
+
+test("GitHub start failure retains the form and cancel linking clears the backend proof", async () => {
+  apiConnector.mockRejectedValueOnce(new Error("unavailable"));
+  const first = setup();
+  fireEvent.click(screen.getByRole("button", { name: "Continue with GitHub" }));
+  await screen.findByText("GitHub sign-in could not start. Please try again.");
+  expect(apiConnector).toHaveBeenCalledWith("POST", "/github-start", { returnTo: "/projects?tag=nodejs" });
+  first.unmount();
+  apiConnector.mockRejectedValueOnce(Object.assign(new Error("link"), { response: { data: { code: "GITHUB_LINK_REQUIRED" } } }))
+    .mockResolvedValueOnce({ data: { success: true, data: {} } });
+  setup(false, true);
+  await screen.findByRole("heading", { name: "Link your GitHub account" });
+  fireEvent.click(screen.getByRole("button", { name: "Cancel linking" }));
+  await screen.findByLabelText("Email");
+  expect(apiConnector).toHaveBeenLastCalledWith("POST", "/github-cancel", {});
 });
