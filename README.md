@@ -249,3 +249,7 @@ Visit **Developer profile** to save your QnA username, display name, headline, a
 Work summaries show imported snapshots, last sync dates, and explicit unavailable/failed states. GitHub calendars come from the public, unauthenticated contribution page; the service token is never sent to that page. Publicly shared private contribution counts may appear without repository details. This HTML endpoint can change: if parsing fails, no graph is shown and repository statistics still sync. Repositories, language counts, and stars cover up to 100 recent public non-fork repos. Codeforces activity covers the most recent 200 submissions. LeetCode uses its unofficial GraphQL endpoint, and Medium shows recent RSS metadata only. Existing connected accounts need **Refresh** to import the expanded snapshot.
 
 Run backend tests with `npm test --workspace backend`; frontend component tests with `CI=true npm test --workspace frontend -- --watchAll=false --runInBand`.
+
+## GitHub sign-in
+
+Login and signup support email/password and GitHub OAuth. Configure `githubClientId`, `githubClientSecret`, `githubRedirectUri`, and `githubRequestTimeoutMs` in the selected backend environment config. The frontend discovers availability from the backend; credentials never enter frontend configuration. See [GitHub sign-in setup](docs/github-sign-in.md) for the IP-based development callback, cookies, password-confirmed linking and database index requirements.

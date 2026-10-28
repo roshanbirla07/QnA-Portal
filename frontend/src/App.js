@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./App.css";
 import { Home, MyPending, MyPosts, QuestionForm, QuestionPage, TopicPage } from "./components/features/questions";
+import AuthPage from "./components/features/auth/AuthPage";
 import { SignUp, Login } from "./components/features/auth";
 import { Navbar } from "./components/layout";
 import AppShell from "./components/layout/AppShell";
@@ -62,6 +63,7 @@ function App() {
         <Route path="/jobs/:jobId" element={<JobBoard />} />
         <Route path="/pendings" element={<PrivateRoute><MyPending /></PrivateRoute>} />
         <Route path="/myposts" element={<PrivateRoute><MyPosts /></PrivateRoute>} />
+        <Route path="/auth/github/callback" element={<AuthPage githubCallback />} />
         <Route path="/login" element={<OpenRoute><Login /></OpenRoute>} />
         <Route path="/signup" element={<OpenRoute><SignUp /></OpenRoute>} />
         <Route path="/question/:questionId?" element={<PrivateRoute><QuestionPage /></PrivateRoute>} />
