@@ -135,7 +135,7 @@ const DeveloperDirectory = () => {
                   const skills = [...new Set(publicWork.flatMap((account) => account.skills || []))].slice(0, 4);
                   return <li key={user._id} className="surface-card developer-directory-card">
                     <div className="developer-card-heading">
-                      <Avatar name={user.displayName || user.username} src={user.avatar} />
+                      <Avatar userId={user._id} name={user.displayName || user.username} src={user.avatar} />
                       <div><h3><Link to={`/developers/${user.username}`}>{user.displayName || user.username}</Link></h3>
                         <p>{user.headline || `@${user.username}`}</p>
                         {user.location && <p className="developer-note">{user.location}</p>}
@@ -157,7 +157,7 @@ const DeveloperDirectory = () => {
             </section>
             <section className="surface-card developer-explorer-detail" aria-label="Selected developer">
               <header className="developer-explorer-profile">
-                <Avatar name={selected.user.displayName || selected.user.username} src={selected.user.avatar} />
+                <Avatar userId={selected.user._id} name={selected.user.displayName || selected.user.username} src={selected.user.avatar} />
                 <div>
                   <p className="feed-eyebrow">@{selected.user.username}</p>
                   <h2>{selected.user.displayName || selected.user.username}</h2>
@@ -225,7 +225,7 @@ const PublicDeveloperProfile = ({ username }) => {
   return (
     <main className="developer-page">
       <header className="surface-card developer-profile-hero">
-        <Avatar name={user.displayName || user.username} src={user.avatar} />
+        <Avatar userId={user._id} name={user.displayName || user.username} src={user.avatar} />
         <div>
           <p className="feed-eyebrow">@{user.username}</p>
           <h1>{user.displayName || user.username}</h1>
