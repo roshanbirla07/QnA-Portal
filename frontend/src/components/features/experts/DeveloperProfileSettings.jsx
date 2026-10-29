@@ -11,9 +11,11 @@ const fields = [
   ["username", "QnA username", 40],
   ["displayName", "Display name", 80],
   ["headline", "Headline", 160],
+  ["location", "Location", 120],
+  ["bio", "About", 500],
 ];
 const profileDraft = (user) => ({
-  username: user.username || "", displayName: user.displayName || "", headline: user.headline || "",
+  username: user.username || "", displayName: user.displayName || "", headline: user.headline || "", location: user.location || "", bio: user.bio || "",
   candidateProfileVisible: Boolean(user.candidateProfileVisible), openToOpportunities: Boolean(user.openToOpportunities),
 });
 const DeveloperProfileSettings = () => {
@@ -144,14 +146,14 @@ const DeveloperProfileSettings = () => {
     <form noValidate className="surface-card developer-identity-form" onSubmit={saveProfile}>
       <div className="developer-section-heading"><div><h2>Your QnA identity</h2><p>A username gives your published profile its own URL.</p></div></div>
       <div className="developer-identity-fields">
-        {fields.map(([name, label, maxLength]) => <div className="developer-search-control" key={name}>
+        {fields.map(([name, label, maxLength]) => { const Field = name === "bio" ? "textarea" : "input"; return <div className="developer-search-control" key={name}>
           <label htmlFor={`profile-${name}`}>{label}</label>
-          <input id={`profile-${name}`} ref={name === "username" ? usernameInput : undefined}
+          <Field rows={name === "bio" ? 5 : undefined} id={`profile-${name}`} ref={name === "username" ? usernameInput : undefined}
             className="input-field" maxLength={maxLength} value={draft[name]} disabled={Boolean(busy)}
             aria-invalid={name === "username" && Boolean(fieldError)}
             aria-describedby={name === "username" ? "username-help" : undefined}
             onChange={(event) => { setDraft((value) => ({ ...value, [name]: event.target.value })); if (name === "username") setFieldError(""); }} />
-        </div>)}
+        </div>; })}
       </div>
       <p id="username-help" className={fieldError ? "developer-form-error" : "developer-note"}>{fieldError || "3–40 characters. Letters, numbers, underscores, and hyphens. Changing it changes your public profile URL."}</p>
       <div className="developer-preferences">
