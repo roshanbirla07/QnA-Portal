@@ -91,7 +91,7 @@ Controls are 8px, panels 12px, and chips 6px. Member avatars use 10px corners, o
 
 Shared visual recipes live in frontend/src/index.css: .btn-primary, .glass-button, .input-field, .icon-button, .topic-chip, .surface-card. All have deliberate hover and visible focus; disabled/busy states preserve geometry. PageState owns loading/empty/error treatment for migrated views. Use its loading indicator rather than inventing screen-local loaders.
 
-SearchField owns explicit clear, input focus restoration, and IME-safe Enter. Its owning form commits navigation on submit; these navigation searches do not send autocomplete requests. Avatar owns initials and failed-image fallback. Modal uses the native dialog top layer for background isolation, focus containment, Escape, and restoration.
+SearchField owns explicit clear, input focus restoration, and IME-safe Enter. Its owning form commits navigation on submit; these navigation searches do not send autocomplete requests. Avatar owns uploaded photos and missing/failed-image fallback. Eight locally rendered Boring Avatars Beam presets provide friendly default faces; stable user IDs assign the same artwork across profile, directory, feed and rankings, with display name used only when no ID exists. Existing avatar dimensions and corner tokens remain unchanged. The library palette is part of the avatar artwork, not an additional application theme. Its MIT notice ships as frontend/public/boring-avatars-license.txt. Modal uses the native dialog top layer for background isolation, focus containment, Escape, and restoration.
 
 ### Navigation and data display
 
