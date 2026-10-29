@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { FiArrowUpRight, FiUsers, FiSearch, FiShare2, FiLink } from "react-icons/fi";
-import PlatformSummary, { platforms, PlatformIdentity } from "./PlatformSummary";
+import PlatformSummary, { platforms, PlatformIdentity, PlatformLogo } from "./PlatformSummary";
 import DeveloperProfileSettings from "./DeveloperProfileSettings";
 import Avatar from "../../common/Avatar";
 import PageState from "../../common/PageState";
@@ -127,7 +127,7 @@ const DeveloperDirectory = () => {
                     {user.openToOpportunities && <span className="developer-open">Open to opportunities</span>}
                   </div>
                   <div className="developer-person-actions"><span className="developer-view-profile">View profile <FiArrowUpRight aria-hidden="true" /></span>
-                    <span className="developer-person-platforms" aria-label="Connected platforms">{platforms.filter((item) => publicWork.some((account) => account.platform === item.id)).map(({ id, icon: Icon, label }) => <span key={id} title={label}><Icon aria-hidden="true" /><span className="sr-only">{label}</span></span>)}</span>
+                    <span className="developer-person-platforms" aria-label="Connected platforms">{platforms.filter((item) => publicWork.some((account) => account.platform === item.id)).map(({ id, label }) => <span key={id} title={label}><PlatformLogo platform={id} /><span className="sr-only">{label}</span></span>)}</span>
                   </div>
                 </Link>
               </li>;

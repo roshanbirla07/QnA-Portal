@@ -112,3 +112,7 @@ First visits use dark mode before first paint; explicit stored light mode remain
 ### Default profile avatars
 
 Avatar is the shared owner for photos and fallbacks. A usable photo takes priority; missing or failed sources render one of eight Boring Avatars Beam SVG presets locally. Stable user IDs keep assignment consistent across the directory, selected profile, full profile, feed and rankings; renaming a member does not change their avatar when an ID is available. No external avatar API, email seed, random assignment, browser storage or database backfill is required. The avatar is decorative beside the visible member name. Existing sizes, themes and publication rules remain unchanged.
+
+### Contest rating graphs
+
+Public LeetCode and Codeforces snapshots may include ratingHistory (date, rating, contest). Sync imports only actual attended/rated contests from provider history; optional history failure leaves core statistics usable. Missing/failed history displays refresh guidance; a successful empty history says no rated contests yet. Existing snapshots require a normal account refresh to acquire history. Hidden accounts and unpublished profiles remain gated by the existing controllers. Public platform cards omit individual submission/problem and repository lists while preserving aggregate statistics and source scope. RatingHistory has a keyboard-operable native disclosure with a dated data table, supports one point and constant ratings, and never generates an initial rating or trend.

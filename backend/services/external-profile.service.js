@@ -1,3 +1,4 @@
+import { normalizeRatingHistory } from "./rating-history.service.js";
 import { parseGithubCalendar } from "./github-calendar.service.js";
 import ApiError from "../utils/ApiError.js";
 import { syncLeetCode } from "./leetcode-profile.service.js";
@@ -168,9 +169,10 @@ const syncGithub = async (handle) => {
 };
 
 const syncCodeforces = async (handle) => {
-  const [infoResult, statusResult] = await Promise.all([
+  const [infoResult, statusResult, ratingResult] = await Promise.all([
     fetchJson(`https://codeforces.com/api/user.info?handles=${encodeURIComponent(handle)}`),
     fetchJson(`https://codeforces.com/api/user.status?handle=${encodeURIComponent(handle)}&from=1&count=200`),
+    fetchJson(`https://codeforces.com/api/user.rating?handle=${encodeURIComponent(handle)}`).catch(() => null),
   ]);
 
   if (infoResult.status !== "OK" || !infoResult.result?.[0]) throw new ApiError(502, "Codeforces profile sync failed");
@@ -203,6 +205,8 @@ const syncCodeforces = async (handle) => {
     verificationStatus: "verified",
     verificationNote: "Synced from the public Codeforces API.",
     metrics: {
+      ratingHistory: normalizeRatingHistory(ratingResult?.status === "OK" && Array.isArray(ratingResult.result)
+        ? ratingResult.result.map((item) => ({ rating: item?.newRating, timestamp: item?.ratingUpdateTimeSeconds, contest: item?.contestName })) : null),
       rating: user.rating ?? null,
       maxRating: user.maxRating ?? null,
       rank: user.rank || "",

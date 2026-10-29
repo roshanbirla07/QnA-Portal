@@ -65,3 +65,27 @@ test("failed platform sync preserves its last successful metrics and timestamp",
   assert.equal(profile.lastSyncedAt, "2026-10-20T00:00:00Z");
   assert.equal(profile.verificationStatus, "failed");
 });
+
+test("Codeforces imports rating history and tolerates optional history failure", async (t) => {
+  const original = globalThis.fetch;
+  t.after(() => { globalThis.fetch = original; });
+  let mode = "success";
+  globalThis.fetch = async (url) => {
+    if (url.includes("user.rating")) {
+      if (mode === "fail") throw new Error("timeout");
+      return { ok: true, json: async () => ({ status: "OK", result: mode === "empty" ? [] : [
+        { newRating: 1299, ratingUpdateTimeSeconds: 2000, contestName: "Round B" },
+        { newRating: 1200, ratingUpdateTimeSeconds: 1000, contestName: "Round A" },
+        { newRating: null, ratingUpdateTimeSeconds: 3000 },
+      ] }) };
+    }
+    return { ok: true, json: async () => ({ status: "OK", result: url.includes("user.info") ? [{ rating: 1299 }] : [] }) };
+  };
+  assert.deepEqual((await syncCodeforces("coder")).metrics.ratingHistory.map((item) => item.rating), [1200, 1299]);
+  mode = "empty";
+  assert.deepEqual((await syncCodeforces("coder")).metrics.ratingHistory, []);
+  mode = "fail";
+  const result = await syncCodeforces("coder");
+  assert.equal(result.metrics.ratingHistory, null);
+  assert.equal(result.metrics.rating, 1299);
+});

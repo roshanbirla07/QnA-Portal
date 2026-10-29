@@ -55,3 +55,39 @@ test("LeetCode ring uses only a complete difficulty breakdown and never invents 
   expect(screen.getByRole("img")).toHaveAccessibleName(/difficulty breakdown unavailable/);
   expect(screen.queryByText(/Top .*%/)).not.toBeInTheDocument();
 });
+
+test("profiles hide problem and repository names while retaining aggregate statistics", () => {
+  render(<><PlatformSummary account={{ platform: "github", metrics: { publicRepos: 5, recentRepositories: [{ name: "REPO SECRET", url: "https://github.com/coder/repo" }] } }} />
+    <PlatformSummary account={{ platform: "codeforces", metrics: { rating: 1299, recentActivity: [{ problem: "PROBLEM SECRET" }] } }} /></>);
+  expect(screen.queryByText("REPO SECRET")).not.toBeInTheDocument();
+  expect(screen.queryByText("PROBLEM SECRET")).not.toBeInTheDocument();
+  expect(screen.getByText("Public repositories")).toBeInTheDocument();
+});
+
+test("rating charts use only dated source ratings and expose the same values in a table", () => {
+  const { container, rerender } = render(<PlatformSummary account={{ platform: "codeforces", metrics: { ratingHistory: [
+    { date: "2026-10-12", rating: 1299, contest: "Round B" },
+    { date: "2026-10-01", rating: 1200, contest: "Round A" },
+    { date: "invalid", rating: 2500 }, { date: "2026-10-10", rating: null },
+  ] } }} />);
+  expect(screen.getByRole("img")).toHaveAccessibleName(/2 rated contests, 1,200 to 1,299/);
+  expect(container.querySelectorAll("circle")).toHaveLength(2);
+  const details = screen.getByText("Contest rating data").parentElement;
+  details.open = true;
+  expect(screen.getByRole("table")).toHaveTextContent("Round A1,200");
+  expect(screen.getByRole("table")).toHaveTextContent("Round B1,299");
+  rerender(<PlatformSummary account={{ platform: "leetcode", metrics: { ratingHistory: [{ date: "2026-10-01", rating: 0 }] } }} />);
+  expect(container.querySelectorAll(".developer-rating-history polyline")).toHaveLength(0);
+  expect(container.querySelectorAll(".developer-rating-history circle")).toHaveLength(1);
+  expect(screen.getByRole("img", { name: /1 rated contests/ })).toBeInTheDocument();
+  expect(container.innerHTML).not.toMatch(/NaN|Infinity/);
+});
+
+test("empty and failed history stay distinct and never create a chart", () => {
+  const { rerender } = render(<PlatformSummary account={{ platform: "codeforces", metrics: { ratingHistory: [] } }} />);
+  expect(screen.getByText("No rated contests yet.")).toBeInTheDocument();
+  expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  rerender(<PlatformSummary account={{ platform: "codeforces", metrics: { ratingHistory: null } }} />);
+  expect(screen.getByText(/Rating history unavailable/)).toBeInTheDocument();
+  expect(screen.queryByRole("img")).not.toBeInTheDocument();
+});
