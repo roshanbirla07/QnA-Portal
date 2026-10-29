@@ -26,6 +26,23 @@ const date = (value) => value && Number.isFinite(Date.parse(value))
 const safeUrl = (value) => /^https:\/\//i.test(value || "") ? value : undefined;
 const Stat = ({ label, value, text = false }) => <div><dt>{label}</dt><dd>{text ? value || "Not available" : number(value)}</dd></div>;
 
+const SolvedGauge = ({ metrics }) => {
+  const counts = [metrics.solvedEasy, metrics.solvedMedium, metrics.solvedHard];
+  const total = metrics.solvedTotal;
+  const breakdown = Number.isFinite(total) && total > 0 && counts.every((count) => Number.isFinite(count) && count >= 0) && counts.reduce((sum, count) => sum + count, 0) === total;
+  let offset = 0;
+  return <div className="developer-solved-gauge">
+    <svg viewBox="0 0 100 100" role="img" aria-label={`LeetCode: ${number(total)} problems solved${breakdown ? `; easy ${counts[0]}, medium ${counts[1]}, hard ${counts[2]}` : "; difficulty breakdown unavailable"}`}>
+      <circle cx="50" cy="50" r="42" fill="none" stroke="var(--line)" strokeWidth="6" />
+      {breakdown && counts.map((count, index) => {
+        const length = count / total * 100, start = offset;
+        offset += length;
+        return <circle key={index} cx="50" cy="50" r="42" pathLength="100" fill="none" stroke={["var(--success)", "var(--action)", "var(--danger)"][index]} strokeWidth="6" strokeDasharray={`${length} ${100 - length}`} strokeDashoffset={-start} />;
+      })}
+    </svg><span aria-hidden="true"><strong>{Number.isFinite(total) ? number(total) : "—"}</strong><small>Solved</small></span>
+  </div>;
+};
+
 const calendarLayout = (days) => {
   const start = Date.parse(days[0].date + "T00:00:00Z");
   const offset = new Date(start).getUTCDay();
@@ -56,33 +73,6 @@ export const ContributionCalendar = ({ calendar }) => {
   </figure>;
 };
 
-// Directory cards show only the imported public snapshot; full evidence stays in Work.
-export const PlatformPreview = ({ account }) => {
-  const metrics = account.metrics || {};
-  const calendar = metrics.contributionCalendar;
-  const days = calendar?.days;
-  const layout = days?.length ? calendarLayout(days) : null;
-  const summary = account.platform === "github"
-    ? calendar?.total != null ? `${number(calendar.total)} contributions` : `${number(metrics.publicRepos)} public repos`
-    : account.platform === "leetcode" ? `${number(metrics.solvedTotal)} problems solved`
-    : account.platform === "codeforces" ? `${number(metrics.rating)} rating`
-    : metrics.recentArticlesCount == null ? "Articles not synced" : `${number(metrics.recentArticlesCount)} recent articles`;
-  return <div className="developer-platform-preview">
-    <PlatformIdentity platform={account.platform} />
-    <strong>{summary}</strong>
-    {account.platform === "github" && days?.length > 0 && <svg className="developer-mini-calendar"
-      viewBox={`0 0 ${layout.columns * 8} 56`}
-      role="img" aria-label={`GitHub: ${number(calendar.total)} contributions from ${calendar.from} to ${calendar.to}`}>
-      {layout.cells.map((day) => <rect key={day.date} x={Math.floor(day.index / 7) * 8} y={(day.index % 7) * 8} width="6" height="6" rx="1"
-        className={`contribution-level-${day.level}`}><title>{day.date}: {day.count} contributions</title></rect>)}
-    </svg>}
-    {account.platform === "leetcode" && <span>Contest rating: {number(metrics.contestRating)}</span>}
-    {account.platform === "codeforces" && metrics.rank && <span>{metrics.rank}</span>}
-    {account.platform === "medium" && metrics.recentArticles?.[0]?.title && <span>{metrics.recentArticles[0].title}</span>}
-    {account.verificationStatus === "failed" && <span className="developer-sync-warning">Refresh failed · {account.lastSyncedAt ? "saved snapshot" : "not synced"}</span>}
-  </div>;
-};
-
 const PlatformSummary = ({ account }) => {
   const m = account.metrics || {};
   const synced = Boolean(account.lastSyncedAt);
@@ -100,15 +90,22 @@ const PlatformSummary = ({ account }) => {
       <p className="developer-note">{m.repositoryScope || "Repository and language statistics cover up to 100 recently updated public, non-fork repos."}</p>
     </>}
     {account.platform === "leetcode" && <>
+      <div className="developer-solved-overview">
+        <div className="developer-contest-rating"><small>Contest rating</small><strong aria-label={`Contest rating: ${number(m.contestRating)}`}>{Number.isFinite(m.contestRating) ? number(m.contestRating) : "—"}</strong>
+          {Number.isFinite(m.contestTopPercentage) && m.contestTopPercentage >= 0 && m.contestTopPercentage <= 100 && <span className="developer-contest-percentile">Top {m.contestTopPercentage.toFixed(2)}%</span>}
+        </div><SolvedGauge metrics={m} />
+      </div>
       <dl className="developer-stat-grid">
-        <Stat label="Contest rating" value={m.contestRating} /><Stat label="Contest ranking" value={m.contestGlobalRanking} /><Stat label="Profile ranking" value={m.profileRanking} />
-        <Stat label="Problems solved" value={m.solvedTotal} /><Stat label="Contests attended" value={m.attendedContests} /><Stat label="Contest top %" value={m.contestTopPercentage == null ? null : `${m.contestTopPercentage.toFixed(2)}%`} text />
+        <Stat label="Contest ranking" value={m.contestGlobalRanking} /><Stat label="Profile ranking" value={m.profileRanking} /><Stat label="Contests attended" value={m.attendedContests} />
       </dl>
       <dl className="developer-difficulty"><Stat label="Easy" value={m.solvedEasy} /><Stat label="Medium" value={m.solvedMedium} /><Stat label="Hard" value={m.solvedHard} /></dl>
-      <p className="developer-note">Public LeetCode GraphQL snapshot. Contest statistics may be unavailable for unrated accounts.</p>
+      <p className="developer-note">Contest statistics may be unavailable for accounts without contest activity.</p>
     </>}
     {account.platform === "codeforces" && <>
-      <dl className="developer-stat-grid"><Stat label="Current rating" value={m.rating} /><Stat label="Max rating" value={m.maxRating} /><Stat label="Rank" value={m.rank} text /><Stat label="Max rank" value={m.maxRank} text /></dl>
+      <div className="developer-rating-overview"><div><p className="developer-note">Current rank</p><p className="developer-rank">{m.rank || "Not available"}</p></div>
+        <div className="developer-rating-ring"><strong aria-label={`Current rating: ${number(m.rating)}`}>{Number.isFinite(m.rating) ? number(m.rating) : "—"}</strong><small>Current rating</small></div>
+      </div>
+      <dl className="developer-stat-grid"><Stat label="Max rating" value={m.maxRating} /><Stat label="Max rank" value={m.maxRank} text /></dl>
       <p className="developer-note">{number(m.solvedInRecentSubmissions)} distinct problems solved in the latest {m.recentSubmissionCount == null ? "up to 200" : number(m.recentSubmissionCount)} submissions. This is not a lifetime total.</p>
       <ul className="developer-work-list">{m.recentActivity?.map((item, index) => <li key={item.url + index}>
         <a href={safeUrl(item.url)} target="_blank" rel="noopener noreferrer">{item.problem || "Submission"} <FiArrowUpRight aria-hidden="true" /></a>

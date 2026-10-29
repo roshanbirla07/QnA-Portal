@@ -22,11 +22,13 @@ test("a user without a QnA username can edit identity and explicitly publish wit
   fireEvent.change(username, { target: { value: "New_User" } });
   fireEvent.change(screen.getByLabelText("Display name"), { target: { value: "New User" } });
   fireEvent.change(screen.getByLabelText("Headline"), { target: { value: "Backend engineer" } });
+  fireEvent.change(screen.getByLabelText("About"), { target: { value: "I build backend systems." } });
+  fireEvent.change(screen.getByLabelText("Location"), { target: { value: "Bengaluru" } });
   fireEvent.click(screen.getByRole("checkbox", { name: /Publish my developer profile/ }));
   fireEvent.click(screen.getByRole("button", { name: "Save profile" }));
   await screen.findByText("Profile saved.");
   expect(apiConnector).toHaveBeenLastCalledWith("PATCH", "/api/v1/profiles/me/profile", {
-    username: "New_User", displayName: "New User", headline: "Backend engineer", candidateProfileVisible: true, openToOpportunities: false,
+    username: "New_User", displayName: "New User", headline: "Backend engineer", location: "Bengaluru", bio: "I build backend systems.", candidateProfileVisible: true, openToOpportunities: false,
   });
   expect(screen.getByRole("link", { name: "View public profile" })).toHaveAttribute("href", "/developers/new_user");
 });

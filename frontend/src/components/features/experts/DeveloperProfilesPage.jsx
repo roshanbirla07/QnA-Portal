@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { FiArrowUpRight, FiUsers, FiSearch } from "react-icons/fi";
-import PlatformSummary, { platforms, PlatformIdentity, PlatformPreview } from "./PlatformSummary";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useParams, useSearchParams, useLocation } from "react-router-dom";
+import { FiArrowUpRight, FiUsers, FiSearch, FiShare2, FiLink } from "react-icons/fi";
+import PlatformSummary, { platforms, PlatformIdentity } from "./PlatformSummary";
 import DeveloperProfileSettings from "./DeveloperProfileSettings";
 import Avatar from "../../common/Avatar";
 import PageState from "../../common/PageState";
@@ -26,22 +26,6 @@ const DeveloperDirectory = () => {
   requestParams.delete("developer");
   requestParams.delete("work");
   const queryKey = requestParams.toString();
-  const selected = data.items?.find(({ user }) => user.username === params.get("developer")) || data.items?.[0];
-  const publicAccounts = selected?.accounts?.filter((account) => account.visibility !== "hidden") || [];
-  const activeAccount = publicAccounts.find((account) => account.platform === params.get("work"))
-    || publicAccounts.find((account) => account.platform === params.get("platform")) || publicAccounts[0];
-  const selectDeveloper = (username) => setParams((current) => {
-    const next = new URLSearchParams(current);
-    next.set("developer", username);
-    next.delete("work");
-    return next;
-  });
-  const selectPlatform = (platform) => setParams((current) => {
-    const next = new URLSearchParams(current);
-    next.set("developer", selected.user.username);
-    next.set("work", platform);
-    return next;
-  });
 
   useEffect(() => {
     const current = new URLSearchParams(queryKey);
@@ -59,6 +43,8 @@ const DeveloperDirectory = () => {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [queryKey, retry]);
+
+  useEffect(() => { document.title = "Developers · QnA"; }, []);
 
   const reset = () => {
     setDraft({ q: "", skill: "", platform: "" });
@@ -80,8 +66,8 @@ const DeveloperDirectory = () => {
       <header className="developer-directory-heading">
         <div className="developer-page-heading">
           <p className="feed-eyebrow">DEVELOPER DIRECTORY</p>
-          <h1>Find your people</h1>
-          <p>Discover developers through their code, contest activity, and writing.</p>
+          <h1>Developers</h1>
+          <p>Find people. Explore what they build.</p>
         </div>
         <Link className="glass-button" to="/developer-profile">Connect your profiles <FiArrowUpRight aria-hidden="true" /></Link>
       </header>
@@ -122,69 +108,31 @@ const DeveloperDirectory = () => {
       {loading ? <PageState state="loading" title="Loading developers…" /> :
         error ? <PageState state="error" title="Unable to load developers"><p>{error}</p><button type="button" className="glass-button" onClick={() => setRetry((value) => value + 1)}>Try again</button></PageState> :
         data.items?.length ? (
-          <div className="developer-explorer">
-            <section className="developer-card-directory" aria-label="Developer profiles">
-              <label className="developer-mobile-picker">Developer
-                <select className="input-field" value={selected.user.username} onChange={(event) => selectDeveloper(event.target.value)}>
-                  {data.items.map(({ user }) => <option key={user._id} value={user.username}>{user.displayName || user.username}</option>)}
-                </select>
-              </label>
-              <ul className="developer-card-grid">
-                {data.items.map(({ user, accounts, topicEvidence }) => {
-                  const publicWork = accounts?.filter((account) => account.visibility !== "hidden") || [];
-                  const skills = [...new Set(publicWork.flatMap((account) => account.skills || []))].slice(0, 4);
-                  return <li key={user._id} className="surface-card developer-directory-card">
-                    <div className="developer-card-heading">
-                      <Avatar userId={user._id} name={user.displayName || user.username} src={user.avatar} />
-                      <div><h3><Link to={`/developers/${user.username}`}>{user.displayName || user.username}</Link></h3>
-                        <p>{user.headline || `@${user.username}`}</p>
-                        {user.location && <p className="developer-note">{user.location}</p>}
-                      </div>
+          <ul className="developer-people-list" aria-label="Developer profiles">
+            {data.items.map(({ user, accounts = [], topicEvidence = [] }) => {
+              const publicWork = accounts.filter((account) => account.visibility !== "hidden" && platforms.some((item) => item.id === account.platform));
+              const skills = [...new Set(publicWork.flatMap((account) => account.skills || []))].slice(0, 4);
+              const name = user.displayName || user.username;
+              return <li key={user._id}>
+                <Link className="surface-card developer-person" to={`/developers/${user.username}`} state={{ directorySearch: queryKey }} aria-label={`View ${name}'s profile`}>
+                  <Avatar userId={user._id} name={name} src={user.avatar} />
+                  <div className="developer-person-copy">
+                    <h3>{name}</h3>
+                    <p className="developer-person-headline">{user.headline || `@${user.username}`}</p>
+                    {user.location && <p className="developer-note">{user.location}</p>}
+                    {user.bio && <p className="developer-person-bio">{user.bio}</p>}
+                    <div className="developer-skills">{skills.map((skill) => <span className="topic-chip" key={skill}>{skill}</span>)}
+                      {topicEvidence.slice(0, 2).map((item) => <span className="topic-chip" key={item.topic}>#{item.topic}</span>)}
                     </div>
                     {user.openToOpportunities && <span className="developer-open">Open to opportunities</span>}
-                    <div className="developer-skills">{skills.map((skill) => <span className="topic-chip" key={skill}>{skill}</span>)}
-                      {topicEvidence?.slice(0, 2).map((item) => <Link className="topic-chip" key={item.topic} to={`/topics/${item.topic}`}>#{item.topic}</Link>)}
-                    </div>
-                    {publicWork.length ? <div className="developer-card-platforms">{publicWork.map((account) => <PlatformPreview key={account.platform} account={account} />)}</div>
-                      : <p className="developer-note">No public connected platforms yet.</p>}
-                    <footer><button type="button" className="glass-button" aria-label={`Explore ${user.displayName || user.username}`}
-                      aria-pressed={selected.user.username === user.username} onClick={() => selectDeveloper(user.username)}>
-                      {selected.user.username === user.username ? "Work selected" : "Explore work"}
-                    </button><Link to={`/developers/${user.username}`}>Full profile <FiArrowUpRight aria-hidden="true" /></Link></footer>
-                  </li>;
-                })}
-              </ul>
-            </section>
-            <section className="surface-card developer-explorer-detail" aria-label="Selected developer">
-              <header className="developer-explorer-profile">
-                <Avatar userId={selected.user._id} name={selected.user.displayName || selected.user.username} src={selected.user.avatar} />
-                <div>
-                  <p className="feed-eyebrow">@{selected.user.username}</p>
-                  <h2>{selected.user.displayName || selected.user.username}</h2>
-                  {selected.user.headline && <p>{selected.user.headline}</p>}
-                  {selected.user.location && <span className="developer-note">{selected.user.location}</span>}
-                </div>
-                <Link className="glass-button" to={`/developers/${selected.user.username}`}>Full profile <FiArrowUpRight aria-hidden="true" /></Link>
-              </header>
-              {selected.user.openToOpportunities && <p className="developer-open">Open to opportunities</p>}
-              <div className="developer-skills">
-                {selected.topicEvidence?.slice(0, 4).map((item) => <span className="topic-chip" key={item.topic}>#{item.topic} · {item.reputation}</span>)}
-                {[...new Set(publicAccounts.flatMap((account) => account.skills || []))].slice(0, 5).map((skill) => <span className="topic-chip" key={skill}>#{skill}</span>)}
-              </div>
-              <section className="developer-explorer-work" aria-label="Work">
-                <div className="developer-section-heading"><div><h3>Work</h3><p>Explore their public platform activity.</p></div></div>
-                {publicAccounts.length ? <>
-                  <div className="developer-platform-options developer-work-options" role="group" aria-label="View platform work">
-                    {publicAccounts.map((account) => <button key={account.platform} type="button" className="glass-button"
-                      aria-pressed={activeAccount.platform === account.platform} onClick={() => selectPlatform(account.platform)}>
-                      <PlatformIdentity platform={account.platform} />
-                    </button>)}
                   </div>
-                  <PlatformSummary key={`${selected.user.username}-${activeAccount.platform}`} account={activeAccount} />
-                </> : <p className="developer-note">No public connected platforms yet. View the full profile for QnA contributions.</p>}
-              </section>
-            </section>
-          </div>
+                  <div className="developer-person-actions"><span className="developer-view-profile">View profile <FiArrowUpRight aria-hidden="true" /></span>
+                    <span className="developer-person-platforms" aria-label="Connected platforms">{platforms.filter((item) => publicWork.some((account) => account.platform === item.id)).map(({ id, icon: Icon, label }) => <span key={id} title={label}><Icon aria-hidden="true" /><span className="sr-only">{label}</span></span>)}</span>
+                  </div>
+                </Link>
+              </li>;
+            })}
+          </ul>
          ) : <PageState state="empty" title={hasFilters ? "No developers found" : "Make your work discoverable"}>
           <span className="developer-empty-icon"><FiUsers aria-hidden="true" /></span>
           <p>{hasFilters ? "Try another skill, name, or platform to broaden your search." : "Connect your technical profiles and publish your developer profile to appear here."}</p>
@@ -197,72 +145,104 @@ const DeveloperDirectory = () => {
         <span>Page {data.page}</span>
         <button className="glass-button" disabled={!data.hasMore} onClick={() => setParams((current) => { const next = new URLSearchParams(current); next.delete("developer"); next.delete("work"); next.set("page", String(data.page + 1)); return next; })}>Next</button>
       </nav>}
-      <p className="developer-directory-note">Public profiles only. Synced data confirms the source, not account ownership. No hiring scores.</p>
+      <p className="developer-directory-note">Only published profiles and public connected platforms appear here.</p>
     </main>
   );
+};
+
+const AboutPreview = ({ user, profilePath, navigationState }) => <section className="surface-card developer-profile-about"><h2>About</h2><p>{user.bio || "No introduction shared yet."}</p><Link to={profilePath + "?view=about"} state={navigationState}>More about {user.displayName || user.username} <FiArrowUpRight aria-hidden="true" /></Link></section>;
+
+const profileViews = ["Overview", "Coding", "Projects", "Writing", "About"];
+const publicUrl = (value) => {
+  try { const url = new URL(value); return ["https:", "http:"].includes(url.protocol) && !url.username && !url.password ? url.href : undefined; }
+  catch { return undefined; }
 };
 
 const PublicDeveloperProfile = ({ username }) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
-
+  const [shareState, setShareState] = useState("");
+  const [params] = useSearchParams();
+  const location = useLocation();
+  const heading = useRef(null);
+  const shareInput = useRef(null);
+  const active = useRef(true);
+  const view = profileViews.find((item) => item.toLowerCase() === params.get("view")) || "Overview";
+  const profilePath = `/developers/${username}`;
+  const directorySearch = typeof location.state?.directorySearch === "string" ? location.state.directorySearch : "";
+  const directoryPath = "/developers" + (directorySearch ? `?${new URLSearchParams(directorySearch)}` : "");
+  const shareUrl = window.location.origin + profilePath;
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
+  useEffect(() => { if (shareState === "manual") { shareInput.current?.focus(); shareInput.current?.select(); } }, [shareState]);
   useEffect(() => {
-    let active = true;
-    setError("");
-    setData(null);
+    let current = true;
+    setError(""); setData(null); setShareState("");
     apiConnector("GET", `${DEVELOPER_PROFILES_ROUTER}/${encodeURIComponent(username)}`)
-      .then((response) => { if (active) setData(response.data.data); })
-      .catch(() => { if (active) setError("This profile is unavailable or could not be loaded."); });
-    return () => { active = false; };
+      .then((response) => { if (current) setData(response.data.data); })
+      .catch(() => { if (current) setError("This profile is unavailable or could not be loaded."); });
+    return () => { current = false; };
   }, [username, retry]);
-
-  if (error) return <main className="developer-page"><PageState state="error" title="Profile unavailable"><p>{error}</p><button className="glass-button" onClick={() => setRetry((value) => value + 1)}>Try again</button></PageState></main>;
-  if (!data) return <main className="developer-page"><PageState state="loading" title="Loading developer work…" /></main>;
-
-  const { user, topicEvidence } = data;
-  const accounts = data.accounts.filter((account) => account.visibility !== "hidden");
-  return (
-    <main className="developer-page">
-      <header className="surface-card developer-profile-hero">
-        <Avatar userId={user._id} name={user.displayName || user.username} src={user.avatar} />
-        <div>
-          <p className="feed-eyebrow">@{user.username}</p>
-          <h1>{user.displayName || user.username}</h1>
-          {user.headline && <p>{user.headline}</p>}
-          <div className="developer-profile-meta">
-            {user.location && <span>{user.location}</span>}
-            {user.openToOpportunities && <span className="developer-open">Open to opportunities</span>}
-          </div>
-        </div>
-        <Link className="glass-button developer-profile-back" to="/developers">Browse developers <FiArrowUpRight aria-hidden="true" /></Link>
-      </header>
-
-      {user.bio && <section className="surface-card developer-section"><h2>About</h2><p>{user.bio}</p></section>}
-
-      <section className="developer-section">
-        <div className="developer-section-heading"><div><h2>Work</h2><p>Public profiles linked by this developer.</p></div></div>
-        {accounts.length ? <div className="developer-evidence-grid">{accounts.filter((account) => account.visibility !== "hidden").map((account) => <PlatformSummary key={account.platform} account={account} />)}</div> :
-          <p>No external profiles are public yet.</p>}
+  useEffect(() => {
+    if (data) { document.title = `${data.user.displayName || data.user.username} · QnA`; heading.current?.focus(); }
+    else document.title = error ? "Profile unavailable · QnA" : "Loading profile · QnA";
+  }, [data, error]);
+  const share = async () => {
+    setShareState("pending");
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(shareUrl);
+      if (active.current) setShareState("copied");
+    } catch { if (active.current) setShareState("manual"); }
+  };
+  if (error) return <main className="developer-page"><Link className="developer-back" to={directoryPath}>← Developers</Link><PageState state="error" title="Profile unavailable"><p>{error}</p><button className="glass-button" onClick={() => setRetry((value) => value + 1)}>Try again</button></PageState></main>;
+  if (!data) return <main className="developer-page"><PageState state="loading" title="Loading developer profile…" /></main>;
+  const { user, topicEvidence = [] } = data;
+  const accounts = (data.accounts || []).filter((account) => account.visibility !== "hidden" && platforms.some((item) => item.id === account.platform));
+  const skills = [...new Set(accounts.flatMap((account) => account.skills || []))].slice(0, 6);
+  const visibleAccounts = accounts.filter((account) => view === "Overview" || (view === "Coding" && ["leetcode", "codeforces"].includes(account.platform)) || (view === "Projects" && account.platform === "github") || (view === "Writing" && account.platform === "medium"))
+    .sort((a, b) => ["leetcode", "codeforces", "github", "medium"].indexOf(a.platform) - ["leetcode", "codeforces", "github", "medium"].indexOf(b.platform));
+  const contacts = [["Website", user.website], ["LinkedIn", user.linkedin], ["GitHub", user.github]].map(([label, url]) => ({ label, url: publicUrl(url) })).filter((item) => item.url);
+  return <main className="developer-page developer-public-profile">
+    <div className="developer-profile-toolbar"><Link className="developer-back" to={directoryPath}>← Developers</Link><span className="developer-note">Public profile</span></div>
+    <header className="developer-profile-hero">
+      <Avatar userId={user._id} name={user.displayName || user.username} src={user.avatar} />
+      <div className="developer-profile-identity"><h1 ref={heading} tabIndex={-1}>{user.displayName || user.username}</h1><p className="developer-note">@{user.username}</p>
+        {user.headline && <p>{user.headline}</p>}{user.bio && <p className="developer-profile-intro">{user.bio}</p>}
+        <div className="developer-profile-meta">{user.location && <span>{user.location}</span>}{user.openToOpportunities && <span className="developer-open">Open to opportunities</span>}</div>
+        <div className="developer-skills">{skills.map((skill) => <span className="topic-chip" key={skill}>{skill}</span>)}</div>
+      </div>
+      <div className="developer-profile-actions">
+        {contacts.length > 0 && <details className="developer-contact"><summary className="glass-button">Contact details</summary><div>{contacts.map((contact) => <a key={contact.label} href={contact.url} target="_blank" rel="noopener noreferrer">{contact.label} <FiArrowUpRight aria-hidden="true" /></a>)}</div></details>}
+        <button type="button" className="glass-button" onClick={share} disabled={shareState === "pending"}><FiShare2 aria-hidden="true" />{shareState === "copied" ? "Link copied" : "Share profile"}</button>
+        {shareState === "copied" && <span className="sr-only" role="status">Profile link copied.</span>}
+        {shareState === "manual" && <label className="developer-share-fallback">Copy this profile link<input ref={shareInput} className="input-field" readOnly value={shareUrl} /></label>}
+      </div>
+    </header>
+    {accounts.length > 0 && <nav className="developer-profile-links" aria-label="Connected platforms">{platforms.filter((item) => accounts.some((account) => account.platform === item.id)).map((item) => {
+      const account = accounts.find((entry) => entry.platform === item.id), url = publicUrl(account.profileUrl);
+      return url ? <a key={item.id} href={url} target="_blank" rel="noopener noreferrer"><PlatformIdentity platform={item.id} /></a> : <span key={item.id}><PlatformIdentity platform={item.id} /></span>;
+    })}</nav>}
+    <nav className="developer-profile-tabs" aria-label="Profile sections">{profileViews.map((item) => <Link key={item} to={profilePath + (item === "Overview" ? "" : `?view=${item.toLowerCase()}`)} state={location.state} aria-current={view === item ? "page" : undefined}>{item}</Link>)}</nav>
+    {view !== "About" && <section className="developer-profile-content" aria-label={`${view} details`}>
+      {visibleAccounts.length ? <div className="developer-evidence-grid">{visibleAccounts.map((account) => <PlatformSummary key={account.platform} account={account} />)}
+        {view === "Overview" && <AboutPreview user={user} profilePath={profilePath} navigationState={location.state} />}
+      </div> : <PageState state="empty" title={view === "Overview" ? "No public connected platforms yet" : `No public ${view.toLowerCase()} to show`}><p>This developer has not shared {view === "Overview" ? "external platform activity" : `any ${view.toLowerCase()} activity`}.</p></PageState>}
+    </section>}
+    {view === "Overview" && !visibleAccounts.length && <AboutPreview user={user} profilePath={profilePath} navigationState={location.state} />}
+    {view === "About" && <>
+      <section className="surface-card developer-section"><h2>About</h2><p>{user.bio || "No introduction shared yet."}</p>
+        {contacts.length > 0 && <ul className="developer-public-contacts">{contacts.map((contact) => <li key={contact.label}><a href={contact.url} target="_blank" rel="noopener noreferrer"><FiLink aria-hidden="true" />{contact.label}</a></li>)}</ul>}
       </section>
-
-      <section className="surface-card developer-section">
-        <h2>QnA topic evidence</h2>
-        <p className="developer-note">Topic reputation is earned from contributions on QnA Portal.</p>
-        <div className="developer-skills">
-          {topicEvidence.length ? topicEvidence.map((item) => (
-            <Link className="topic-chip" to={`/topics/${item.topic}`} key={item.topic}>#{item.topic} · {item.reputation}</Link>
-          )) : <span>No topic reputation yet.</span>}
-        </div>
-      </section>
-    </main>
-  );
+      <section className="surface-card developer-section"><h2>QnA topic evidence</h2><p className="developer-note">Topic reputation is earned from contributions on QnA Portal.</p><div className="developer-skills">{topicEvidence.length ? topicEvidence.map((item) => <Link className="topic-chip" to={`/topics/${item.topic}`} key={item.topic}>#{item.topic} · {item.reputation}</Link>) : <span>No topic reputation yet.</span>}</div></section>
+    </>}
+  </main>;
 };
 
 const DeveloperProfilesPage = ({ manage = false }) => {
   const { username } = useParams();
   if (manage) return <DeveloperProfileSettings />;
-  if (username) return <PublicDeveloperProfile username={username} />;
+  if (username) return <PublicDeveloperProfile key={username} username={username} />;
   return <DeveloperDirectory />;
 };
 
