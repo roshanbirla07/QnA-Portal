@@ -47,7 +47,8 @@ test("profile navigation groups public evidence and restores directory filters a
   const calls = apiConnector.mock.calls.length;
   const nav = screen.getByRole("navigation", { name: "Profile sections" });
   fireEvent.click(within(nav).getByRole("link", { name: "Projects" }));
-  expect(screen.getByRole("link", { name: /Public project/ })).toBeInTheDocument();
+  expect(screen.getByText("Public repositories")).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: /Public project/ })).not.toBeInTheDocument();
   expect(screen.queryByRole("img", { name: /LeetCode/ })).not.toBeInTheDocument();
   fireEvent.click(within(nav).getByRole("link", { name: "Writing" }));
   expect(screen.getByText("No public writing to show")).toBeInTheDocument();

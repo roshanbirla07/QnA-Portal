@@ -1,20 +1,30 @@
 import React, { useState } from "react";
 import { FiArrowUpRight } from "react-icons/fi";
-import { SiGithub, SiLeetcode, SiCodeforces, SiMedium } from "react-icons/si";
+import { SiGithub, SiLeetcode, SiMedium } from "react-icons/si";
+
+const CodeforcesLogo = () => <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true">
+  <rect x="1" y="10" width="6" height="13" rx="1" fill="#f6c445" />
+  <rect x="9" y="1" width="6" height="22" rx="1" fill="#54a6d8" />
+  <rect x="17" y="6" width="6" height="17" rx="1" fill="#d85c66" />
+</svg>;
 
 export const platforms = [
   { icon: SiGithub, description: "Code & open source", id: "github", label: "GitHub", placeholder: "github username", autoSync: true },
   { icon: SiLeetcode, description: "Problems & contests", id: "leetcode", label: "LeetCode", placeholder: "leetcode username", autoSync: true },
-  { icon: SiCodeforces, description: "Competitive programming", id: "codeforces", label: "Codeforces", placeholder: "codeforces handle", autoSync: true },
+  { icon: CodeforcesLogo, description: "Competitive programming", id: "codeforces", label: "Codeforces", placeholder: "codeforces handle", autoSync: true },
   { icon: SiMedium, description: "Articles & ideas", id: "medium", label: "Medium", placeholder: "medium username", autoSync: true },
 ];
+
+export const PlatformLogo = ({ platform }) => {
+  const Icon = platforms.find((item) => item.id === platform)?.icon;
+  return Icon ? <span className={`developer-platform-logo developer-platform-logo--${platform}`}><Icon aria-hidden="true" /></span> : null;
+};
 
 export const PlatformIdentity = ({ platform, detail = false }) => {
   const item = platforms.find((entry) => entry.id === platform);
   if (!item) return <span>{platform}</span>;
-  const Icon = item.icon;
   return <span className="developer-platform-identity">
-    <span className="developer-platform-logo"><Icon aria-hidden="true" /></span>
+    <PlatformLogo platform={platform} />
     <span><strong>{item.label}</strong>{detail && <small>{item.description}</small>}</span>
   </span>;
 };
@@ -73,6 +83,36 @@ export const ContributionCalendar = ({ calendar }) => {
   </figure>;
 };
 
+export const RatingHistory = ({ history, platform }) => {
+  const points = (Array.isArray(history) ? history : []).filter((item) => item && Number.isFinite(item.rating) && item.rating >= 0 && date(item.date))
+    .slice().sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+  if (!points.length) return <p className="developer-note">{Array.isArray(history) && !history.length
+    ? "No rated contests yet." : "Rating history unavailable. Refresh this account to try again."}</p>;
+  const min = points.reduce((value, item) => Math.min(value, item.rating), Infinity);
+  const max = points.reduce((value, item) => Math.max(value, item.rating), -Infinity);
+  const first = Date.parse(points[0].date), last = Date.parse(points[points.length - 1].date);
+  const coordinates = points.map((item) => ({ ...item,
+    x: last === first ? 220 : 8 + (Date.parse(item.date) - first) / (last - first) * 424,
+    y: max === min ? 75 : 130 - (item.rating - min) / (max - min) * 110,
+  }));
+  return <figure className="developer-rating-history">
+    <figcaption>{platform} contest rating history</figcaption>
+    <div className="developer-rating-plot">
+      <div className={`developer-rating-scale${max === min ? " developer-rating-scale--constant" : ""}`} aria-hidden="true"><span>{number(max)}</span>{max !== min && <span>{number(min)}</span>}</div>
+    <svg viewBox="0 0 440 150" role="img" aria-label={`${platform} rating history: ${points.length} rated contests, ${number(min)} to ${number(max)}`}>
+      <line x1="8" y1="20" x2="432" y2="20" className="rating-grid" />
+      <line x1="8" y1="130" x2="432" y2="130" className="rating-grid" />
+      {coordinates.length > 1 && <polyline points={coordinates.map((item) => `${item.x},${item.y}`).join(" ")} fill="none" className="rating-line" />}
+      {coordinates.map((item, index) => <circle key={index} cx={item.x} cy={item.y} r="3" className="rating-point"><title>{date(item.date)} · {item.contest || "Contest"}: {number(item.rating)}</title></circle>)}
+    </svg></div>
+    <div className="developer-rating-dates" aria-hidden="true"><span>{date(points[0].date)}</span>{last !== first && <span>{date(points[points.length - 1].date)}</span>}</div>
+    <details><summary>Contest rating data</summary><div className="developer-calendar-table"><table>
+      <caption className="sr-only">{platform} contest rating history</caption><thead><tr><th scope="col">Date (UTC)</th><th scope="col">Contest</th><th scope="col">Rating</th></tr></thead>
+      <tbody>{points.map((item, index) => <tr key={index}><th scope="row">{date(item.date)}</th><td>{item.contest || "Contest"}</td><td>{number(item.rating)}</td></tr>)}</tbody>
+    </table></div></details>
+  </figure>;
+};
+
 const PlatformSummary = ({ account }) => {
   const m = account.metrics || {};
   const synced = Boolean(account.lastSyncedAt);
@@ -86,7 +126,6 @@ const PlatformSummary = ({ account }) => {
       <dl className="developer-stat-grid"><Stat label="Public repositories" value={m.publicRepos} /><Stat label="Stars in sampled repos" value={m.totalStars} /><Stat label="Followers" value={m.followers} /></dl>
       <ContributionCalendar calendar={m.contributionCalendar} />
       <div className="developer-skills">{m.topLanguages?.map((language) => <span className="topic-chip" key={language.name}>{language.name} · {number(language.count)} repos</span>)}</div>
-      <ul className="developer-work-list">{m.recentRepositories?.slice(0, 3).map((repo) => <li key={repo.url}><a href={safeUrl(repo.url)} target="_blank" rel="noopener noreferrer">{repo.name} <FiArrowUpRight aria-hidden="true" /></a><span>{repo.language || "Language not reported"} · {number(repo.stars)} stars</span></li>)}</ul>
       <p className="developer-note">{m.repositoryScope || "Repository and language statistics cover up to 100 recently updated public, non-fork repos."}</p>
     </>}
     {account.platform === "leetcode" && <>
@@ -99,18 +138,14 @@ const PlatformSummary = ({ account }) => {
         <Stat label="Contest ranking" value={m.contestGlobalRanking} /><Stat label="Profile ranking" value={m.profileRanking} /><Stat label="Contests attended" value={m.attendedContests} />
       </dl>
       <dl className="developer-difficulty"><Stat label="Easy" value={m.solvedEasy} /><Stat label="Medium" value={m.solvedMedium} /><Stat label="Hard" value={m.solvedHard} /></dl>
+      <RatingHistory history={m.ratingHistory} platform="LeetCode" />
       <p className="developer-note">Contest statistics may be unavailable for accounts without contest activity.</p>
     </>}
     {account.platform === "codeforces" && <>
-      <div className="developer-rating-overview"><div><p className="developer-note">Current rank</p><p className="developer-rank">{m.rank || "Not available"}</p></div>
-        <div className="developer-rating-ring"><strong aria-label={`Current rating: ${number(m.rating)}`}>{Number.isFinite(m.rating) ? number(m.rating) : "—"}</strong><small>Current rating</small></div>
-      </div>
+      <dl className="developer-stat-grid"><Stat label="Current rating" value={m.rating} /><Stat label="Current rank" value={m.rank} text /></dl>
       <dl className="developer-stat-grid"><Stat label="Max rating" value={m.maxRating} /><Stat label="Max rank" value={m.maxRank} text /></dl>
       <p className="developer-note">{number(m.solvedInRecentSubmissions)} distinct problems solved in the latest {m.recentSubmissionCount == null ? "up to 200" : number(m.recentSubmissionCount)} submissions. This is not a lifetime total.</p>
-      <ul className="developer-work-list">{m.recentActivity?.map((item, index) => <li key={item.url + index}>
-        <a href={safeUrl(item.url)} target="_blank" rel="noopener noreferrer">{item.problem || "Submission"} <FiArrowUpRight aria-hidden="true" /></a>
-        <span>{item.verdict} · {item.language}{date(item.submittedAt) && ` · ${date(item.submittedAt)}`}</span>
-      </li>)}</ul>
+      <RatingHistory history={m.ratingHistory} platform="Codeforces" />
     </>}
     {account.platform === "medium" && <>
       <p className="developer-note">{m.recentArticlesCount == null ? "Articles not synced yet." : `${number(m.recentArticlesCount)} recent ${m.recentArticlesCount === 1 ? "article" : "articles"} in the RSS feed. Not an all-time total.`}</p>

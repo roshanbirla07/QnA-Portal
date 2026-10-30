@@ -130,7 +130,7 @@ Plain labels name actions. Loading, empty, and errors explain the next step. Rep
 
 ### Developer platform identity
 
-The developer directory uses visible logo buttons for its four supported platforms (GitHub, LeetCode, Codeforces, Medium). Brand glyphs come from the existing react-icons Simple Icons package, rendered in the current text color for reliable contrast in both themes. The shared PlatformIdentity recipe in PlatformSummary is reused across directory filters, profile evidence, and connection settings. No new palette or font is introduced. Directory search uses SearchField; loading, error, and empty feedback uses PageState.
+The developer directory uses visible logo buttons for its four supported platforms (GitHub, LeetCode, Codeforces, Medium). Brand glyphs reuse react-icons Simple Icons, with a local three-color Codeforces mark. PlatformLogo owns the source colors documented below. The shared PlatformIdentity recipe in PlatformSummary is reused across directory filters, profile evidence, and connection settings. The application palette and font remain unchanged. Directory search uses SearchField; loading, error, and empty feedback uses PageState.
 
 ### Developer Work summaries and profile setup
 
@@ -138,7 +138,7 @@ DeveloperProfileSettings owns identity, location and biography editing, publicat
 
 A separate public profile owns the full platform overview. Its header shows identity, biography, skills, public platform links and Share profile; Contact details exposes only existing public website/LinkedIn/GitHub fields when provided. Five URL-backed navigation links (Overview, Coding, Projects, Writing, About) group the same fetched snapshot without repeated requests. No experience, education, telephone, achievements or rating history is invented where no source data exists. GitHub spans the evidence grid; LeetCode and Codeforces sit beside each other on desktop. Medium writing and About complete the overview. All panels stack on mobile.
 
-The LeetCode solved ring represents the actual Easy/Medium/Hard breakdown of solved problems, not an invented total available question count. Missing or inconsistent breakdowns leave a neutral track. Its contest percentile is shown only when the snapshot provides a finite 0–100 value. The Codeforces rating is displayed inside a neutral ring without implying percentage progress toward a fabricated maximum. Missing rating numbers use an em dash with an accessible unavailable label. GitHub calendars retain actual dates/counts; absent data has an explicit explanation.
+The LeetCode solved ring represents the actual Easy/Medium/Hard breakdown of solved problems, not an invented total available question count. Missing or inconsistent breakdowns leave a neutral track. Its contest percentile is shown only when the snapshot provides a finite 0–100 value. Codeforces shows current/max rating and rank above its actual contest rating history. Missing ratings use the shared Not available label. GitHub calendars retain actual dates/counts; absent data has an explicit explanation.
 
 ### Linear migration — 27 October 2026
 
@@ -149,3 +149,9 @@ Intentional drift resolution: blue/light-default → yellow/dark-default; split 
 ### Authentication surfaces
 
 AuthPage owns the login/signup form, local validation, password reveal, pending/errors, and protected-destination restoration. GitHubSignIn owns provider availability and an explicit full-page sign-in action, reusing the existing SiGithub platform logo. GitHubCallback owns the temporary callback exchange and URL cleanup. All surfaces and actions use the current QnA tokens in both themes. Existing accounts confirm their QnA password before linking GitHub; no silent account merge or automatic provider redirect is introduced.
+
+### Platform summaries and rating history
+
+The public profile shows aggregate coding statistics, actual contest rating history, the GitHub contribution calendar and language summaries. Problem/submission names and repository-name lists are omitted. Medium article titles remain part of Writing. RatingHistory owns the responsive SVG time/rating plot and native expandable data table, shared by LeetCode and Codeforces. One rated contest is a single point; absent data never becomes a trend or baseline. Dates are UTC and points use proportional elapsed time with labeled rating bounds.
+
+PlatformLogo owns artwork across directory, filters, connections and full profiles: LeetCode amber (#e7a41f), Codeforces yellow/blue/red (#f6c445/#54a6d8/#d85c66), GitHub and Medium their monochrome marks adapted to the current foreground. These artwork colors live in PlatformSummary.jsx and developer-profiles.css and do not replace application theme roles.
